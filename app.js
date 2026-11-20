@@ -82,6 +82,7 @@
   /* ---------- Navegação ---------- */
   var MENU = [
     ["inicio", "Início", '<path d="M4 11l8-7 8 7v9H4z"/>'],
+    ["nivelamento", "Nivelamento", '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/>'],
     ["diagnostico", "Diagnóstico", '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>'],
     ["perfil", "Testes de perfil", '<circle cx="9" cy="9" r="5"/><circle cx="15" cy="15" r="5"/>'],
     ["plano", "Meu plano", '<path d="M5 5h14v14H5zM9 9h6M9 13h6"/>'],
@@ -168,7 +169,7 @@
     h += '<div class="grid g4" style="margin-bottom:16px">' +
       '<div class="card ind"><span class="rot">Nota geral</span><b>' + (u ? mediaGeral(u.notas) : "—") + "</b><small>" + (u ? "último diagnóstico" : "faça o diagnóstico") + "</small></div>" +
       '<div class="card ind" data-ir="conquistas" style="cursor:pointer"><span class="rot">Pontos</span><b>' + pontuacao().total + "</b><small>" + nivel(pontuacao().total) + " · ver prêmios</small></div>" +
-      '<div class="card ind"><span class="rot">Encontros</span><b>' + d.encontrosVistos.length + "/" + P.encontros.length + "</b><small>marcados como vistos</small></div>" +
+      '<div class="card ind" data-ir="nivelamento" style="cursor:pointer"><span class="rot">Nivelamento</span><b>' + nivProg().feitas + "/" + nivProg().total + "</b><small>" + (nivProg().feitas < nivProg().total ? "aulas · continuar" : "concluído!") + "</small></div>" +
       '<div class="card ind"><span class="rot">Cashback VOX</span><b>' + moeda(d.aluno.valor * 0.3) + "</b><small>em 3 cupons mensais</small></div></div>";
     h += '<div class="grid g2">';
     h += '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2>O seu momento hoje</h2>' +
@@ -327,6 +328,108 @@
       return '<div class="item"><span class="num ' + (visto ? "ok" : e.n === 8 ? "br" : "") + '">' + e.n + '</span><div style="flex:1"><b>' + esc(e.titulo) + '</b><p><span class="chip">' + esc(A(area(e.area)).nome) + "</span> Prepare-se: " + esc(e.prep) + '</p></div><button class="btn peq ' + (visto ? "" : "contorno") + '" data-visto="' + e.n + '">' + (visto ? "Visto" : "Marcar como visto") + "</button></div>";
     }).join("") + '<p class="muted" style="font-size:12px;margin:12px 0 0">Os vídeos dos encontros entram aqui assim que forem gravados (hospedados no Bunny Stream).</p></div>';
     return h;
+  }
+
+
+  /* ---------- Nivelamento: aulas em vídeo no formato "player + lista de módulos" (nivelamento.js) ---------- */
+  var NV = window.NIVELAMENTO || { modulos: [], emBreve: [] };
+  var aulaSel = null, teatro = false;
+  function nivAulas() { var l = []; NV.modulos.forEach(function (m) { m.aulas.forEach(function (a) { l.push(a); }); }); return l; }
+  function nivD() {
+    var d = dados();
+    if (!d.nivel) d.nivel = { feitas: [], fav: [], notas: {}, aval: {}, ferr: {}, ultima: null };
+    return d.nivel;
+  }
+  function ferrPreenchida(a) {
+    var f = nivD().ferr[a.id] || {};
+    return !!a.ferramenta && a.ferramenta.campos.some(function (_, i) { return (f[i] || "").trim(); });
+  }
+  function nivProg() {
+    var aulas = nivAulas(), n = nivD();
+    var comF = aulas.filter(function (a) { return a.ferramenta; });
+    return { feitas: aulas.filter(function (a) { return n.feitas.indexOf(a.id) >= 0; }).length, total: aulas.length,
+      ferr: comF.filter(ferrPreenchida).length, ferrTotal: comF.length };
+  }
+  function aulaAtual() {
+    var aulas = nivAulas(), n = nivD();
+    var id = aulaSel || n.ultima || (aulas.filter(function (a) { return n.feitas.indexOf(a.id) < 0; })[0] || aulas[0]).id;
+    return aulas.filter(function (a) { return a.id === id; })[0] || aulas[0];
+  }
+  function textoFerramenta(a) {
+    var f = nivD().ferr[a.id] || {};
+    return a.ferramenta.nome.toUpperCase() + "\n" + a.ferramenta.campos.map(function (c, i) { return "- " + c.rot + ": " + ((f[i] || "").trim() || "(não preenchido)"); }).join("\n");
+  }
+  function telaNivelamento() {
+    var n = nivD(), aulas = nivAulas(), a = aulaAtual(), idx = aulas.indexOf(a), pr = nivProg();
+    var pct = Math.round(pr.feitas / pr.total * 100), feita = n.feitas.indexOf(a.id) >= 0, fav = n.fav.indexOf(a.id) >= 0, nota = n.aval[a.id] || 0;
+    var h = '<div class="nv-topo"><div><span class="rot">A Panela · Nivelamento</span><h1>O kit básico antes do 1º encontro</h1>' +
+      '<p class="muted" style="margin:4px 0 0"><b style="color:var(--ink)">' + pct + "% concluído</b> · " + pr.feitas + "/" + pr.total + " aulas · " + pr.ferr + "/" + pr.ferrTotal + ' ferramentas preenchidas</p></div>' +
+      '<div class="nv-prog" role="progressbar" aria-label="Progresso do nivelamento" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + pct + '%"></i></div></div>';
+    h += '<div class="nv' + (teatro ? " teatro" : "") + '"><div class="nv-principal">';
+    h += '<div class="nv-player">' + (a.video ? '<iframe src="' + esc(a.video) + '" loading="lazy" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen title="' + esc(a.titulo) + '"></iframe>' :
+      '<div class="nv-sem"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>' + esc(a.titulo) + '</b><span>Vídeo em gravação · ' + esc(a.dur) + " min</span></div>") + "</div>";
+    h += '<div class="nv-ctrl"><div><button class="nv-ic" data-nv-ir="' + (idx - 1) + '"' + (idx ? "" : " disabled") + ' aria-label="Aula anterior"><svg viewBox="0 0 24 24"><path d="M6 5v14M18 5l-9 7 9 7z"/></svg></button>' +
+      '<button class="nv-ic" data-nv-ir="' + (idx + 1) + '"' + (idx < aulas.length - 1 ? "" : " disabled") + ' aria-label="Próxima aula"><svg viewBox="0 0 24 24"><path d="M18 5v14M6 5l9 7-9 7z"/></svg></button></div>' +
+      '<button class="nv-ic nv-teatro-b" id="nv-teatro" aria-label="Modo teatro" aria-pressed="' + teatro + '"><svg viewBox="0 0 24 24"><path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4"/></svg></button></div>';
+    h += '<div class="card nv-aula"><span class="rot">Aula ' + (idx + 1) + " de " + aulas.length + " · " + esc(a.dur) + " min</span><h2>" + esc(a.titulo) + '</h2><p style="margin:6px 0 0">' + esc(a.resumo) + "</p>" +
+      '<div class="nv-acoes"><button class="btn" id="nv-concluir">' + (feita ? (idx < aulas.length - 1 ? "Próxima aula" : "Aula concluída") : "Concluir e avançar") + "</button>" +
+      '<button class="btn contorno' + (fav ? " on" : "") + '" id="nv-fav" aria-pressed="' + fav + '">' + (fav ? "★ Favorita" : "☆ Favoritar") + "</button>" +
+      '<span class="nv-estrelas" role="group" aria-label="Avaliar a aula">' + [1, 2, 3, 4, 5].map(function (k) { return '<button data-nv-nota="' + k + '" aria-label="' + k + " estrela" + (k > 1 ? "s" : "") + '" class="' + (k <= nota ? "on" : "") + '">★</button>'; }).join("") + "</span></div>" +
+      '<h3 style="margin-top:18px">Nesta aula</h3><ul class="lista">' + a.pontos.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></div>";
+    if (a.ferramenta) {
+      var f = n.ferr[a.id] || {};
+      h += '<div class="card nv-ferr"><div class="nv-ferr-topo"><div><span class="rot">Ferramenta da aula</span><h2>' + esc(a.ferramenta.nome) + '</h2></div><span class="chip">' + (ferrPreenchida(a) ? "Salva automaticamente" : "Preencha aqui") + "</span></div>" +
+        a.ferramenta.campos.map(function (c, i) { return '<div class="campo"><label for="nvf-' + i + '">' + esc(c.rot) + "</label>" + (c.dica ? '<small class="muted">' + esc(c.dica) + "</small>" : "") + '<textarea id="nvf-' + i + '" data-nv-campo="' + i + '" rows="2">' + esc(f[i] || "") + "</textarea></div>"; }).join("") +
+        '<div class="nv-pedido"><span class="rot">Pedido pronto para o Claude</span><p>' + esc(a.prompt) + '</p><button class="btn peq" id="nv-copiar">Copiar a ferramenta com o pedido</button></div></div>';
+    } else if (a.prompt) {
+      h += '<div class="card nv-ferr"><span class="rot">Tudo o que você preencheu</span><h2>O manual do seu negócio para o Claude</h2><p class="muted" style="margin:6px 0 12px">Junta todas as ferramentas do nivelamento num texto só, pronto para colar nas instruções do seu Projeto no Claude.</p>' +
+        '<div class="nv-pedido"><span class="rot">Pedido pronto para o Claude</span><p>' + esc(a.prompt) + '</p><button class="btn peq" id="nv-copiar-tudo">Copiar tudo do nivelamento</button></div></div>';
+    }
+    h += '<div class="card"><span class="rot">Missão da aula</span><p style="margin:6px 0 0"><b>' + esc(a.tarefa) + '</b></p><p class="muted" style="font-size:12.5px;margin:8px 0 0">Ficou com dúvida? Leve para o grupo da Panela no WhatsApp ou para o seu encontro individual.</p></div>';
+    h += '<div class="card"><label class="rot" for="nv-notas">Anotações</label><textarea id="nv-notas" class="nv-notas" rows="4" placeholder="Escreva aqui o que você quer lembrar desta aula. Só você vê.">' + esc(n.notas[a.id] || "") + '</textarea><div style="margin-top:10px"><button class="btn peq" id="nv-salvar">Salvar</button></div></div>';
+    h += '</div><aside class="nv-lista" aria-label="Módulos e aulas">' + NV.modulos.map(function (m) {
+      var feitasM = m.aulas.filter(function (x) { return n.feitas.indexOf(x.id) >= 0; }).length, pm = Math.round(feitasM / m.aulas.length * 100);
+      var aberto = m.aulas.indexOf(a) >= 0;
+      return '<details class="nv-mod"' + (aberto ? " open" : "") + '><summary><span class="nv-pct">' + pm + "%</span>" + esc(m.titulo) + "</summary>" + m.aulas.map(function (x) {
+        var ok = n.feitas.indexOf(x.id) >= 0;
+        return '<button class="nv-item' + (x === a ? " at" : "") + (ok ? " ok" : "") + '" data-nv-aula="' + x.id + '"' + (x === a ? ' aria-current="true"' : "") + '><span class="nv-ck">' + (ok ? "✓" : "") + "</span><span>" + esc(x.titulo) + (n.fav.indexOf(x.id) >= 0 ? " ★" : "") + "</span><small>" + esc(x.dur) + "</small></button>";
+      }).join("") + "</details>";
+    }).join("") + (NV.emBreve || []).map(function (t) { return '<div class="nv-mod nv-breve"><span class="nv-pct">🔒</span><span>' + esc(t) + "</span><small>em breve</small></div>"; }).join("") + "</aside></div>";
+    return h;
+  }
+  function ligarNivelamento() {
+    if (atual !== "nivelamento") return;
+    var n = nivD(), aulas = nivAulas(), a = aulaAtual(), idx = aulas.indexOf(a);
+    function abrir(id) { aulaSel = id; n.ultima = id; salvar(); desenhar(); var t = document.querySelector(".nv-topo"); if (t) t.scrollIntoView({ block: "start" }); }
+    document.querySelectorAll("[data-nv-aula]").forEach(function (b) { b.addEventListener("click", function () { abrir(b.getAttribute("data-nv-aula")); }); });
+    document.querySelectorAll("[data-nv-ir]").forEach(function (b) { b.addEventListener("click", function () { var k = +b.getAttribute("data-nv-ir"); if (aulas[k]) abrir(aulas[k].id); }); });
+    var te = document.getElementById("nv-teatro"); if (te) te.addEventListener("click", function () { teatro = !teatro; desenhar(); });
+    var co = document.getElementById("nv-concluir");
+    if (co) co.addEventListener("click", function () {
+      var nova = n.feitas.indexOf(a.id) < 0;
+      if (nova) { n.feitas.push(a.id); salvar(); }
+      if (idx < aulas.length - 1) { abrir(aulas[idx + 1].id); if (nova) toast("Aula concluída! +10 pontos"); }
+      else { desenhar(); if (nova) toast("Nivelamento concluído! Você está pronto para o 1º encontro."); }
+    });
+    var fv = document.getElementById("nv-fav");
+    if (fv) fv.addEventListener("click", function () { var i = n.fav.indexOf(a.id); if (i >= 0) n.fav.splice(i, 1); else n.fav.push(a.id); salvar(); desenhar(); });
+    document.querySelectorAll("[data-nv-nota]").forEach(function (b) { b.addEventListener("click", function () { n.aval[a.id] = +b.getAttribute("data-nv-nota"); salvar(); toast("Obrigado pela avaliação!"); desenhar(); }); });
+    document.querySelectorAll("[data-nv-campo]").forEach(function (t) {
+      t.addEventListener("input", function () { n.ferr[a.id] = n.ferr[a.id] || {}; n.ferr[a.id][t.getAttribute("data-nv-campo")] = t.value; salvar(); });
+    });
+    function copiar(txt) {
+      var ok = function () { toast("Copiado! Cole no Claude."); };
+      if (navigator.clipboard) navigator.clipboard.writeText(txt).then(ok, function () { window.prompt("Copie o texto:", txt); });
+      else window.prompt("Copie o texto:", txt);
+    }
+    var cp = document.getElementById("nv-copiar"); if (cp) cp.addEventListener("click", function () { copiar(a.prompt + "\n\n" + textoFerramenta(a)); });
+    var ct = document.getElementById("nv-copiar-tudo");
+    if (ct) ct.addEventListener("click", function () {
+      var partes = aulas.filter(function (x) { return x.ferramenta; }).map(textoFerramenta);
+      copiar("MANUAL DO MEU NEGÓCIO (preenchido no Nivelamento de A Panela)\n\n" + partes.join("\n\n") + "\n\n" + a.prompt);
+    });
+    var sv = document.getElementById("nv-salvar");
+    if (sv) sv.addEventListener("click", function () { n.notas[a.id] = document.getElementById("nv-notas").value; salvar(); toast("Anotação salva."); });
   }
 
   /* ---------- Temperos: a biblioteca de skills por ramo (temperos.json) ---------- */
@@ -503,6 +606,9 @@
     add("Evolução da nota geral", Math.max(0, evol) * 10, 150, nd > 1 ? (evol >= 0 ? "+" : "") + evol + " pontos na nota" : "refaça o teste para medir");
     var t = d.testes || { disc: [], animais: [] };
     add("Testes de perfil", (t.disc.length ? 50 : 0) + (t.animais.length ? 50 : 0), 100, (t.disc.length ? 1 : 0) + (t.animais.length ? 1 : 0) + " de 2 testes");
+    var np = nivProg();
+    add("Aulas do nivelamento", np.feitas * 10, np.total * 10, np.feitas + " de " + np.total + " aulas");
+    add("Ferramentas do nivelamento preenchidas", np.ferr * 15, np.ferrTotal * 15, np.ferr + " de " + np.ferrTotal);
     add("Encontros vistos", d.encontrosVistos.length * 30, 360, d.encontrosVistos.length + " de " + P.encontros.length);
     add("Ramo escolhido nos temperos", d.aluno.ramo ? 20 : 0, 20, d.aluno.ramo ? "escolhido" : "escolha na aba Temperos");
     add("Temperos explorados", (d.temperosAbertos || []).length * 5, 100, (d.temperosAbertos || []).length + " abertos");
@@ -541,7 +647,7 @@
 
 
   /* Celular: barra fixa embaixo com as 4 abas principais + "Mais" (grade com todas as abas numa tela só). */
-  var PRINCIPAIS = ["inicio", "diagnostico", "temperos", "conquistas"];
+  var PRINCIPAIS = ["inicio", "nivelamento", "diagnostico", "temperos"];
   function icone(id) { var m = MENU.filter(function (x) { return x[0] === id; })[0]; return '<svg viewBox="0 0 24 24" aria-hidden="true">' + m[2] + "</svg>"; }
   function nomeMenu(id) { var m = MENU.filter(function (x) { return x[0] === id; })[0]; return m[1]; }
   function barraInferior() {
@@ -558,7 +664,7 @@
     var d = dados();
     if (!d) return telaLogin();
     marcarDia();
-    var telas = { inicio: telaInicio, diagnostico: telaDiagnostico, plano: telaPlano, encontros: telaEncontros, temperos: telaTemperos, perfil: telaPerfil, conquistas: telaConquistas, cashback: telaCashback, individual: telaIndividual, regras: telaRegras };
+    var telas = { inicio: telaInicio, nivelamento: telaNivelamento, diagnostico: telaDiagnostico, plano: telaPlano, encontros: telaEncontros, temperos: telaTemperos, perfil: telaPerfil, conquistas: telaConquistas, cashback: telaCashback, individual: telaIndividual, regras: telaRegras };
     var menu = MENU.map(function (m) { return '<button data-ir="' + m[0] + '" class="' + (atual === m[0] ? "ativo" : "") + '"' + (atual === m[0] ? ' aria-current="page"' : "") + '><svg viewBox="0 0 24 24" aria-hidden="true">' + m[2] + "</svg>" + m[1] + "</button>"; }).join("");
     var raiz = document.getElementById("raiz");
     raiz.innerHTML = '<div class="aviso-demo">Versão de demonstração: os dados ficam só neste navegador.</div>' +
@@ -571,6 +677,7 @@
 
   function ligar() {
     var d = dados();
+    ligarNivelamento();
     document.querySelectorAll("[data-ir]").forEach(function (b) { b.addEventListener("click", function () { ir(b.getAttribute("data-ir")); }); });
     var bm = document.getElementById("b-mais"), fo = document.getElementById("folha-mais"), ff = document.getElementById("folha-fundo");
     function folha(abrir) { if (!fo) return; fo.hidden = !abrir; ff.hidden = !abrir; bm.setAttribute("aria-expanded", String(abrir)); document.body.classList.toggle("sem-rolar", abrir); }
