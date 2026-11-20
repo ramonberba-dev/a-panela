@@ -102,19 +102,23 @@
     var raiz = document.getElementById("raiz");
     raiz.innerHTML = "";
     raiz.appendChild(el(
-      '<div class="login"><div class="caixa card" style="padding:28px">' +
-      '<img src="logo-h-web.jpg" alt="A Panela">' +
-      "<div><h1>Área do participante</h1><p class=\"muted\" style=\"margin:6px 0 0\">Entre com o e-mail da sua inscrição e o código de acesso que você recebeu.</p></div>" +
-      '<form id="f-login" class="grid" novalidate>' +
+      '<div class="login2">' +
+      '<section class="l-arte" aria-hidden="true"><span class="l-cota l-c1">FIG. 01 · A PANELA</span><span class="l-cota l-c2">MENTORIA · TURMA 01</span>' +
+      '<span class="l-cruz l-x1"></span><span class="l-cruz l-x2"></span><img class="l-poster" src="login-arte.jpg" alt=""></section>' +
+      '<section class="l-form"><div class="l-in">' +
+      '<div class="l-topo"><span>Hub de Empreendedores Católicos</span><span>Nº 001</span></div>' +
+      '<div class="l-tit"><span class="l-num">01 — Acesso</span><h1>Área do<br>participante</h1><p>Entre com o e-mail da sua inscrição e o código de acesso que você recebeu.</p></div>' +
+      '<form id="f-login" class="l-campos" novalidate>' +
       '<div class="campo"><label for="l-nome">Seu nome</label><input id="l-nome" autocomplete="name"></div>' +
       '<div class="campo"><label for="l-email">E-mail</label><input id="l-email" type="email" autocomplete="email"></div>' +
-      '<div class="campo"><label for="l-perfil">Qual é o seu momento?</label><select id="l-perfil">' + P.perfis.map(function (x) { return '<option value="' + x.id + '">' + esc(x.nome) + "</option>"; }).join("") + "</select></div>" +
-      '<div class="campo"><label for="l-turma">Como você entrou na Panela?</label><select id="l-turma"><option value="hub">Fui ao 1º Encontro do Hub (R$ 997)</option><option value="geral">Inscrição geral (R$ 1.697)</option></select></div>' +
+      '<div class="l-duas"><div class="campo"><label for="l-perfil">Seu momento</label><select id="l-perfil">' + P.perfis.map(function (x) { return '<option value="' + x.id + '">' + esc(x.nome) + "</option>"; }).join("") + "</select></div>" +
+      '<div class="campo"><label for="l-turma">Como entrou</label><select id="l-turma"><option value="hub">Fui ao 1º Encontro do Hub (R$ 997)</option><option value="geral">Inscrição geral (R$ 1.697)</option></select></div></div>' +
       '<p class="erro" id="l-erro" role="alert"></p>' +
-      '<button class="btn" type="submit">Entrar na Panela</button>' +
-      '<button class="btn contorno" type="button" id="b-demo">Entrar como participante de demonstração</button>' +
-      '<p class="muted" style="font-size:12px;margin:0">Demonstração: não é preciso código. Na versão no ar, o acesso é liberado depois da confirmação do pagamento.</p>' +
-      "</form></div></div>"));
+      '<button class="l-entrar" type="submit"><span>Entrar na Panela</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>' +
+      '<button class="l-demo" type="button" id="b-demo">Entrar como participante de demonstração</button>' +
+      '<p class="l-nota">Demonstração: não é preciso código. Na versão no ar, o acesso é liberado depois da confirmação do pagamento.</p>' +
+      '</form><div class="l-rodape"><span>Orar · Trabalhar · Servir · Amar</span><span>Panela só é ruim pra quem tá de fora</span></div>' +
+      "</div></section></div>"));
     document.getElementById("b-demo").addEventListener("click", function () {
       if (!window.TEMPEROS_DATA && !CAT) { fetch("temperos.json").then(function (r) { return r.json(); }).then(function (j) { window.TEMPEROS_DATA = j; entrarDemo(); }).catch(entrarDemo); return; }
       if (!window.TEMPEROS_DATA) window.TEMPEROS_DATA = CAT; entrarDemo();
