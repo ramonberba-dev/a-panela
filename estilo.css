@@ -222,3 +222,40 @@ html,body{overflow-x:hidden}
   .grid>*{min-width:0}
 }
 @media (max-width:900px){.ind b{font-size:clamp(18px,6vw,26px);white-space:nowrap;overflow-wrap:normal}.card{padding:14px}}
+
+/* ===== Navegação nova: menu lateral compacto no computador, barra fixa embaixo no celular ===== */
+.topo-mob,.tabbar,.folha,.folha-fundo{display:none}
+.lateral{gap:12px;padding:16px 12px}
+.lateral img{height:44px}
+.menu button{padding:8px 10px;font-size:13px}
+.perfil{padding-top:10px;gap:6px}
+.perfil .muted{font-size:11.5px}
+.perfil .avatar{width:52px;height:52px}
+@media (max-width:900px){
+  .barra-mob{display:none!important}
+  .topo-mob{display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:30;padding:8px max(16px,env(safe-area-inset-left,0px));background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--traco)}
+  .topo-mob img{height:34px;mix-blend-mode:multiply}
+  .topo-mob-perfil{border:0;background:none;padding:0;cursor:pointer}
+  .topo-mob .avatar{width:40px;height:40px;font-size:16px}
+  .conteudo{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--ink);border-radius:18px;padding:6px;box-shadow:0 10px 30px rgba(20,20,20,.28)}
+  .tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:transparent;color:rgba(255,255,255,.62);font:600 10px var(--texto);padding:8px 2px;border-radius:12px;cursor:pointer;min-height:52px}
+  .tabbar svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .tabbar #b-mais svg{fill:currentColor;stroke:none}
+  .tabbar button.ativo{color:#fff;background:rgba(255,255,255,.12)}
+  .tabbar button.ativo svg{stroke:var(--amarelo)}
+  .tabbar #b-mais.ativo svg{fill:var(--amarelo)}
+  .folha-fundo:not([hidden]){display:block;position:fixed;inset:0;background:rgba(20,20,20,.45);z-index:45}
+  .folha:not([hidden]){display:block;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--bg);border-radius:20px 20px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 30px rgba(20,20,20,.2);animation:sobe .22s ease-out}
+  .folha-alca{width:42px;height:4px;border-radius:4px;background:#C9C9C4;margin:0 auto 12px}
+  .folha-grade{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+  .folha-grade button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:84px;border:1px solid var(--traco);background:#fff;border-radius:14px;font:600 12px var(--texto);color:var(--ink);cursor:pointer;text-align:center;padding:8px 4px}
+  .folha-grade svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .folha-grade button.ativo{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .folha-grade button.ativo svg{stroke:var(--amarelo)}
+  body.sem-rolar{overflow:hidden}
+  .aviso-demo{font-size:10px;padding:4px 16px}
+}
+@keyframes sobe{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.folha{animation:none!important}}
+@media (max-width:900px){.toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}}

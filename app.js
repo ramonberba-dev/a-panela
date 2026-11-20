@@ -539,6 +539,20 @@
     return h;
   }
 
+
+  /* Celular: barra fixa embaixo com as 4 abas principais + "Mais" (grade com todas as abas numa tela só). */
+  var PRINCIPAIS = ["inicio", "diagnostico", "temperos", "conquistas"];
+  function icone(id) { var m = MENU.filter(function (x) { return x[0] === id; })[0]; return '<svg viewBox="0 0 24 24" aria-hidden="true">' + m[2] + "</svg>"; }
+  function nomeMenu(id) { var m = MENU.filter(function (x) { return x[0] === id; })[0]; return m[1]; }
+  function barraInferior() {
+    var naMais = PRINCIPAIS.indexOf(atual) < 0;
+    return '<nav class="tabbar" aria-label="Navegação principal">' + PRINCIPAIS.map(function (id) {
+      return '<button data-ir="' + id + '" class="' + (atual === id ? "ativo" : "") + '"' + (atual === id ? ' aria-current="page"' : "") + ">" + icone(id) + "<span>" + (id === "diagnostico" ? "Diagnóstico" : nomeMenu(id)) + "</span></button>";
+    }).join("") + '<button id="b-mais" class="' + (naMais ? "ativo" : "") + '" aria-expanded="false" aria-controls="folha-mais"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>Mais</span></button></nav>' +
+      '<div class="folha-fundo" id="folha-fundo" hidden></div><div class="folha" id="folha-mais" hidden role="dialog" aria-label="Todas as abas"><div class="folha-alca"></div><span class="rot">Todas as abas</span><div class="folha-grade">' +
+      MENU.map(function (m) { return '<button data-ir="' + m[0] + '" class="' + (atual === m[0] ? "ativo" : "") + '">' + icone(m[0]) + "<span>" + m[1] + "</span></button>"; }).join("") +
+      '</div><button class="btn contorno" id="b-sair-mob" style="width:100%;justify-content:center;margin-top:14px">Sair</button></div>';
+  }
   /* ---------- Montagem ---------- */
   function desenhar() {
     var d = dados();
@@ -548,16 +562,22 @@
     var menu = MENU.map(function (m) { return '<button data-ir="' + m[0] + '" class="' + (atual === m[0] ? "ativo" : "") + '"' + (atual === m[0] ? ' aria-current="page"' : "") + '><svg viewBox="0 0 24 24" aria-hidden="true">' + m[2] + "</svg>" + m[1] + "</button>"; }).join("");
     var raiz = document.getElementById("raiz");
     raiz.innerHTML = '<div class="aviso-demo">Versão de demonstração: os dados ficam só neste navegador.</div>' +
-      '<div class="barra-mob">' + MENU.map(function (m) { return '<button data-ir="' + m[0] + '" class="' + (atual === m[0] ? "ativo" : "") + '">' + m[1] + "</button>"; }).join("") + "</div>" +
+      '<header class="topo-mob"><img src="logo-h-web.jpg" alt="A Panela"><button class="topo-mob-perfil" data-ir="conquistas" aria-label="Minhas conquistas">' + avatar() + "</button></header>" +
       '<div class="app"><aside class="lateral"><img src="logo-h-web.jpg" alt="A Panela"><nav class="menu" aria-label="Área do participante">' + menu + "</nav>" +
       '<div class="perfil"><div class="quem">' + avatar() + '<div><b>' + esc(d.aluno.nome) + "</b>" + (animalDe() ? "<small>" + esc(animalDe()) + "</small>" : "") + '</div></div><span class="muted">' + esc(d.aluno.email) + '</span><button class="btn peq contorno" id="b-sair">Sair</button></div></aside>' +
-      '<main class="conteudo">' + telas[atual]() + "</main></div>";
+      '<main class="conteudo">' + telas[atual]() + "</main></div>" + barraInferior();
     ligar();
   }
 
   function ligar() {
     var d = dados();
     document.querySelectorAll("[data-ir]").forEach(function (b) { b.addEventListener("click", function () { ir(b.getAttribute("data-ir")); }); });
+    var bm = document.getElementById("b-mais"), fo = document.getElementById("folha-mais"), ff = document.getElementById("folha-fundo");
+    function folha(abrir) { if (!fo) return; fo.hidden = !abrir; ff.hidden = !abrir; bm.setAttribute("aria-expanded", String(abrir)); document.body.classList.toggle("sem-rolar", abrir); }
+    if (bm) { bm.addEventListener("click", function () { folha(fo.hidden); }); ff.addEventListener("click", function () { folha(false); }); }
+    document.body.classList.remove("sem-rolar");
+    var sm = document.getElementById("b-sair-mob");
+    if (sm) sm.addEventListener("click", function () { Armazem.apagar(); atual = "inicio"; desenhar(); });
     var sair = document.getElementById("b-sair");
     if (sair) sair.addEventListener("click", function () { Armazem.apagar(); atual = "inicio"; desenhar(); });
     var novo = document.getElementById("b-novo");
