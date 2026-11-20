@@ -312,3 +312,6 @@ html,body{overflow-x:hidden}
 .login .caixa{width:min(460px,100%);overflow:hidden}
 .login h1{font-size:clamp(26px,3vw,36px);line-height:1;overflow-wrap:break-word}
 .login img{height:56px}
+/* título da entrada sempre proporcional à largura do cartão (nunca passa da borda) */
+.login .caixa{container-type:inline-size}
+.login h1{font-size:min(36px,9cqi);hyphens:none;word-break:normal}
