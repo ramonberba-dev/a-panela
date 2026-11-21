@@ -117,8 +117,19 @@
       '<button class="l-entrar" type="submit"><span>Entrar na Panela</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>' +
       '<button class="l-demo" type="button" id="b-demo">Entrar como participante de demonstração</button>' +
       '<p class="l-nota">Demonstração: não é preciso código. Na versão no ar, o acesso é liberado depois da confirmação do pagamento.</p>' +
-      '</form><div class="l-rodape"><span>Orar · Trabalhar · Servir · Amar</span><span>Panela só é ruim pra quem tá de fora</span></div>' +
+      '</form><details class="l-mentor"><summary>Acesso do mentor</summary><div class="l-mentor-f"><input id="m-email" type="email" autocomplete="email" placeholder="E-mail do mentor" aria-label="E-mail do mentor"><button type="button" id="b-mentor">Entrar</button></div><p class="erro" id="m-erro" role="alert"></p></details><div class="l-rodape"><span>Orar · Trabalhar · Servir · Amar</span><span>Panela só é ruim pra quem tá de fora</span></div>' +
       "</div></section></div>"));
+    function entrarMentor() {
+      var em = (document.getElementById("m-email").value || "").trim().toLowerCase(), er = document.getElementById("m-erro");
+      if (!window.crypto || !crypto.subtle) { er.textContent = "Abra pelo endereço com cadeado (https) para entrar."; return; }
+      crypto.subtle.digest("SHA-256", new TextEncoder().encode(em)).then(function (b) {
+        var hx = Array.prototype.map.call(new Uint8Array(b), function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
+        if (hx !== MENTOR_ID) { er.textContent = "Esse e-mail não é de mentor."; return; }
+        memoria = { mentor: true, nome: "Ramon", desde: new Date().toISOString() }; salvar(); desenhar();
+      });
+    }
+    document.getElementById("b-mentor").addEventListener("click", entrarMentor);
+    document.getElementById("m-email").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); entrarMentor(); } });
     document.getElementById("b-demo").addEventListener("click", function () {
       if (!window.TEMPEROS_DATA && !CAT) { fetch("temperos.json").then(function (r) { return r.json(); }).then(function (j) { window.TEMPEROS_DATA = j; entrarDemo(); }).catch(entrarDemo); return; }
       if (!window.TEMPEROS_DATA) window.TEMPEROS_DATA = CAT; entrarDemo();
@@ -912,10 +923,116 @@
       MENU.map(function (m) { return '<button data-ir="' + m[0] + '" class="' + (atual === m[0] ? "ativo" : "") + '">' + icone(m[0]) + "<span>" + m[1] + "</span></button>"; }).join("") +
       '</div><button class="btn contorno" id="b-sair-mob" style="width:100%;justify-content:center;margin-top:14px">Sair</button></div>';
   }
+
+  /* ---------- Painel do mentor (acesso do Ramon) ----------
+     Enquanto o servidor da turma não existe, mostra a turma de exemplo (guia-perfis.js), marcada como exemplo.
+     Quando houver servidor, basta trocar turmaMentor() pela lista real de alunos. */
+  var MENTOR_ID = "a7a59f44c8ed4492fa10d5a7ffdbb7a3e79c84862eea1ca65c18d75c72ea97ea";
+  var alunoSel = null, filtroM = "todos";
+  function nomeAreaM(ar, a) { return ((ar[(a.aluno || {}).perfil] || ar.negocio || {}).nome) || ar.id; }
+  function turmaMentor() { return (window.TURMA_EXEMPLO || []).slice(); }
+  function comAluno(a, fn) { var m = memoria; memoria = a; try { return fn(); } finally { memoria = m; } }
+  function diasSem(a) { var u = (a.diasAtivos || [])[0] || a.ultimoAcesso || a.aluno.inicio; return Math.floor((Date.now() - new Date(u).getTime()) / 864e5); }
+  function recebido(a) { var v = a.aluno.valor || 0; return a.aluno.pagamento === "cartao6x" ? Math.round(v / 6 * (a.aluno.parcelasPagas || 0) * 100) / 100 : v; }
+  function moeda(v) { return "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function infoAluno(a) {
+    return comAluno(a, function () {
+      var pt = pontuacao(), nd = a.diagnosticos.length, ini = nd ? mediaGeral(a.diagnosticos[0].notas) : null, atu = nd ? mediaGeral(a.diagnosticos[nd - 1].notas) : null;
+      var disc = (a.testes && a.testes.disc[0]) || null, ani = (a.testes && a.testes.animais[0]) || null;
+      var prox = PREMIOS.filter(function (p) { return p.pts > pt.total; })[0];
+      var fraca = nd ? P.areas.slice().sort(function (x, y) { return a.diagnosticos[nd - 1].notas[x.id] - a.diagnosticos[nd - 1].notas[y.id]; })[0] : null;
+      var alertas = [];
+      var ds = diasSem(a);
+      if (ds >= 5) alertas.push(["sumiu", "Sem entrar há " + ds + " dias"]);
+      if (!nd) alertas.push(["diag", "Ainda não fez o diagnóstico"]);
+      if (nd > 1 && atu < mediaGeral(a.diagnosticos[nd - 2].notas)) alertas.push(["caiu", "Nota caiu no último diagnóstico"]);
+      if (a.individual && !a.individual.feito) alertas.push(["ind", "Pediu individual: " + (a.individual.tema || "sem tema")]);
+      if (a.respostaAberta) alertas.push(["duv", "Dúvida sem resposta"]);
+      if (a.aluno.pagamento === "cartao6x" && (a.aluno.parcelasPagas || 0) < Math.min(6, 1 + Math.floor((Date.now() - new Date(a.aluno.inicio)) / (30 * 864e5)))) alertas.push(["pag", "Parcela em aberto"]);
+      return { pt: pt, nv: nivel(pt.total), ini: ini, atu: atu, evol: nd > 1 ? atu - ini : 0, disc: disc, ani: ani, prox: prox, fraca: fraca, alertas: alertas, ds: ds, np: nivProg() };
+    });
+  }
+  function avatarDe(a) {
+    var u = a.testes && a.testes.animais[0], arq = u ? ARQ_ANIMAL[u.principal] : null, ini = esc((a.aluno.nome || "?").charAt(0));
+    return '<span class="avatar m-av">' + ini + (arq ? '<img src="avatares/' + arq + '.png" alt="" onerror="this.remove()">' : "") + "</span>";
+  }
+  function mensagemPara(a, inf) {
+    var nome = a.aluno.nome.split(" ")[0], g = window.GUIA_PERFIS || {}, base = inf.ani && g.animais && g.animais[inf.ani.principal] && g.animais[inf.ani.principal].mensagem;
+    var falta = inf.prox ? inf.prox.pts - inf.pt.total : 0;
+    var txt = base ? base.replace(/\{nome\}/g, nome).replace(/\{falta\}/g, falta).replace(/\{premio\}/g, inf.prox ? inf.prox.nome : "próximo prêmio") : nome + ", passando para saber como você está. Bora para o próximo passo?";
+    if (inf.fraca) txt += "\n\nMinha sugestão para esta semana: dar atenção a " + nomeAreaM(inf.fraca, a).toLowerCase() + ". Separei um tempero para você na plataforma.";
+    return txt;
+  }
+  function telaMentor() {
+    var raiz = document.getElementById("raiz"), turma = turmaMentor(), infos = turma.map(infoAluno);
+    var contratado = turma.reduce(function (s, a) { return s + (a.aluno.valor || 0); }, 0), rec = turma.reduce(function (s, a) { return s + recebido(a); }, 0);
+    var ativos = infos.filter(function (i) { return i.ds <= 7; }).length, evolM = infos.filter(function (i) { return i.ini != null; });
+    var evolMed = evolM.length ? Math.round(evolM.reduce(function (s, i) { return s + i.evol; }, 0) / evolM.length) : 0;
+    var atencao = turma.map(function (a, k) { return [a, infos[k]]; }).filter(function (x) { return x[1].alertas.length; });
+    var lista = turma.map(function (a, k) { return [a, infos[k], k]; }).filter(function (x) {
+      return filtroM === "todos" || (filtroM === "atencao" && x[1].alertas.length) || (filtroM === "hub" && x[0].aluno.turma === "hub") || (filtroM === "geral" && x[0].aluno.turma !== "hub");
+    }).sort(function (x, y) { return y[1].pt.total - x[1].pt.total; });
+    var h = '<div class="mentor"><header class="m-topo"><img src="logo-h-web.jpg" alt="A Panela"><div><span class="rot">Acesso do mentor</span><b>Painel do Ramon</b></div><button class="btn peq contorno" id="m-sair">Sair</button></header>';
+    h += '<div class="m-aviso">Dados de exemplo: a turma abaixo é fictícia. Quando o servidor da turma for ligado, os alunos reais aparecem aqui no mesmo formato.</div>';
+    h += '<div class="m-corpo"><section class="m-kpis">' +
+      [["Alunos", turma.length, turma.filter(function (a) { return a.aluno.turma === "hub"; }).length + " do 1º Encontro"], ["Faturamento contratado", moeda(contratado), "ticket médio " + moeda(turma.length ? contratado / turma.length : 0)],
+       ["Recebido até hoje", moeda(rec), "a receber " + moeda(contratado - rec)], ["Ativos na semana", ativos + " de " + turma.length, Math.round(ativos / Math.max(1, turma.length) * 100) + "% entraram nos últimos 7 dias"],
+       ["Evolução média", (evolMed >= 0 ? "+" : "") + evolMed + " pts", "na nota geral do diagnóstico"]].map(function (k) {
+        return '<div class="card m-kpi"><span class="rot">' + k[0] + "</span><b>" + k[1] + "</b><small>" + k[2] + "</small></div>"; }).join("") + "</section>";
+    h += '<section class="card m-atencao"><span class="rot">Precisam de você hoje</span>' + (atencao.length ? atencao.map(function (x) {
+      return '<button class="m-alerta" data-m-aluno="' + turma.indexOf(x[0]) + '">' + avatarDe(x[0]) + "<span><b>" + esc(x[0].aluno.nome) + "</b>" + x[1].alertas.map(function (al) { return '<em class="m-tag t-' + al[0] + '">' + esc(al[1]) + "</em>"; }).join("") + "</span></button>"; }).join("") :
+      '<p class="muted">Ninguém precisa de atenção agora.</p>') + "</section>";
+    h += '<section class="card m-lista"><div class="m-lista-topo"><span class="rot">A turma</span><div class="m-filtros">' + [["todos", "Todos"], ["atencao", "Precisam de atenção"], ["hub", "1º Encontro"], ["geral", "Inscrição geral"]].map(function (f) {
+      return '<button class="chip' + (filtroM === f[0] ? " on" : "") + '" data-m-filtro="' + f[0] + '">' + f[1] + "</button>"; }).join("") + '</div></div><div class="m-tab-rolar"><table class="m-tab"><thead><tr><th>Aluno</th><th>Perfil</th><th>Pontos</th><th>Nota</th><th>Nivelamento</th><th>Encontros</th><th>Último acesso</th><th>Pagamento</th></tr></thead><tbody>' +
+      lista.map(function (x) {
+        var a = x[0], i = x[1], T2 = window.PANELA_TESTES;
+        return '<tr data-m-aluno="' + x[2] + '" tabindex="0"><td><div class="m-nome">' + avatarDe(a) + "<span><b>" + esc(a.aluno.nome) + "</b><small>" + esc(a.aluno.ramo || "ramo não escolhido") + "</small></span></div></td>" +
+          "<td>" + (i.disc ? '<span class="chip">DISC ' + i.disc.principal + "</span>" : "") + (i.ani ? ' <span class="chip">' + esc(T2.animais.perfis[i.ani.principal].nome) + "</span>" : "") + "</td>" +
+          "<td><b>" + i.pt.total + '</b><small class="muted"> · ' + esc(i.nv) + "</small></td>" +
+          "<td>" + (i.ini == null ? "–" : i.ini + " → <b>" + i.atu + '</b> <small class="' + (i.evol >= 0 ? "m-up" : "m-down") + '">' + (i.evol >= 0 ? "+" : "") + i.evol + "</small>") + "</td>" +
+          "<td>" + i.np.feitas + "/" + i.np.total + "</td><td>" + a.encontrosVistos.length + "/" + P.encontros.length + "</td>" +
+          '<td class="' + (i.ds >= 5 ? "m-down" : "") + '">' + (i.ds === 0 ? "hoje" : "há " + i.ds + " dia" + (i.ds > 1 ? "s" : "")) + "</td>" +
+          "<td>" + (a.aluno.pagamento === "cartao6x" ? (a.aluno.parcelasPagas || 0) + "/6 no cartão" : "à vista") + "</td></tr>";
+      }).join("") + "</tbody></table></div></section>";
+    if (alunoSel != null && turma[alunoSel]) h += detalheAluno(turma[alunoSel], infos[alunoSel]);
+    h += '<section class="card m-guia"><span class="rot">Como lidar com cada personalidade</span><div class="m-guia-g">' + ["D", "I", "S", "C"].map(function (k) {
+      var g = (window.GUIA_PERFIS || { disc: {} }).disc[k] || {}, pf = window.PANELA_TESTES.disc.perfis[k];
+      return '<div class="m-gcard"><b>' + k + " · " + esc(pf.nome) + "</b><p><strong>Comunicar:</strong> " + esc(g.comunicar || "") + "</p><p><strong>Motivar:</strong> " + esc(g.motivar || "") + "</p><p><strong>Cobrar:</strong> " + esc(g.cobrar || "") + "</p><p><strong>Evitar:</strong> " + esc(g.evitar || "") + "</p></div>";
+    }).join("") + "</div></section></div></div>";
+    raiz.innerHTML = h;
+    document.getElementById("m-sair").onclick = function () { Armazem.apagar(); alunoSel = null; desenhar(); };
+    raiz.querySelectorAll("[data-m-filtro]").forEach(function (b) { b.onclick = function () { filtroM = b.getAttribute("data-m-filtro"); telaMentor(); }; });
+    raiz.querySelectorAll("[data-m-aluno]").forEach(function (b) {
+      function abre() { alunoSel = +b.getAttribute("data-m-aluno"); telaMentor(); var d = document.getElementById("m-det"); if (d) d.scrollIntoView({ block: "start", behavior: "smooth" }); }
+      b.onclick = abre; b.onkeydown = function (e) { if (e.key === "Enter") abre(); };
+    });
+    var fx = document.getElementById("m-fechar"); if (fx) fx.onclick = function () { alunoSel = null; telaMentor(); };
+    var cm = document.getElementById("m-copiar");
+    if (cm) cm.onclick = function () { var t = cm.getAttribute("data-txt"); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast("Mensagem copiada. Cole no WhatsApp do aluno."); }, function () { window.prompt("Copie a mensagem:", t); }); };
+  }
+  function detalheAluno(a, i) {
+    var g = window.GUIA_PERFIS || { disc: {}, animais: {} }, T2 = window.PANELA_TESTES, nd = a.diagnosticos.length;
+    var gd = i.disc ? g.disc[i.disc.principal] : null, ga = i.ani ? g.animais[i.ani.principal] : null;
+    var barras = nd ? P.areas.map(function (ar) {
+      var v0 = a.diagnosticos[0].notas[ar.id], v1 = a.diagnosticos[nd - 1].notas[ar.id];
+      return '<div class="m-barra"><span>' + esc(nomeAreaM(ar, a)) + '</span><div><i class="b0" style="width:' + v0 + '%"></i><i class="b1" style="width:' + v1 + '%"></i></div><b>' + v1 + "</b></div>"; }).join("") : '<p class="muted">Ainda sem diagnóstico.</p>';
+    var faltam = i.pt.itens.filter(function (x) { return x.pts < x.max; }).sort(function (x, y) { return (y.max - y.pts) - (x.max - x.pts); }).slice(0, 3);
+    var msg = mensagemPara(a, i);
+    return '<section class="card m-det" id="m-det"><div class="m-det-topo">' + avatarDe(a) + "<div><span class=\"rot\">Aluno</span><h2>" + esc(a.aluno.nome) + '</h2><small class="muted">' + esc(a.aluno.ramo || "") + " · " + (a.aluno.turma === "hub" ? "1º Encontro do Hub" : "Inscrição geral") + " · " + i.pt.total + " pts · " + esc(i.nv) + '</small></div><button class="btn peq contorno" id="m-fechar">Fechar</button></div>' +
+      '<div class="m-det-g"><div><h3>Evolução por área</h3><p class="muted" style="font-size:12px;margin:2px 0 8px">Cinza: 1º diagnóstico · cor: último</p>' + barras + "</div>" +
+      "<div><h3>Para ele progredir</h3><ul class=\"lista\">" + (i.fraca ? "<li>Área mais fraca: <b>" + esc(nomeAreaM(i.fraca, a)) + "</b>. Indique um tempero dessa área e leve o caso para o próximo encontro.</li>" : "") +
+      faltam.map(function (x) { return "<li>" + esc(x.nome) + ": " + esc(x.detalhe) + " (vale até +" + (x.max - x.pts) + " pts)</li>"; }).join("") +
+      (i.prox ? "<li>Faltam <b>" + (i.prox.pts - i.pt.total) + " pts</b> para o prêmio " + esc(i.prox.nome) + ".</li>" : "<li>Já liberou todos os prêmios.</li>") + "</ul>" +
+      "<h3 style=\"margin-top:14px\">Como lidar com " + esc(a.aluno.nome.split(" ")[0]) + "</h3>" +
+      (gd ? "<p><strong>DISC " + i.disc.principal + " (" + esc(T2.disc.perfis[i.disc.principal].nome) + "):</strong> " + esc(gd.comunicar) + " " + esc(gd.motivar) + "</p><p><strong>No individual:</strong> " + esc(gd.individual) + "</p><p><strong>Evite:</strong> " + esc(gd.evitar) + "</p>" : '<p class="muted">Ainda não fez o DISC.</p>') +
+      (ga ? "<p><strong>" + esc(T2.animais.perfis[i.ani.principal].nome) + ":</strong> " + esc(ga.comunicar) + " " + esc(ga.cobrar) + "</p>" : "") +
+      '<div class="m-msg"><span class="rot">Mensagem pronta no tom dele</span><p>' + esc(msg).replace(/\n/g, "<br>") + '</p><button class="btn peq" id="m-copiar" data-txt="' + esc(msg) + '">Copiar para o WhatsApp</button></div></div></div></section>';
+  }
   /* ---------- Montagem ---------- */
   function desenhar() {
     var d = dados();
     if (!d) return telaLogin();
+    if (d.mentor) return telaMentor();
     marcarDia();
     var telas = { inicio: telaInicio, nivelamento: telaNivelamento, diagnostico: telaDiagnostico, plano: telaPlano, encontros: telaEncontros, temperos: telaTemperos, perfil: telaPerfil, conquistas: telaConquistas, cashback: telaCashback, individual: telaIndividual, regras: telaRegras };
     var menu = MENU.map(function (m) { return '<button data-ir="' + m[0] + '" class="' + (atual === m[0] ? "ativo" : "") + '"' + (atual === m[0] ? ' aria-current="page"' : "") + '><svg viewBox="0 0 24 24" aria-hidden="true">' + m[2] + "</svg>" + m[1] + "</button>"; }).join("");
