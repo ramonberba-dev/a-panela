@@ -286,6 +286,13 @@ html:not(.liberado) a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi
 .hero .arte{min-height:440px}
 #video{padding-top:24px}
 @media (max-width:900px){.hero .arte{display:none}.hero .texto{padding-block:20px 4px;gap:12px}.hero p.desc,.hero .vagas{display:none}}
+
+/* preço só depois de "Garantir minha vaga" */
+.revelar{display:flex;flex-direction:column;align-items:flex-start;gap:16px;max-width:620px}
+.revelar p{margin:0;color:#333;font-size:17px}
+.revelar .btn{font-size:16px;padding:16px 26px;cursor:pointer}
+.planos[hidden]{display:none!important}
+.plano .valor{font-size:clamp(30px,3.4vw,40px)}
 </style>
 
 <header class="topo">
@@ -433,9 +440,10 @@ html:not(.liberado) a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi
   <section id="investimento">
     <div class="wrap">
       <div class="cab"><div><span class="rot">Investimento</span><h2 style="margin-top:8px">Entra pra panela</h2></div></div>
-      <div class="planos">
-        <div class="card plano destaque"><p class="valor"><small>3 meses de mentoria</small>R$ 997</p><p style="margin:0;color:var(--muted)">Com o cupom exclusivo que você recebeu no grupo do Encontro. Digite no carrinho, antes de pagar.</p><p style="margin:0"><b>R$ 299,10</b> de cashback na VOX</p><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Comprar com o cupom &rarr;</a></div>
-        <div class="card plano"><span class="rot">Inscrição geral</span><p class="valor"><small>3 meses de mentoria</small>R$ 1.697</p><p style="margin:0;color:var(--muted)">Pix, boleto ou cartão de crédito parcelado.</p><p style="margin:0"><b>R$ 509,10</b> de cashback na VOX</p><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Garantir minha vaga &rarr;</a></div>
+      <div class="revelar" id="revelar"><p>Tudo o que está incluído na sua vaga, a condição de quem foi ao Encontro do Hub e as formas de pagamento.</p><button type="button" class="btn cheio" id="btn-revelar">Garantir minha vaga &rarr;</button></div>
+      <div class="planos" id="planos" hidden>
+        <div class="card plano destaque"><p class="valor"><small>3 meses de mentoria · no cartão</small>12x de R$ 107,91</p><p style="margin:0;color:var(--muted)">Com o cupom exclusivo que você recebeu no grupo do Encontro. Digite no carrinho, antes de pagar.</p><p style="margin:0"><b>R$ 299,10</b> de cashback na VOX</p><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Comprar com o cupom &rarr;</a></div>
+        <div class="card plano"><span class="rot">Inscrição geral</span><p class="valor"><small>3 meses de mentoria · no cartão</small>12x de R$ 183,67</p><p style="margin:0;color:var(--muted)">Também no Pix ou boleto.</p><p style="margin:0"><b>R$ 509,10</b> de cashback na VOX</p><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Garantir minha vaga &rarr;</a></div>
         <div class="card plano escuro"><span class="rot" style="color:#bbb">O que está incluído</span><ul style="color:#ddd"><li>Nivelamento: 12 aulas curtas com material em PDF</li><li>12 encontros ao vivo em grupo, às 20h, gravados</li><li>3 encontros individuais, um por mês</li><li>Grupo de dúvidas durante os 3 meses</li><li>Aula especial com Kevin Eger</li><li>Curso O Funcionário Invisível</li><li>Área do participante com diagnóstico e gráficos</li><li>Mais de 800 temperos (skills) por ramo</li><li>Guias práticos do Claude e do Grok</li><li>Cashback de 30% em 3 cupons mensais da VOX</li></ul></div>
       </div>
       <p class="garantia">Pagamento seguro pela loja da VOX. Assim que o pagamento é aprovado, você recebe por e-mail o link para criar a sua senha e entrar na área do participante. Garantia de 7 dias: entrou e viu que não é para você, devolvemos 100% do valor.</p>
@@ -459,7 +467,7 @@ html:not(.liberado) a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi
   <section id="entrar">
     <div class="wrap contato">
       <div><h2>Vamos cozinhar algo extraordinário</h2><p style="color:var(--muted)">Turma pequena, porque eu quero olhar cada negócio de perto. Quando fechar, fechou.</p><p class="rot" style="margin-top:18px">Mentoria online · Brasil inteiro</p></div>
-      <div class="fim-acoes"><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/">Quero entrar pra panela &rarr;</a><a class="btn contorno" href="https://wa.me/5521996588197?text=Oi%2C%20Ramon%21%20Quero%20saber%20mais%20sobre%20a%20Panela." target="_blank" rel="noopener">Tirar uma dúvida no WhatsApp</a><small style="color:var(--muted)">Foi ao 1º Encontro? Use o seu cupom no carrinho e pague R$ 997.</small></div>
+      <div class="fim-acoes"><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/">Quero entrar pra panela &rarr;</a><a class="btn contorno" href="https://wa.me/5521996588197?text=Oi%2C%20Ramon%21%20Quero%20saber%20mais%20sobre%20a%20Panela." target="_blank" rel="noopener">Tirar uma dúvida no WhatsApp</a><small style="color:var(--muted)">Foi ao 1º Encontro? Use o seu cupom no carrinho e garanta a condição especial.</small></div>
       <div class="card box-panela"><img src="panela-logo-arte.jpg" alt=""><small>Vagas limitadas · turma fundadora</small></div>
     </div>
   </section>
@@ -510,4 +518,12 @@ document.addEventListener("click",function(ev){
   [["add_to_cart","382571596"],["quantity","1"]].forEach(function(c){var i=document.createElement("input");i.type="hidden";i.name=c[0];i.value=c[1];f.appendChild(i);});
   document.body.appendChild(f);f.submit();
 });
+</script>
+<script>
+/* mostra os planos (com valor parcelado) só depois do clique */
+(function(){
+  var b=document.getElementById("btn-revelar"),pl=document.getElementById("planos"),r=document.getElementById("revelar");
+  if(!b||!pl)return;
+  b.addEventListener("click",function(){pl.hidden=false;r.style.display="none";pl.scrollIntoView({behavior:"smooth",block:"start"});});
+})();
 </script>
