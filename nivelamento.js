@@ -137,10 +137,10 @@ window.NIVELAMENTO = {
         },
         {
           id: "planilha", titulo: "A planilha do plano semanal", dur: "5:00", video: null,
-          resumo: "Tutorial rápido da planilha que junta a grade da semana, as pedras grandes e o número do dia, para acompanhar sem esforço.",
-          pontos: ["Como copiar a planilha para a sua conta", "Onde preencher toda segunda", "Como pedir ao Claude para analisar a sua semana"],
-          tarefa: "Faça a sua cópia da planilha e preencha a semana atual.",
-          roteiro: ["Mostrar a planilha na tela, aba por aba", "Copiar para o Google Drive", "Preencher uma semana de exemplo", "Pedir ao Claude a análise da semana", "Missão: a sua cópia preenchida"]
+          resumo: "A planilha que junta a grade da semana, as pedras grandes e o número do dia, para acompanhar sem esforço. Ela fica aqui embaixo: use na própria aula ou baixe em Excel.",
+          pontos: ["As 3 partes: grade da semana, pedras grandes e número do dia", "Usar aqui mesmo ou baixar em Excel (abre no Google Planilhas)", "Como pedir ao Claude para analisar a sua semana"],
+          tarefa: "Preencha a planilha da semana atual aqui na aula e, no domingo, copie para o Claude analisar.",
+          roteiro: ["Mostrar a planilha na tela, parte por parte", "As cores da grade: família, pedra grande, rotina e Claude", "Preencher uma semana de exemplo", "Baixar em Excel e abrir no Google Planilhas", "Pedir ao Claude a análise da semana", "Missão: a semana atual preenchida"]
         },
         {
           id: "metas", titulo: "Metas que cabem na vida real", dur: "10:00", video: null,

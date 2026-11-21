@@ -363,6 +363,153 @@
     var f = nivD().ferr[a.id] || {};
     return a.ferramenta.nome.toUpperCase() + "\n" + a.ferramenta.campos.map(function (c, i) { return "- " + c.rot + ": " + ((f[i] || "").trim() || "(não preenchido)"); }).join("\n");
   }
+
+  /* ---------- Planilha do plano semanal (aula 9): grade, pedras grandes e número do dia ---------- */
+  var DIAS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"], TURNOS = ["Manhã", "Tarde", "Noite"];
+  var CATS = { "": "Sem marcação", F: "Família, fé e saúde", P: "Pedra grande", T: "Trabalho e rotina", C: "Com o Claude" }, ORDEM_C = ["", "F", "P", "T", "C"];
+  var semOff = 0;
+  function segundaDe(d) { d = new Date(d); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d; }
+  function semAtual() { var x = segundaDe(new Date()); x.setDate(x.getDate() + 7 * semOff); return x; }
+  function ddmm(d) { return ("0" + d.getDate()).slice(-2) + "/" + ("0" + (d.getMonth() + 1)).slice(-2); }
+  function rotSemana() { var a = semAtual(), b = new Date(a); b.setDate(b.getDate() + 6); return ddmm(a) + " a " + ddmm(b); }
+  function planD() {
+    var n = nivD(); if (!n.plan) n.plan = {};
+    var k = semAtual().toISOString().slice(0, 10);
+    if (!n.plan[k]) {
+      var f7 = n.ferr.semana || {}, f8 = n.ferr.pedras || {}, f10 = n.ferr.metas || {};
+      n.plan[k] = { grade: {}, encerrar: f7[4] || "", pedras: [0, 1, 2].map(function (i) { return { t: f8[i] || "", passos: "", dia: "", ok: false }; }),
+        num: { nome: f10[4] || "", meta: "", real: {} }, balanco: "" };
+    }
+    return n.plan[k];
+  }
+  function numRes(p) {
+    var meta = parseFloat(String(p.num.meta).replace(",", ".")) || 0, tot = 0, bat = 0;
+    DIAS.slice(0, 6).forEach(function (d) { var v = parseFloat(String(p.num.real[d] || "").replace(",", ".")); if (!isNaN(v)) { tot += v; if (meta && v >= meta) bat++; } });
+    var alvo = meta * 6; return { meta: meta, tot: tot, alvo: alvo, pct: alvo ? Math.round(tot / alvo * 100) : 0, bat: bat };
+  }
+  function htmlRes(p) {
+    var r = numRes(p);
+    return '<div><small>Total da semana</small><b>' + r.tot + (r.alvo ? " / " + r.alvo : "") + '</b></div><div><small>Da meta</small><b>' + (r.alvo ? r.pct + "%" : "–") + '</b></div><div><small>Dias que bateu</small><b>' + r.bat + " de 6</b></div>" +
+      '<div class="pl-barra" aria-hidden="true"><i style="width:' + Math.min(100, r.pct) + '%"></i></div>';
+  }
+  function planilhaHTML() {
+    var p = planD();
+    var leg = ORDEM_C.slice(1).map(function (c) { return '<span class="pl-leg c-' + c + '"><i></i>' + CATS[c] + "</span>"; }).join("");
+    var grade = '<div class="pl-rolar"><table class="pl-grade"><thead><tr><th></th>' + DIAS.map(function (d) { return "<th>" + d + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      TURNOS.map(function (t) {
+        return "<tr><th>" + t + "</th>" + DIAS.map(function (d) {
+          var k = d + "-" + t, c = p.grade[k] || { t: "", c: "" };
+          return '<td><div class="pl-cel c-' + (c.c || "0") + '"><button type="button" class="pl-cat" data-pl-cat="' + k + '" title="Trocar a cor: ' + CATS[c.c || ""] + '" aria-label="Cor do bloco ' + d + " " + t + ": " + CATS[c.c || ""] + '"></button><textarea rows="2" data-pl-cel="' + k + '" aria-label="' + d + " " + t + '">' + esc(c.t) + "</textarea></div></td>";
+        }).join("") + "</tr>";
+      }).join("") + "</tbody></table></div>";
+    var pedras = p.pedras.map(function (x, i) {
+      return '<div class="pl-pedra"><span class="pl-n">' + (i + 1) + '</span><input data-pl-pedra="' + i + '" data-k="t" placeholder="Pedra grande ' + (i + 1) + '" value="' + esc(x.t) + '"><input data-pl-pedra="' + i + '" data-k="passos" placeholder="Próximo passo (até 1 hora)" value="' + esc(x.passos) + '">' +
+        '<select data-pl-pedra="' + i + '" data-k="dia" aria-label="Dia da pedra ' + (i + 1) + '"><option value="">Dia</option>' + DIAS.map(function (d) { return "<option" + (x.dia === d ? " selected" : "") + ">" + d + "</option>"; }).join("") + "</select>" +
+        '<label class="pl-ok"><input type="checkbox" data-pl-pedra="' + i + '" data-k="ok"' + (x.ok ? " checked" : "") + "> Feito</label></div>";
+    }).join("");
+    var num = '<div class="pl-num-topo"><div class="campo"><label for="pl-nome">O que eu conto todo dia</label><input id="pl-nome" data-pl-num="nome" placeholder="Ex.: contatos, propostas, posts" value="' + esc(p.num.nome) + '"></div>' +
+      '<div class="campo"><label for="pl-meta">Meta por dia</label><input id="pl-meta" data-pl-num="meta" inputmode="decimal" placeholder="Ex.: 5" value="' + esc(p.num.meta) + '"></div></div>' +
+      '<div class="pl-dias">' + DIAS.slice(0, 6).map(function (d) { return '<label><span>' + d + '</span><input inputmode="decimal" data-pl-real="' + d + '" value="' + esc(p.num.real[d] || "") + '"></label>'; }).join("") + "</div>" +
+      '<div class="pl-res" id="pl-res">' + htmlRes(p) + "</div>";
+    return '<div class="card pl" id="pl"><div class="nv-ferr-topo"><div><span class="rot">Ferramenta da aula</span><h2>Planilha do plano semanal</h2><p class="muted" style="margin:4px 0 0">Use aqui mesmo (salva sozinha) ou baixe em Excel, que também abre no Google Planilhas.</p></div>' +
+      '<div class="pl-sem"><button type="button" class="nv-ic" data-pl-sem="-1" aria-label="Semana anterior">‹</button><span><small>Semana</small><b>' + rotSemana() + '</b></span><button type="button" class="nv-ic" data-pl-sem="1" aria-label="Próxima semana">›</button></div></div>' +
+      '<h3 class="pl-tit"><span>01</span> Grade da semana</h3><p class="muted pl-dica">Escreva o que entra em cada bloco e toque na bolinha para trocar a cor.</p><div class="pl-legs">' + leg + "</div>" + grade +
+      '<div class="campo" style="max-width:280px;margin-top:12px"><label for="pl-enc">Meu horário de encerrar o dia</label><input id="pl-enc" data-pl-campo="encerrar" placeholder="Ex.: 18h30" value="' + esc(p.encerrar) + '"></div>' +
+      '<h3 class="pl-tit"><span>02</span> Pedras grandes</h3><p class="muted pl-dica">As 3 prioridades que mais mexem no resultado. Vieram da aula 8; ajuste se precisar.</p>' + pedras +
+      '<h3 class="pl-tit"><span>03</span> Número do dia</h3><p class="muted pl-dica">Anote no fim de cada dia quanto você fez. O resto a planilha calcula.</p>' + num +
+      '<div class="campo" style="margin-top:14px"><label for="pl-bal">Balanço da semana: onde a grade furou e o que aprendi</label><textarea id="pl-bal" rows="3" data-pl-campo="balanco">' + esc(p.balanco) + "</textarea></div>" +
+      '<div class="pl-acoes"><button class="btn" id="pl-xlsx" type="button">Baixar em Excel</button><button class="btn contorno" id="pl-claude" type="button">Copiar para o Claude analisar</button><button class="btn contorno" id="pl-imp" type="button">Imprimir ou salvar PDF</button></div>' +
+      '<p class="muted" style="font-size:12px;margin:10px 0 0">No Google Planilhas: Arquivo › Importar › Fazer upload e escolha o arquivo baixado.</p></div>';
+  }
+  function textoPlanilha(p) {
+    var r = numRes(p), l = ["PLANO DA SEMANA (" + rotSemana() + ")", "", "GRADE DA SEMANA"];
+    DIAS.forEach(function (d) {
+      var it = TURNOS.map(function (t) { var c = p.grade[d + "-" + t]; return c && c.t.trim() ? t + ": " + c.t.trim() + (c.c ? " [" + CATS[c.c] + "]" : "") : ""; }).filter(Boolean);
+      if (it.length) l.push("- " + d + " · " + it.join(" | "));
+    });
+    l.push("Horário de encerrar o dia: " + (p.encerrar || "(não definido)"), "", "PEDRAS GRANDES");
+    p.pedras.forEach(function (x, i) { l.push((i + 1) + ". " + (x.t || "(vazia)") + (x.passos ? " · próximo passo: " + x.passos : "") + (x.dia ? " · " + x.dia : "") + (x.ok ? " · FEITO" : "")); });
+    l.push("", "NÚMERO DO DIA: " + (p.num.nome || "(indicador)") + " · meta " + (p.num.meta || "?") + " por dia");
+    DIAS.slice(0, 6).forEach(function (d) { l.push("- " + d + ": " + (p.num.real[d] || "-")); });
+    l.push("Total: " + r.tot + (r.alvo ? " de " + r.alvo + " (" + r.pct + "%)" : "") + " · dias que bateu: " + r.bat + " de 6", "", "BALANÇO: " + (p.balanco || "(em branco)"));
+    return "Analise a minha semana abaixo. Diga onde a grade furou e por quê, se as pedras grandes andaram, como foi o número do dia e o que eu devo proteger na próxima semana. Sugira a grade da próxima semana e liste o que você, Claude, pode assumir para eu ganhar tempo com a família.\n\n" + l.join("\n");
+  }
+  function salvarArquivo(nome, dados, tipo) {
+    if (window.claude && window.claude.use) {
+      return window.claude.use("downloads").then(function (dl) {
+        if (!dl) { toast("Download indisponível aqui."); return; }
+        return dl.save({ filename: nome, data: dados instanceof Blob ? dados : new Blob([dados], { type: tipo }) }).then(function () { toast("Arquivo salvo: " + nome); }, function (e) { if (!e || e.code !== "declined") toast("Não foi possível baixar agora."); });
+      });
+    }
+    var a = document.createElement("a"); a.href = URL.createObjectURL(dados instanceof Blob ? dados : new Blob([dados], { type: tipo })); a.download = nome; document.body.appendChild(a); a.click(); a.remove(); toast("Baixando " + nome);
+  }
+  function carregarXLSX() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    return new Promise(function (ok, erro) {
+      var sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+      sc.onload = function () { ok(window.XLSX); }; sc.onerror = erro; document.head.appendChild(sc);
+    });
+  }
+  function baixarPlanilha() {
+    var p = planD(), r = numRes(p), sem = semAtual().toISOString().slice(0, 10), nome = "Plano semanal - A Panela - " + sem;
+    var abaGrade = [["PLANO DA SEMANA · " + rotSemana()], [], ["Turno"].concat(DIAS)].concat(TURNOS.map(function (t) {
+      return [t].concat(DIAS.map(function (d) { var c = p.grade[d + "-" + t]; return c ? (c.c ? "[" + CATS[c.c] + "] " : "") + c.t : ""; }));
+    })).concat([[], ["Horário de encerrar o dia", p.encerrar]]);
+    var abaPedras = [["#", "Pedra grande", "Próximo passo", "Dia", "Feito"]].concat(p.pedras.map(function (x, i) { return [i + 1, x.t, x.passos, x.dia, x.ok ? "Sim" : "Não"]; }));
+    var abaNum = [["Indicador", p.num.nome], ["Meta por dia", r.meta || ""], [], ["Dia", "Meta", "Realizado", "Bateu?"]].concat(DIAS.slice(0, 6).map(function (d) {
+      var v = parseFloat(String(p.num.real[d] || "").replace(",", ".")); return [d, r.meta || "", isNaN(v) ? "" : v, isNaN(v) || !r.meta ? "" : v >= r.meta ? "Sim" : "Não"];
+    })).concat([[], ["Total", r.alvo || "", r.tot, r.bat + " de 6"], ["% da meta", r.alvo ? r.pct / 100 : ""]]);
+    carregarXLSX().then(function (X) {
+      var wb = X.utils.book_new();
+      function aba(dados, nomeA, larg) { var ws = X.utils.aoa_to_sheet(dados); ws["!cols"] = larg.map(function (w) { return { wch: w }; }); X.utils.book_append_sheet(wb, ws, nomeA); return ws; }
+      aba(abaGrade, "Grade da semana", [24, 22, 22, 22, 22, 22, 22, 22]);
+      aba(abaPedras, "Pedras grandes", [4, 40, 40, 8, 8]);
+      var wn = aba(abaNum, "Número do dia", [24, 12, 12, 10]);
+      wn["C11"] = { t: "n", f: "SUM(C5:C10)", v: r.tot }; if (r.alvo) { wn["B12"] = { t: "n", f: "IFERROR(C11/B11,0)", v: r.pct / 100, z: "0%" }; }
+      aba([["Balanço da semana"], [p.balanco || ""], [], ["Pedido para o Claude"], [textoPlanilha(p).split("\n\n")[0]]], "Balanço", [100]);
+      var buf = X.write(wb, { bookType: "xlsx", type: "array" });
+      salvarArquivo(nome + ".xlsx", new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    }).catch(function () {
+      var csv = abaGrade.concat([[]], abaPedras, [[]], abaNum).map(function (l) { return l.map(function (v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }).join(";"); }).join("\r\n");
+      salvarArquivo(nome + ".csv", "\ufeff" + csv, "text/csv");
+    });
+  }
+  function ligarPlanilha() {
+    var el = document.getElementById("pl"); if (!el) return;
+    var p = planD();
+    el.querySelectorAll("[data-pl-sem]").forEach(function (b) { b.addEventListener("click", function () { semOff += +b.getAttribute("data-pl-sem"); desenhar(); var x = document.getElementById("pl"); if (x) x.scrollIntoView({ block: "start" }); }); });
+    el.querySelectorAll("[data-pl-cat]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = b.getAttribute("data-pl-cat"), c = p.grade[k] || (p.grade[k] = { t: "", c: "" });
+        c.c = ORDEM_C[(ORDEM_C.indexOf(c.c || "") + 1) % ORDEM_C.length]; salvar();
+        b.parentNode.className = "pl-cel c-" + (c.c || "0"); b.title = "Trocar a cor: " + CATS[c.c]; b.setAttribute("aria-label", b.getAttribute("aria-label").replace(/: .*$/, ": " + CATS[c.c]));
+      });
+    });
+    el.querySelectorAll("[data-pl-cel]").forEach(function (t) { t.addEventListener("input", function () { var k = t.getAttribute("data-pl-cel"); (p.grade[k] || (p.grade[k] = { t: "", c: "" })).t = t.value; salvar(); }); });
+    el.querySelectorAll("[data-pl-campo]").forEach(function (t) { t.addEventListener("input", function () { p[t.getAttribute("data-pl-campo")] = t.value; salvar(); }); });
+    el.querySelectorAll("[data-pl-pedra]").forEach(function (t) {
+      t.addEventListener(t.type === "checkbox" || t.tagName === "SELECT" ? "change" : "input", function () { var x = p.pedras[+t.getAttribute("data-pl-pedra")]; x[t.getAttribute("data-k")] = t.type === "checkbox" ? t.checked : t.value; salvar(); });
+    });
+    function atualiza() { document.getElementById("pl-res").innerHTML = htmlRes(p); }
+    el.querySelectorAll("[data-pl-num]").forEach(function (t) { t.addEventListener("input", function () { p.num[t.getAttribute("data-pl-num")] = t.value; salvar(); atualiza(); }); });
+    el.querySelectorAll("[data-pl-real]").forEach(function (t) { t.addEventListener("input", function () { p.num.real[t.getAttribute("data-pl-real")] = t.value; salvar(); atualiza(); }); });
+    document.getElementById("pl-xlsx").addEventListener("click", baixarPlanilha);
+    document.getElementById("pl-claude").addEventListener("click", function () {
+      var txt = textoPlanilha(p);
+      if (navigator.clipboard) navigator.clipboard.writeText(txt).then(function () { toast("Copiado! Cole no Claude."); }, function () { window.prompt("Copie o texto:", txt); });
+      else window.prompt("Copie o texto:", txt);
+    });
+    document.getElementById("pl-imp").addEventListener("click", function () {
+      document.body.classList.add("imp-pl");
+      window.addEventListener("afterprint", function f() { document.body.classList.remove("imp-pl"); window.removeEventListener("afterprint", f); });
+      window.print();
+    });
+  }
+
+  /* Material de apoio em PDF de cada aula e guias */
+  var BASE_MAT = (location.protocol === "https:" || location.protocol === "http:") && !/claude\.ai|claudeusercontent/.test(location.host) ? "materiais/" : "https://panela.usevox.com.br/materiais/";
+  var GUIAS = [["guia-claude.pdf", "Guia prático inicial do Claude", "32 páginas"], ["guia-grok-claude.pdf", "Grok + Claude: a dupla do seu negócio", "18 páginas"]];
+  function pdfAula(idx) { return BASE_MAT + "aula-" + ("0" + (idx + 1)).slice(-2) + ".pdf"; }
   function telaNivelamento() {
     var n = nivD(), aulas = nivAulas(), a = aulaAtual(), idx = aulas.indexOf(a), pr = nivProg();
     var pct = Math.round(pr.feitas / pr.total * 100), feita = n.feitas.indexOf(a.id) >= 0, fav = n.fav.indexOf(a.id) >= 0, nota = n.aval[a.id] || 0;
@@ -389,6 +536,9 @@
       h += '<div class="card nv-ferr"><span class="rot">Tudo o que você preencheu</span><h2>O manual do seu negócio para o Claude</h2><p class="muted" style="margin:6px 0 12px">Junta todas as ferramentas do nivelamento num texto só, pronto para colar nas instruções do seu Projeto no Claude.</p>' +
         '<div class="nv-pedido"><span class="rot">Pedido pronto para o Claude</span><p>' + esc(a.prompt) + '</p><button class="btn peq" id="nv-copiar-tudo">Copiar tudo do nivelamento</button></div></div>';
     }
+    if (a.id === "planilha") h += planilhaHTML();
+    h += '<div class="card nv-mat"><div><span class="rot">Material de apoio · PDF</span><b>Aula ' + ("0" + (idx + 1)).slice(-2) + " · " + esc(a.titulo) + '</b><small class="muted">Explicação passo a passo, exemplos, a ferramenta para imprimir e os pedidos prontos para o Claude.</small></div>' +
+      '<div class="nv-mat-b"><a class="btn" href="' + pdfAula(idx) + '" target="_blank" rel="noopener">Abrir o PDF</a><a class="btn contorno" href="' + pdfAula(idx) + '" download>Baixar</a></div></div>';
     h += '<div class="card"><span class="rot">Missão da aula</span><p style="margin:6px 0 0"><b>' + esc(a.tarefa) + '</b></p><p class="muted" style="font-size:12.5px;margin:8px 0 0">Ficou com dúvida? Leve para o grupo da Panela no WhatsApp ou para o seu encontro individual.</p></div>';
     h += '<div class="card"><label class="rot" for="nv-notas">Anotações</label><textarea id="nv-notas" class="nv-notas" rows="4" placeholder="Escreva aqui o que você quer lembrar desta aula. Só você vê.">' + esc(n.notas[a.id] || "") + '</textarea><div style="margin-top:10px"><button class="btn peq" id="nv-salvar">Salvar</button></div></div>';
     h += '</div><aside class="nv-lista" aria-label="Módulos e aulas">' + NV.modulos.map(function (m) {
@@ -398,7 +548,7 @@
         var ok = n.feitas.indexOf(x.id) >= 0;
         return '<button class="nv-item' + (x === a ? " at" : "") + (ok ? " ok" : "") + '" data-nv-aula="' + x.id + '"' + (x === a ? ' aria-current="true"' : "") + '><span class="nv-ck">' + (ok ? "✓" : "") + "</span><span>" + esc(x.titulo) + (n.fav.indexOf(x.id) >= 0 ? " ★" : "") + "</span><small>" + esc(x.dur) + "</small></button>";
       }).join("") + "</details>";
-    }).join("") + (NV.emBreve || []).map(function (t) { return '<div class="nv-mod nv-breve"><span class="nv-pct">🔒</span><span>' + esc(t) + "</span><small>em breve</small></div>"; }).join("") + "</aside></div>";
+    }).join("") + '<div class="nv-mod nv-guias"><span class="rot">Guias práticos</span>' + GUIAS.map(function (g) { return '<a class="nv-guia" href="' + BASE_MAT + g[0] + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z M15 3v4h4 M9 12h7 M9 16h7"/></svg><span>' + esc(g[1]) + "<small>PDF · " + g[2] + "</small></span></a>"; }).join("") + "</div>" + (NV.emBreve || []).map(function (t) { return '<div class="nv-mod nv-breve"><span class="nv-pct">🔒</span><span>' + esc(t) + "</span><small>em breve</small></div>"; }).join("") + "</aside></div>";
     return h;
   }
   function ligarNivelamento() {
@@ -432,6 +582,7 @@
       var partes = aulas.filter(function (x) { return x.ferramenta; }).map(textoFerramenta);
       copiar("MANUAL DO MEU NEGÓCIO (preenchido no Nivelamento de A Panela)\n\n" + partes.join("\n\n") + "\n\n" + a.prompt);
     });
+    if (a.id === "planilha") ligarPlanilha();
     var sv = document.getElementById("nv-salvar");
     if (sv) sv.addEventListener("click", function () { n.notas[a.id] = document.getElementById("nv-notas").value; salvar(); toast("Anotação salva."); });
   }

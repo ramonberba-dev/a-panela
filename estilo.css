@@ -366,3 +366,62 @@ html,body{overflow-x:hidden}
 .l-duas>*,.l-campos .campo{min-width:0}
 .l-campos .campo select{min-width:0;text-overflow:ellipsis}
 @media (max-width:900px){.l-poster{width:auto;max-width:100%;height:44vh;max-height:420px}.l-arte{padding:40px 16px 16px}}
+
+/* ===== Planilha do plano semanal (aula 9) e material de apoio ===== */
+.pl h2{margin-top:4px}
+.pl-sem{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--soft)}
+.pl-sem span{display:grid;text-align:center;min-width:110px}.pl-sem small{font:600 9.5px var(--mono,monospace);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.pl-tit{display:flex;align-items:center;gap:10px;margin:22px 0 2px;font-size:13px}
+.pl-tit span{font:600 11px var(--mono,monospace);background:var(--ink);color:#fff;padding:3px 7px;border-radius:3px;letter-spacing:.1em}
+.pl-dica{font-size:12.5px;margin:4px 0 10px}
+.pl-legs{display:flex;flex-wrap:wrap;gap:8px 14px;margin-bottom:10px}
+.pl-leg{display:inline-flex;align-items:center;gap:6px;font-size:12px}.pl-leg i{width:12px;height:12px;border-radius:50%;border:1px solid var(--ink)}
+.c-F i,.pl-cel.c-F .pl-cat{background:var(--amarelo)}.c-P i,.pl-cel.c-P .pl-cat{background:var(--vermelho)}.c-T i,.pl-cel.c-T .pl-cat{background:var(--azul)}.c-C i,.pl-cel.c-C .pl-cat{background:var(--salvia)}
+.pl-rolar{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px}
+.pl-grade{border-collapse:collapse;width:100%;min-width:760px;table-layout:fixed}
+.pl-grade th{font:600 10.5px var(--mono,monospace);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:8px 6px;background:var(--soft);border-bottom:1px solid var(--line);text-align:left}
+.pl-grade tbody th{width:74px;border-right:1px solid var(--line);background:var(--soft)}
+.pl-grade td{border:1px solid var(--line);padding:0;vertical-align:top}
+.pl-cel{position:relative;height:100%}
+.pl-cel textarea{width:100%;border:0;resize:none;padding:8px 8px 8px 22px;font-size:12.5px;background:transparent;min-height:62px;display:block}
+.pl-cel textarea:focus{outline:2px solid var(--azul);outline-offset:-2px}
+.pl-cat{position:absolute;left:6px;top:9px;width:11px;height:11px;border-radius:50%;border:1px solid var(--ink);background:#fff;padding:0;cursor:pointer}
+.pl-cat::after{content:"";position:absolute;inset:-9px}
+.pl-cel.c-F{background:#FFF6D6}.pl-cel.c-P{background:#FDE5E3}.pl-cel.c-T{background:#E7EDFB}.pl-cel.c-C{background:#EEF1EB}
+.pl-pedra{display:grid;grid-template-columns:28px minmax(0,1.2fr) minmax(0,1.4fr) 82px auto;gap:8px;align-items:center;margin-bottom:8px}
+.pl-pedra input:not([type=checkbox]),.pl-pedra select,.pl-num-topo input,.pl-dias input,.pl input#pl-enc{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:5px;background:#fff}
+.pl-n{width:26px;height:26px;border-radius:50%;background:var(--vermelho);color:#fff;font:800 12px var(--display);display:grid;place-items:center}
+.pl-ok{display:flex;align-items:center;gap:6px;font-size:12.5px;white-space:nowrap}
+.pl-num-topo{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px}
+.pl-dias{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:10px}
+.pl-dias label{display:grid;gap:4px;font:600 10.5px var(--mono,monospace);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.pl-dias input{text-align:center;font:700 16px var(--texto);color:var(--ink)}
+.pl-res{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px;padding:12px;border:1px dashed var(--ink);border-radius:8px;background:var(--soft)}
+.pl-res small{display:block;font:600 9.5px var(--mono,monospace);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.pl-res b{font:900 22px var(--display)}
+.pl-barra{grid-column:1/-1;height:8px;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}.pl-barra i{display:block;height:100%;background:linear-gradient(90deg,var(--vermelho),var(--amarelo),var(--azul))}
+.pl-acoes{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.nv-mat{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-left:4px solid var(--vermelho)}
+.nv-mat>div:first-child{display:grid;gap:3px;min-width:0;flex:1 1 260px}.nv-mat small{font-size:12.5px}
+.nv-mat-b{display:flex;gap:8px;flex-wrap:wrap}
+.nv-guias{display:grid;gap:8px;padding:12px}
+.nv-guia{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--ink);padding:8px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.nv-guia:hover{border-color:var(--ink)}
+.nv-guia svg{width:22px;height:22px;flex:none;stroke:var(--vermelho);fill:none;stroke-width:1.6;stroke-linejoin:round}
+.nv-guia span{display:grid;font-size:13px;font-weight:600;line-height:1.3}.nv-guia small{font:500 10.5px var(--mono,monospace);color:var(--muted);letter-spacing:.08em}
+@media (max-width:640px){
+  .pl-pedra{grid-template-columns:28px minmax(0,1fr);}
+  .pl-pedra input,.pl-pedra select,.pl-ok{grid-column:2}
+  .pl-num-topo{grid-template-columns:minmax(0,1fr)}
+  .pl-dias{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pl-res b{font-size:18px}
+}
+@media print{
+  body.imp-pl *{visibility:hidden}
+  body.imp-pl #pl,body.imp-pl #pl *{visibility:visible}
+  body.imp-pl #pl{position:absolute;left:0;top:0;width:100%;border:0;box-shadow:none}
+  body.imp-pl .pl-acoes,body.imp-pl .pl-sem button{display:none}
+  body.imp-pl .pl-rolar{overflow:visible}body.imp-pl .pl-grade{min-width:0}
+  @page{size:A4 landscape;margin:10mm}
+}
+.pl-tit span{white-space:nowrap;flex:none}
