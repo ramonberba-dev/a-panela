@@ -301,6 +301,15 @@ html:not(.liberado) a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi
 #planos{grid-template-columns:1fr 1fr}
 @media (max-width:900px){#planos{grid-template-columns:1fr}}
 .plano .pix{margin:0;padding:12px 14px;border-radius:8px;background:#E8F6EF;color:#14532d;font-size:14px;line-height:1.45}
+
+/* agenda em 3 módulos */
+.mods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+.mod{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.mod h3{margin:0;font-family:var(--display);font-size:24px;font-weight:800}
+.mod .ent{margin:0;padding:10px 12px;border-radius:8px;background:var(--azul-claro,#E7EDFB);font-size:14px}
+.mods .agenda{grid-template-columns:1fr!important;margin:4px 0 0}
+.mods .agenda li{background:transparent;border:0;border-top:1px solid var(--line);border-radius:0;padding:10px 0}
+@media (max-width:900px){.mods{grid-template-columns:1fr}}
 </style>
 
 <header class="topo">
@@ -370,7 +379,7 @@ html:not(.liberado) a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi
   <section id="caminho" class="caminho">
     <div class="wrap">
       <div class="cab"><div><span class="rot">A agenda</span><h2 style="margin-top:8px">Os 12 encontros ao vivo</h2><p style="color:var(--muted);margin:6px 0 0">Toda semana, às 20h, com gravação na área do participante.</p></div></div>
-      <div><ol class="agenda"><li><span>01</span>A tampa abre: o Claude trabalhando ao vivo para o seu negócio</li><li><span>02</span>Contratando o funcionário invisível: Claude e Grok</li><li><span>03</span>O manual da empresa e os seus temperos</li><li><span>04</span>Estratégia, posicionamento e nova rota</li><li><span>05</span>Apresentações profissionais com IA</li><li><span>06</span>O seu site e a sua página de vendas</li><li><span>07</span>Redes sociais profissionais e agendamento de posts</li><li><span>08</span>Geração de leads e demanda comercial · aula exclusiva com Kevin Eger</li><li><span>09</span>Tráfego pago na prática</li><li><span>10</span>Atendimento, vendas e resposta automática</li><li><span>11</span>O seu aplicativo e o lançamento</li><li><span>12</span>Pessoas, delegação e plano de 90 dias</li></ol></div>
+      <div><div class="mods"><div class="mod"><span class="rot">Mês 1</span><h3>A vitrine</h3><p class="ent"><b>Sai pronto:</b> Site que converte no ar e Instagram organizado, com o mês de posts agendado.</p><ol class="agenda"><li><span>01</span>A tampa abre: aonde você quer chegar (e os primeiros passos no Claude)</li><li><span>02</span>O site que converte</li><li><span>03</span>Identidade visual e artes com a cara do seu negócio</li><li><span>04</span>Instagram organizado e posts no automático</li></ol></div><div class="mod"><span class="rot">Mês 2</span><h3>A máquina de vendas</h3><p class="ent"><b>Sai pronto:</b> O caminho completo do anúncio ao pagamento funcionando.</p><ol class="agenda"><li><span>05</span>Proposta, página de vendas e pagamento</li><li><span>06</span>Geração de leads e demanda comercial · aula exclusiva com Kevin Eger</li><li><span>07</span>Tráfego pago na prática</li><li><span>08</span>Atendimento automático no WhatsApp e no Instagram</li></ol></div><div class="mod"><span class="rot">Mês 3</span><h3>A empresa no automático</h3><p class="ent"><b>Sai pronto:</b> Aplicativo, agentes e rotinas trabalhando por você.</p><ol class="agenda"><li><span>09</span>O seu aplicativo</li><li><span>10</span>Agentes: os seus funcionários invisíveis</li><li><span>11</span>Rotinas que rodam sozinhas</li><li><span>12</span>Painel do dono e plano de 90 dias</li></ol></div></div></div>
     </div>
   </section>
 

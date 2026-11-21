@@ -223,19 +223,25 @@ window.PANELA = {
         aberta: "Como você quer que a sua família viva com o novo negócio daqui a 1 ano?" } }
   ],
 
+  modulos: [
+    { n: 1, nome: "A vitrine", mes: "Mês 1", entrega: "Site que converte no ar e Instagram organizado, com o mês de posts agendado." },
+    { n: 2, nome: "A máquina de vendas", mes: "Mês 2", entrega: "O caminho completo do anúncio ao pagamento funcionando." },
+    { n: 3, nome: "A empresa no automático", mes: "Mês 3", entrega: "Aplicativo, agentes e rotinas trabalhando por você." }
+  ],
+
   encontros: [
-    { n: 1, titulo: "A tampa abre: o Claude trabalhando ao vivo para o seu negócio", area: "ia", prep: "Faça o diagnóstico e os testes de perfil e traga UMA tarefa que rouba o seu tempo. Ela vai ser resolvida ao vivo, na frente da turma." },
-    { n: 2, titulo: "Contratando o funcionário invisível: Claude e Grok", area: "ia", prep: "Crie a sua conta no Claude e no Grok." },
-    { n: 3, titulo: "O manual da empresa e os seus temperos", area: "ia", prep: "Junte os documentos do negócio: cardápio, tabela de preços, perguntas frequentes." },
-    { n: 4, titulo: "Estratégia, posicionamento e nova rota", area: "estrategia", prep: "Responda: quem é o seu cliente ideal e por que ele compra de você?" },
-    { n: 5, titulo: "Apresentações profissionais com IA", area: "ia", prep: "Escolha uma apresentação que você precisa fazer (proposta, palestra ou reunião)." },
-    { n: 6, titulo: "O seu site e a sua página de vendas", area: "marketing", prep: "Separe o seu logo, 10 fotos boas e os seus contatos." },
-    { n: 7, titulo: "Redes sociais profissionais e agendamento de posts", area: "marketing", prep: "Anote os 3 assuntos que o seu cliente mais gosta de ver." },
-    { n: 8, titulo: "Geração de leads e demanda comercial · aula exclusiva com Kevin Eger", area: "vendas", prep: "Anote de onde vieram os seus últimos 10 clientes e quantos contatos novos você recebe por semana." },
-    { n: 9, titulo: "Tráfego pago na prática", area: "marketing", prep: "Defina quanto pode investir por mês e qual produto quer anunciar." },
-    { n: 10, titulo: "Atendimento, vendas e resposta automática", area: "vendas", prep: "Copie as 5 perguntas que os clientes mais fazem no WhatsApp e no Instagram." },
-    { n: 11, titulo: "O seu aplicativo e o lançamento", area: "vendas", prep: "Escolha o produto, serviço ou ferramenta que você quer lançar." },
-    { n: 12, titulo: "Pessoas, delegação e plano de 90 dias", area: "pessoas", prep: "Refaça o diagnóstico e escolha uma tarefa para delegar." }
+    { n: 1, mod: 1, titulo: "A tampa abre: aonde você quer chegar", area: "estrategia", prep: "Faça o diagnóstico e os testes de perfil e pense: aonde você quer que o seu negócio (ou a sua carreira) esteja daqui a 3 meses? Neste encontro você define o objetivo e o prazo, e dá os primeiros passos no Claude: instalar, colocar temperos e usar no dia a dia." },
+    { n: 2, mod: 1, titulo: "O site que converte", area: "marketing", prep: "Separe o seu logo, 10 fotos boas, os seus contatos e 3 sites que você admira." },
+    { n: 3, mod: 1, titulo: "Identidade visual e artes com a cara do seu negócio", area: "marketing", prep: "Junte o logo, as cores que você já usa e 5 posts de outras marcas que você acha bonitos (sem exagero)." },
+    { n: 4, mod: 1, titulo: "Instagram organizado e posts no automático", area: "marketing", prep: "Anote os 3 assuntos que o seu cliente mais gosta de ver e tenha o acesso ao Instagram do negócio em mãos." },
+    { n: 5, mod: 2, titulo: "Proposta, página de vendas e pagamento", area: "vendas", prep: "Escolha o produto ou serviço que mais quer vender e anote o preço e as formas de pagamento." },
+    { n: 6, mod: 2, kevin: true, titulo: "Geração de leads e demanda comercial · aula exclusiva com Kevin Eger", area: "vendas", prep: "Anote de onde vieram os seus últimos 10 clientes e quantos contatos novos você recebe por semana." },
+    { n: 7, mod: 2, titulo: "Tráfego pago na prática", area: "marketing", prep: "Defina quanto pode investir por mês e qual produto quer anunciar." },
+    { n: 8, mod: 2, titulo: "Atendimento automático no WhatsApp e no Instagram", area: "vendas", prep: "Copie as 5 perguntas que os clientes mais fazem no WhatsApp e no Instagram." },
+    { n: 9, mod: 3, titulo: "O seu aplicativo", area: "ia", prep: "Pense no que o seu cliente faria pelo celular: agendar, pedir, consultar, acompanhar." },
+    { n: 10, mod: 3, titulo: "Agentes: os seus funcionários invisíveis", area: "ia", prep: "Liste as 5 tarefas que mais tomam o seu tempo e de quem são hoje." },
+    { n: 11, mod: 3, titulo: "Rotinas que rodam sozinhas", area: "ia", prep: "Anote o que você faz todo dia ou toda semana do mesmo jeito: relatórios, cobranças, lembretes, posts." },
+    { n: 12, mod: 3, titulo: "Painel do dono e plano de 90 dias", area: "estrategia", prep: "Refaça o diagnóstico e revise o objetivo que você marcou no 1º encontro: onde chegou e o que falta." }
   ],
 
   temperos: [

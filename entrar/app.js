@@ -100,6 +100,8 @@
     ["diagnostico", "Diagnóstico", '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>'],
     ["perfil", "Testes de perfil", '<circle cx="9" cy="9" r="5"/><circle cx="15" cy="15" r="5"/>'],
     ["plano", "Meu plano", '<path d="M5 5h14v14H5zM9 9h6M9 13h6"/>'],
+    ["via", "Via", '<circle cx="7" cy="5" r="2.2"/><circle cx="14" cy="19" r="2.2"/><path d="M8.5 6.5c4 1.5 8 3 6 6.5s-6 2.5-2 5" stroke-dasharray="2.4 2.2"/>'],
+    ["praticas", "Boas práticas", '<path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/>'],
     ["encontros", "Encontros", '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/>'],
     ["temperos", "Temperos", '<path d="M8 3h8l-1 4H9zM7 7h10v14H7z"/>'],
     ["cashback", "Cashback VOX", '<rect x="3" y="7" width="18" height="11" rx="2"/><path d="M8 12h.01M16 12h.01"/>'],
@@ -553,8 +555,10 @@
 
   function telaPlano() {
     var u = ultimoDiag();
-    var h = cabecalho("Meu plano", "Montado a partir do seu último diagnóstico. Ele muda sempre que você refaz o teste.");
-    if (!u) return h + '<div class="vazio">Faça o diagnóstico para gerar o seu plano. <br><br><button class="btn" data-ir="diagnostico">Fazer o diagnóstico</button></div>';
+    var h = cabecalho("Meu plano", "Aonde você quer chegar, em quanto tempo, e as prioridades que o diagnóstico mostrou.");
+    h += cartaoObjetivo();
+    if (!u) return h + '<div class="vazio">Faça o diagnóstico para ver as suas prioridades por área. <br><br><button class="btn" data-ir="diagnostico">Fazer o diagnóstico</button></div>';
+    h += '<h2 style="margin:22px 0 10px">Prioridades do diagnóstico</h2>';
     var ordem = P.areas.slice().sort(function (a, b) { return u.notas[a.id] - u.notas[b.id]; });
     h += '<div class="grid g3">' + ordem.slice(0, 3).map(function (a, i) {
       var enc = P.encontros.filter(function (e) { return e.area === a.id; });
@@ -571,13 +575,150 @@
     return h;
   }
 
+  /* ---------- Objetivo com prazo (definido no 1º encontro) ---------- */
+  function metaD() {
+    var d = dados();
+    if (!d.meta) d.meta = { hoje: "", objetivo: "", prazo: "", porque: "", marcos: [{ t: "", ok: false }, { t: "", ok: false }, { t: "", ok: false }] };
+    return d.meta;
+  }
+  function diasAte(iso) { if (!iso) return null; var a = new Date(); a.setHours(12, 0, 0, 0); var b = new Date(iso + "T12:00:00"); return Math.round((b - a) / 864e5); }
+  function cartaoObjetivo() {
+    var m = metaD(), feitos = m.marcos.filter(function (x) { return x.ok && x.t; }).length, comT = m.marcos.filter(function (x) { return x.t; }).length;
+    var dl = diasAte(m.prazo), pct = comT ? Math.round(feitos / comT * 100) : 0;
+    var resumo = m.objetivo ? '<div class="obj-resumo"><span class="rot">Meu objetivo</span><p class="obj-frase">' + esc(m.objetivo) + "</p>" +
+      '<div class="obj-meta">' + (m.prazo ? "<span><b>" + (dl >= 0 ? dl : 0) + "</b> dias até " + m.prazo.split("-").reverse().join("/") + "</span>" : "<span>sem prazo definido</span>") + "<span><b>" + pct + "%</b> dos marcos</span></div>" +
+      '<div class="barra"><i style="width:' + pct + '%"></i></div></div>' : '<div class="dica" style="margin:0 0 14px"><span class="rot">Comece por aqui</span><p>Cada negócio e cada profissional tem a sua particularidade. Escreva aonde você quer chegar, com prazo. Isso é a régua dos seus 3 meses na Panela (definimos juntos no 1º encontro).</p></div>';
+    return '<div class="card obj">' + resumo + '<form id="f-obj" class="obj-form">' +
+      '<label>Onde estou hoje<textarea name="hoje" rows="2" placeholder="Ex.: faturo R$ 15 mil por mês, faço tudo sozinha e não tenho tempo para a família">' + esc(m.hoje) + "</textarea></label>" +
+      '<label>Aonde quero chegar<textarea name="objetivo" rows="2" placeholder="Ex.: faturar R$ 25 mil por mês com o site e o Instagram vendendo por mim">' + esc(m.objetivo) + "</textarea></label>" +
+      '<div class="obj-linha"><label>Prazo<input type="date" name="prazo" value="' + esc(m.prazo) + '"></label><label style="flex:2">Por que isso importa para mim<input name="porque" value="' + esc(m.porque) + '" placeholder="Ex.: jantar com a família todos os dias"></label></div>' +
+      '<span class="rot" style="display:block;margin-top:10px">Marcos (um por mês)</span>' +
+      m.marcos.map(function (x, i) { return '<div class="obj-marco"><input type="checkbox" data-marco-ok="' + i + '"' + (x.ok ? " checked" : "") + ' aria-label="Marco ' + (i + 1) + ' concluído"><input data-marco="' + i + '" value="' + esc(x.t) + '" placeholder="Mês ' + (i + 1) + ': ' + ["site no ar e Instagram organizado", "primeiras vendas pelo anúncio", "rotinas e agentes trabalhando"][i] + '"></div>'; }).join("") +
+      '<p class="muted" style="font-size:12px;margin:8px 0 0">Salva sozinho enquanto você escreve. O Ramon acompanha o seu objetivo no painel dele.</p></form></div>';
+  }
+  function ligarObjetivo() {
+    var f = document.getElementById("f-obj"); if (!f) return;
+    var m = metaD(), t = null;
+    function guardar() {
+      m.hoje = f.hoje.value; m.objetivo = f.objetivo.value; m.prazo = f.prazo.value; m.porque = f.porque.value;
+      f.querySelectorAll("[data-marco]").forEach(function (x) { m.marcos[+x.getAttribute("data-marco")].t = x.value; });
+      f.querySelectorAll("[data-marco-ok]").forEach(function (x) { m.marcos[+x.getAttribute("data-marco-ok")].ok = x.checked; });
+      salvar();
+    }
+    f.addEventListener("input", function () { clearTimeout(t); t = setTimeout(guardar, 500); });
+    f.addEventListener("change", function (e) { guardar(); if (e.target.type === "checkbox" || e.target.name === "prazo") desenhar(); });
+    f.addEventListener("focusout", function (e) { if (e.target.name === "objetivo") { guardar(); desenhar(); } });
+  }
+
+  /* ---------- Via: a pequena via do dia (rotina diária) ---------- */
+  var viaAba = "hoje";
+  var HABITOS = [["oracao", "Tempo com Deus", "Oração, leitura ou silêncio antes de abrir o celular"], ["familia", "Tempo com a família", "Presente de verdade, sem tela"], ["corpo", "Corpo em movimento", "Caminhada, treino ou alongamento"],
+    ["sono", "Dormir bem", "7 horas ou mais"], ["pedra", "A pedra grande do dia", "A tarefa que mais aproxima você do objetivo"], ["claude", "Uma tarefa com o Claude", "Tirei algo da minha mão com a IA"]];
+  function hojeK(off) { var x = new Date(); x.setDate(x.getDate() + (off || 0)); return x.getFullYear() + "-" + ("0" + (x.getMonth() + 1)).slice(-2) + "-" + ("0" + x.getDate()).slice(-2); }
+  function viaD() { var d = dados(); if (!d.via) d.via = { dias: {}, ideias: [] }; return d.via; }
+  function diaV(k) { var v = viaD(); k = k || hojeK(); if (!v.dias[k]) v.dias[k] = { agora: "", tarefas: [], quando: [], hab: {}, fech: { andou: "", travou: "", amanha: "" } }; return v.dias[k]; }
+  function sequencia() { var v = viaD(), n = 0; for (var i = 0; i < 60; i++) { var x = v.dias[hojeK(-i)]; if (x && Object.keys(x.hab).some(function (k) { return x.hab[k]; })) n++; else if (i) break; } return n; }
+  function telaVia() {
+    var d = dados(), dia = diaV(), ontem = viaD().dias[hojeK(-1)], m = metaD();
+    var hora = new Date().getHours(), saud = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
+    var h = cabecalho("Via", "A pequena via do seu dia: o que importa hoje, as ideias que surgem, a saúde e o fechamento à noite.");
+    h += '<div class="via-abas" role="tablist">' + [["hoje", "Hoje"], ["ideias", "Ideias"], ["saude", "Saúde e família"], ["noite", "Fechamento do dia"]].map(function (a) {
+      return '<button role="tab" aria-selected="' + (viaAba === a[0]) + '" class="' + (viaAba === a[0] ? "on" : "") + '" data-via-aba="' + a[0] + '">' + a[1] + "</button>"; }).join("") + "</div>";
+    if (viaAba === "hoje") {
+      h += '<div class="card via-saud"><span class="rot">' + new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }) + "</span><h2>" + saud + ", " + esc(d.aluno.nome.split(" ")[0]) + "</h2>" +
+        (m.objetivo ? '<p class="muted" style="margin:4px 0 0">Rumo a: <b>' + esc(m.objetivo) + "</b>" + (m.prazo ? " · faltam " + Math.max(0, diasAte(m.prazo)) + " dias" : "") + "</p>" : '<p class="muted" style="margin:4px 0 0"><a href="#" data-ir="plano">Defina o seu objetivo</a> para ele aparecer aqui todo dia.</p>') +
+        (ontem && ontem.fech.amanha ? '<div class="dica" style="margin-top:12px"><span class="rot">Ontem você deixou para hoje</span><p>' + esc(ontem.fech.amanha) + "</p></div>" : "") + "</div>";
+      h += '<div class="card"><span class="rot">Agora</span><input class="via-agora" id="via-agora" value="' + esc(dia.agora) + '" placeholder="A UMA coisa que você está fazendo agora"></div>';
+      h += '<div class="grid g2" style="margin-top:16px"><div class="card"><h2>Seu dia</h2><p class="muted" style="margin:2px 0 10px;font-size:12.5px">Tarefas com horário.</p>' + listaVia("tarefas", dia.tarefas, true) + "</div>" +
+        '<div class="card"><h2>Quando der</h2><p class="muted" style="margin:2px 0 10px;font-size:12.5px">Sem horário, sem culpa.</p>' + listaVia("quando", dia.quando, false) + "</div></div>";
+    } else if (viaAba === "ideias") {
+      var ideias = viaD().ideias;
+      h += '<div class="card"><span class="rot">Faísca</span><form id="via-ideia" class="via-add"><input name="t" placeholder="Anote a ideia antes que ela fuja" aria-label="Nova ideia"><button class="btn peq" type="submit">Guardar</button></form></div>';
+      h += '<div class="card" style="margin-top:16px"><h2>Todas as ideias · ' + ideias.length + "</h2>" + (ideias.length ? ideias.slice().reverse().map(function (x, i) {
+        var k = ideias.length - 1 - i;
+        return '<div class="item"><span class="num' + (x.feita ? " ok" : "") + '">✦</span><div style="flex:1"><b' + (x.feita ? ' style="text-decoration:line-through;opacity:.6"' : "") + ">" + esc(x.t) + "</b><p>" + dataBR(x.data) + '</p></div><button class="btn peq contorno" data-ideia-ok="' + k + '">' + (x.feita ? "Reabrir" : "Virou tarefa") + '</button><button class="btn peq perigo" data-ideia-del="' + k + '" aria-label="Apagar ideia">×</button></div>';
+      }).join("") : '<div class="vazio">Nenhuma ideia ainda. Ideia boa é a que fica anotada.</div>') + "</div>";
+    } else if (viaAba === "saude") {
+      var seq = sequencia(), feitos = HABITOS.filter(function (x) { return dia.hab[x[0]]; }).length;
+      h += '<div class="grid g2"><div class="card ind"><span class="rot">Hoje</span><b>' + feitos + "/" + HABITOS.length + "</b><small>hábitos cuidados</small></div>" +
+        '<div class="card ind"><span class="rot">Sequência</span><b>' + seq + "</b><small>dia" + (seq === 1 ? "" : "s") + " seguidos cuidando de você</small></div></div>";
+      h += '<div class="card" style="margin-top:16px"><h2>Mais tempo com a família e mais resultado</h2><p class="muted" style="margin:2px 0 10px;font-size:12.5px">Negócio que cresce às custas da saúde e da família não é o que a Panela quer para você.</p>' +
+        HABITOS.map(function (x) { return '<label class="via-hab"><input type="checkbox" data-hab="' + x[0] + '"' + (dia.hab[x[0]] ? " checked" : "") + "><span><b>" + esc(x[1]) + "</b><small>" + esc(x[2]) + "</small></span></label>"; }).join("") +
+        '<div class="via-semana">' + [-6, -5, -4, -3, -2, -1, 0].map(function (o) {
+          var k = hojeK(o), x = viaD().dias[k], n = x ? HABITOS.filter(function (hh) { return x.hab[hh[0]]; }).length : 0;
+          return '<span title="' + k.split("-").reverse().join("/") + ": " + n + ' hábitos"><i style="height:' + Math.max(6, n / HABITOS.length * 48) + 'px"></i>' + ["D", "S", "T", "Q", "Q", "S", "S"][new Date(k + "T12:00:00").getDay()] + "</span>"; }).join("") + "</div></div>";
+    } else {
+      h += '<div class="card"><span class="rot">Fechamento do dia · uns 3 minutos</span><form id="via-fech" class="obj-form">' +
+        '<label>O que andou hoje?<textarea name="andou" rows="2">' + esc(dia.fech.andou) + "</textarea></label>" +
+        '<label>O que travou (e por quê)?<textarea name="travou" rows="2">' + esc(dia.fech.travou) + "</textarea></label>" +
+        '<label>O que fica para amanhã?<textarea name="amanha" rows="2" placeholder="Isso aparece amanhã na aba Hoje">' + esc(dia.fech.amanha) + "</textarea></label>" +
+        '<p class="muted" style="font-size:12px;margin:4px 0 0">Salva sozinho. Se travou em algo que o Claude resolve, leve para o grupo de dúvidas.</p></form></div>';
+    }
+    return h;
+  }
+  function listaVia(tipo, itens, comHora) {
+    return '<div class="via-lista">' + itens.map(function (x, i) {
+      return '<div class="via-it' + (x.ok ? " ok" : "") + '"><input type="checkbox" data-via-ok="' + tipo + ":" + i + '"' + (x.ok ? " checked" : "") + ' aria-label="Feito">' + (comHora && x.h ? '<span class="via-h">' + esc(x.h) + "</span>" : "") +
+        "<span class=\"via-t\">" + esc(x.t) + '</span><button class="via-x" data-via-del="' + tipo + ":" + i + '" aria-label="Apagar">×</button></div>'; }).join("") + "</div>" +
+      '<form class="via-add" data-via-add="' + tipo + '">' + (comHora ? '<input name="h" type="time" aria-label="Horário">' : "") + '<input name="t" placeholder="' + (comHora ? "Nova tarefa" : "Algo para quando der") + '" aria-label="Nova tarefa"><button class="btn peq" type="submit">+</button></form>';
+  }
+  function ligarVia() {
+    var dia = diaV();
+    document.querySelectorAll("[data-via-aba]").forEach(function (b) { b.addEventListener("click", function () { viaAba = b.getAttribute("data-via-aba"); desenhar(); }); });
+    var ag = document.getElementById("via-agora"); if (ag) ag.addEventListener("input", function () { dia.agora = ag.value; salvar(); });
+    document.querySelectorAll("[data-via-add]").forEach(function (f) {
+      f.addEventListener("submit", function (e) {
+        e.preventDefault(); var t = f.t.value.trim(); if (!t) return;
+        var tipo = f.getAttribute("data-via-add"), it = { t: t, ok: false }; if (f.h) it.h = f.h.value;
+        dia[tipo].push(it); if (tipo === "tarefas") dia.tarefas.sort(function (a, b) { return (a.h || "99") < (b.h || "99") ? -1 : 1; });
+        salvar(); desenhar(); var nf = document.querySelector('[data-via-add="' + tipo + '"] input[name="t"]'); if (nf) nf.focus();
+      });
+    });
+    document.querySelectorAll("[data-via-ok]").forEach(function (c) { c.addEventListener("change", function () { var p = c.getAttribute("data-via-ok").split(":"); dia[p[0]][+p[1]].ok = c.checked; salvar(); desenhar(); }); });
+    document.querySelectorAll("[data-via-del]").forEach(function (b) { b.addEventListener("click", function () { var p = b.getAttribute("data-via-del").split(":"); dia[p[0]].splice(+p[1], 1); salvar(); desenhar(); }); });
+    var fi = document.getElementById("via-ideia");
+    if (fi) fi.addEventListener("submit", function (e) { e.preventDefault(); var t = fi.t.value.trim(); if (!t) return; viaD().ideias.push({ t: t, data: new Date().toISOString(), feita: false }); salvar(); toast("Ideia guardada."); desenhar(); });
+    document.querySelectorAll("[data-ideia-ok]").forEach(function (b) { b.addEventListener("click", function () { var x = viaD().ideias[+b.getAttribute("data-ideia-ok")]; x.feita = !x.feita; if (x.feita) { dia.quando.push({ t: x.t, ok: false }); toast("Foi para o Quando der de hoje."); } salvar(); desenhar(); }); });
+    document.querySelectorAll("[data-ideia-del]").forEach(function (b) { b.addEventListener("click", function () { viaD().ideias.splice(+b.getAttribute("data-ideia-del"), 1); salvar(); desenhar(); }); });
+    document.querySelectorAll("[data-hab]").forEach(function (c) { c.addEventListener("change", function () { dia.hab[c.getAttribute("data-hab")] = c.checked; salvar(); desenhar(); }); });
+    var ff = document.getElementById("via-fech");
+    if (ff) ff.addEventListener("input", function () { dia.fech = { andou: ff.andou.value, travou: ff.travou.value, amanha: ff.amanha.value }; salvar(); });
+  }
+
+  /* ---------- Boas práticas ---------- */
+  var PRATICAS = [
+    { t: "Ao acordar", cor: "var(--azul)", itens: [["Deus antes do celular", "Os primeiros minutos do dia são de oração e silêncio, não de notificação."], ["Abra a Via, não o WhatsApp", "Veja o objetivo, o que ficou de ontem e escolha a pedra grande do dia."], ["Uma coisa de cada vez", "Escreva no campo Agora a única coisa que você está fazendo."]] },
+    { t: "Durante o dia", cor: "var(--vermelho)", itens: [["Bloco protegido", "Reserve 90 minutos sem interrupção para a pedra grande, de preferência de manhã."], ["Repetiu duas vezes? Vira tempero", "Toda tarefa que você fez duas vezes do mesmo jeito pode virar um tempero no Claude."], ["Responder em lote", "WhatsApp e Instagram em 3 horários fixos, com as respostas automáticas cobrindo o resto."], ["Anote a faísca", "Ideia boa que aparece no meio do dia vai para Ideias, e você volta para o que estava fazendo."]] },
+    { t: "No fechamento", cor: "var(--amarelo)", itens: [["3 minutos de fechamento", "O que andou, o que travou e o que fica para amanhã. Quem fecha o dia dorme melhor."], ["Desligar de verdade", "Depois do fechamento, o tempo é da família."], ["Exame de consciência do dono", "Uma vez por semana: Deus, família e trabalho estão na ordem certa?"]] },
+    { t: "Toda semana", cor: "var(--salvia-escura)", itens: [["Planeje a semana no domingo", "Use a planilha do plano semanal do nivelamento: pedras grandes primeiro."], ["Olhe os números", "Vendas, contatos novos e o investimento em anúncio, sempre no mesmo dia."], ["Leve uma dúvida para o grupo", "Panela só é ruim pra quem tá de fora: pergunte, ajude, compartilhe o que funcionou."]] },
+    { t: "Com o Claude", cor: "var(--ink)", itens: [["Dê contexto antes de pedir", "O Projeto do seu negócio é o manual do funcionário invisível. Mantenha atualizado."], ["Peça o rascunho, você dá o acabamento", "A IA tira o trabalho pesado; o seu olhar dá o tom e a verdade do negócio."], ["Confira antes de publicar", "Números, preços e promessas: sempre revisados por você."], ["Identidade sempre igual", "Use o guia de identidade visual do módulo 1 em toda arte e texto."]] }
+  ];
+  function telaPraticas() {
+    var h = cabecalho("Boas práticas", "Os hábitos que fazem a mentoria virar resultado. Simples, repetidos todos os dias.");
+    h += '<div class="grid g2 praticas">' + PRATICAS.map(function (g) {
+      return '<div class="card"><span class="rot" style="color:' + g.cor + '">' + esc(g.t) + "</span>" + g.itens.map(function (x) { return '<div class="item"><span class="num" style="background:' + g.cor + ";border-color:" + g.cor + ';color:#fff">✓</span><div><b>' + esc(x[0]) + "</b><p>" + esc(x[1]) + "</p></div></div>"; }).join("") + "</div>";
+    }).join("") + "</div>";
+    h += '<div class="card" style="margin-top:16px"><h2>Temperos recomendados por módulo</h2>' + (P.modulos || []).map(function (m) {
+      var enc = P.encontros.filter(function (e) { return e.mod === m.n; });
+      return '<div class="item"><span class="num">' + m.n + "</span><div><b>" + esc(m.nome) + "</b><p>" + esc(enc.map(function (e) { return e.titulo.split(" · ")[0]; }).join(" · ")) + '</p></div><button class="btn peq contorno" data-ir="temperos">Ver temperos</button></div>';
+    }).join("") + "</div>";
+    return h;
+  }
+
   function telaEncontros() {
     var d = dados();
-    var h = cabecalho("Encontros", "Ao vivo às 20h. A gravação aparece aqui em até 48 horas.");
-    h += '<div class="card">' + P.encontros.map(function (e) {
+    var h = cabecalho("Encontros", "Ao vivo às 20h. A gravação aparece aqui em até 48 horas. A cada módulo de 4 encontros, você constrói algo que fica funcionando no seu negócio.");
+    function linhaEnc(e) {
       var visto = d.encontrosVistos.indexOf(e.n) >= 0;
-      return '<div class="item"><span class="num ' + (visto ? "ok" : e.n === 8 ? "br" : "") + '">' + e.n + '</span><div style="flex:1"><b>' + esc(e.titulo) + '</b><p><span class="chip">' + esc(A(area(e.area)).nome) + "</span> Prepare-se: " + esc(e.prep) + '</p></div><button class="btn peq ' + (visto ? "" : "contorno") + '" data-visto="' + e.n + '">' + (visto ? "Visto" : "Marcar como visto") + "</button></div>";
-    }).join("") + '<p class="muted" style="font-size:12px;margin:12px 0 0">Os vídeos dos encontros entram aqui assim que forem gravados (hospedados no Bunny Stream).</p></div>';
+      return '<div class="item"><span class="num ' + (visto ? "ok" : e.kevin ? "br" : "") + '">' + e.n + '</span><div style="flex:1"><b>' + esc(e.titulo) + '</b><p><span class="chip">' + esc(A(area(e.area)).nome) + "</span> Prepare-se: " + esc(e.prep) + '</p></div><button class="btn peq ' + (visto ? "" : "contorno") + '" data-visto="' + e.n + '">' + (visto ? "Visto" : "Marcar como visto") + "</button></div>";
+    }
+    var mods = P.modulos || [{ n: 0, nome: "Encontros", entrega: "" }];
+    h += mods.map(function (m) {
+      var lista = P.encontros.filter(function (e) { return (e.mod || 0) === m.n; });
+      var feitos = lista.filter(function (e) { return d.encontrosVistos.indexOf(e.n) >= 0; }).length;
+      return '<div class="card modulo-enc"><div class="mod-topo"><div><span class="rot">' + esc(m.mes || "") + " · Módulo " + m.n + '</span><h2>' + esc(m.nome) + '</h2></div><span class="chip">' + feitos + "/" + lista.length + " vistos</span></div>" +
+        (m.entrega ? '<p class="mod-entrega"><b>Sai pronto:</b> ' + esc(m.entrega) + "</p>" : "") + lista.map(linhaEnc).join("") + "</div>";
+    }).join("") + '<p class="muted" style="font-size:12px;margin:12px 0 0">Os vídeos dos encontros entram aqui assim que forem gravados.</p>';
     return h;
   }
 
@@ -1249,6 +1390,7 @@
     var faltam = i.pt.itens.filter(function (x) { return x.pts < x.max; }).sort(function (x, y) { return (y.max - y.pts) - (x.max - x.pts); }).slice(0, 3);
     var msg = mensagemPara(a, i);
     return '<section class="card m-det" id="m-det"><div class="m-det-topo">' + avatarDe(a) + "<div><span class=\"rot\">Aluno</span><h2>" + esc(a.aluno.nome) + '</h2><small class="muted">' + esc(a.aluno.ramo || "") + " · " + (a.aluno.turma === "hub" ? "1º Encontro do Hub" : "Inscrição geral") + " · " + i.pt.total + " pts · " + esc(i.nv) + '</small></div>' + (a._uid ? '<button class="btn peq contorno" id="m-pausar" data-uid="' + a._uid + '">Pausar acesso</button>' : "") + '<button class="btn peq contorno" id="m-fechar">Fechar</button></div>' +
+      (a.meta && a.meta.objetivo ? '<div class="m-msg" style="margin:0 0 14px"><span class="rot">Objetivo do aluno' + (a.meta.prazo ? " · até " + a.meta.prazo.split("-").reverse().join("/") : "") + "</span><p><b>" + esc(a.meta.objetivo) + "</b>" + (a.meta.hoje ? "<br><small>Hoje: " + esc(a.meta.hoje) + "</small>" : "") + "<br><small>Marcos: " + a.meta.marcos.filter(function (x) { return x.t && x.ok; }).length + "/" + a.meta.marcos.filter(function (x) { return x.t; }).length + " concluídos</small></p></div>" : '<p class="muted" style="margin:0 0 14px">Ainda não definiu o objetivo com prazo.</p>') +
       '<div class="m-det-g"><div><h3>Evolução por área</h3><p class="muted" style="font-size:12px;margin:2px 0 8px">Cinza: 1º diagnóstico · cor: último</p>' + barras + "</div>" +
       "<div><h3>Para ele progredir</h3><ul class=\"lista\">" + (i.fraca ? "<li>Área mais fraca: <b>" + esc(nomeAreaM(i.fraca, a)) + "</b>. Indique um tempero dessa área e leve o caso para o próximo encontro.</li>" : "") +
       faltam.map(function (x) { return "<li>" + esc(x.nome) + ": " + esc(x.detalhe) + " (vale até +" + (x.max - x.pts) + " pts)</li>"; }).join("") +
@@ -1265,7 +1407,7 @@
     if (!d) return telaLogin();
     if (d.mentor) return telaMentor();
     marcarDia();
-    var telas = { inicio: telaInicio, nivelamento: telaNivelamento, diagnostico: telaDiagnostico, plano: telaPlano, encontros: telaEncontros, temperos: telaTemperos, perfil: telaPerfil, conquistas: telaConquistas, cashback: telaCashback, individual: telaIndividual, regras: telaRegras };
+    var telas = { inicio: telaInicio, nivelamento: telaNivelamento, diagnostico: telaDiagnostico, plano: telaPlano, via: telaVia, praticas: telaPraticas, encontros: telaEncontros, temperos: telaTemperos, perfil: telaPerfil, conquistas: telaConquistas, cashback: telaCashback, individual: telaIndividual, regras: telaRegras };
     var menu = MENU.map(function (m) { return '<button data-ir="' + m[0] + '" class="' + (atual === m[0] ? "ativo" : "") + '"' + (atual === m[0] ? ' aria-current="page"' : "") + '><svg viewBox="0 0 24 24" aria-hidden="true">' + m[2] + "</svg>" + m[1] + "</button>"; }).join("");
     var raiz = document.getElementById("raiz");
     raiz.innerHTML = (d.demo ? '<div class="aviso-demo">Participante de demonstração: os dados ficam só neste navegador.</div>' : "") +
@@ -1279,6 +1421,7 @@
   function ligar() {
     var d = dados();
     ligarNivelamento();
+    ligarObjetivo(); ligarVia();
     document.querySelectorAll("[data-ir]").forEach(function (b) { b.addEventListener("click", function () { ir(b.getAttribute("data-ir")); }); });
     var bm = document.getElementById("b-mais"), fo = document.getElementById("folha-mais"), ff = document.getElementById("folha-fundo");
     function folha(abrir) { if (!fo) return; fo.hidden = !abrir; ff.hidden = !abrir; bm.setAttribute("aria-expanded", String(abrir)); document.body.classList.toggle("sem-rolar", abrir); }
