@@ -293,6 +293,13 @@ html:not(.liberado) a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi
 .revelar .btn{font-size:16px;padding:16px 26px;cursor:pointer}
 .planos[hidden]{display:none!important}
 .plano .valor{font-size:clamp(30px,3.4vw,40px)}
+
+.revelar[hidden],.plano[hidden]{display:none!important}
+.pergunta .q{font-family:var(--display);font-weight:800;font-size:clamp(22px,3vw,30px);line-height:1.15;color:var(--ink)}
+.sim-nao{display:flex;gap:12px;flex-wrap:wrap}
+.sim-nao .btn{min-width:150px;justify-content:center;cursor:pointer;font-size:16px;padding:15px 24px}
+#planos{grid-template-columns:1fr 1fr}
+@media (max-width:900px){#planos{grid-template-columns:1fr}}
 </style>
 
 <header class="topo">
@@ -440,10 +447,11 @@ html:not(.liberado) a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi
   <section id="investimento">
     <div class="wrap">
       <div class="cab"><div><span class="rot">Investimento</span><h2 style="margin-top:8px">Entra pra panela</h2></div></div>
-      <div class="revelar" id="revelar"><p>Tudo o que está incluído na sua vaga, a condição de quem foi ao Encontro do Hub e as formas de pagamento.</p><button type="button" class="btn cheio" id="btn-revelar">Garantir minha vaga &rarr;</button></div>
+      <div class="revelar" id="revelar"><p>Tudo o que está incluído na sua vaga e as formas de pagamento.</p><button type="button" class="btn cheio" id="btn-revelar">Garantir minha vaga &rarr;</button></div>
+      <div class="revelar pergunta" id="pergunta" hidden><p class="q">Você participou do 1º Encontro do Hub Católico?</p><div class="sim-nao"><button type="button" class="btn cheio" data-resp="sim">Sim, participei</button><button type="button" class="btn contorno" data-resp="nao">Não</button></div></div>
       <div class="planos" id="planos" hidden>
-        <div class="card plano destaque"><p class="valor"><small>3 meses de mentoria · no cartão</small>12x de R$ 107,91</p><p style="margin:0;color:var(--muted)">Com o cupom exclusivo que você recebeu no grupo do Encontro. Digite no carrinho, antes de pagar.</p><p style="margin:0"><b>R$ 299,10</b> de cashback na VOX</p><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Comprar com o cupom &rarr;</a></div>
-        <div class="card plano"><span class="rot">Inscrição geral</span><p class="valor"><small>3 meses de mentoria · no cartão</small>12x de R$ 183,67</p><p style="margin:0;color:var(--muted)">Também no Pix ou boleto.</p><p style="margin:0"><b>R$ 509,10</b> de cashback na VOX</p><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Garantir minha vaga &rarr;</a></div>
+        <div class="card plano destaque" id="plano-hub"><p class="valor"><small>3 meses de mentoria · sem juros</small>6x de R$ 166,17</p><p style="margin:0;font-weight:700">Total de R$ 997 com o desconto de quem participou do 1º Encontro.</p><p style="margin:0;color:var(--muted)">Com o cupom exclusivo que você recebeu no grupo do Encontro. Digite no carrinho, antes de pagar.</p><p style="margin:0"><b>R$ 299,10</b> de cashback na VOX</p><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Comprar com o cupom &rarr;</a></div>
+        <div class="card plano" id="plano-geral"><span class="rot">Inscrição geral</span><p class="valor"><small>3 meses de mentoria · sem juros</small>6x de R$ 282,83</p><p style="margin:0;color:var(--muted)">Também no Pix ou boleto.</p><p style="margin:0"><b>R$ 509,10</b> de cashback na VOX</p><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Garantir minha vaga &rarr;</a></div>
         <div class="card plano escuro"><span class="rot" style="color:#bbb">O que está incluído</span><ul style="color:#ddd"><li>Nivelamento: 12 aulas curtas com material em PDF</li><li>12 encontros ao vivo em grupo, às 20h, gravados</li><li>3 encontros individuais, um por mês</li><li>Grupo de dúvidas durante os 3 meses</li><li>Aula especial com Kevin Eger</li><li>Curso O Funcionário Invisível</li><li>Área do participante com diagnóstico e gráficos</li><li>Mais de 800 temperos (skills) por ramo</li><li>Guias práticos do Claude e do Grok</li><li>Cashback de 30% em 3 cupons mensais da VOX</li></ul></div>
       </div>
       <p class="garantia">Pagamento seguro pela loja da VOX. Assim que o pagamento é aprovado, você recebe por e-mail o link para criar a sua senha e entrar na área do participante. Garantia de 7 dias: entrou e viu que não é para você, devolvemos 100% do valor.</p>
@@ -520,10 +528,17 @@ document.addEventListener("click",function(ev){
 });
 </script>
 <script>
-/* mostra os planos (com valor parcelado) só depois do clique */
+/* "Garantir minha vaga" -> pergunta do Encontro -> mostra só o plano certo (6x sem juros) */
 (function(){
-  var b=document.getElementById("btn-revelar"),pl=document.getElementById("planos"),r=document.getElementById("revelar");
-  if(!b||!pl)return;
-  b.addEventListener("click",function(){pl.hidden=false;r.style.display="none";pl.scrollIntoView({behavior:"smooth",block:"start"});});
+  var b=document.getElementById("btn-revelar"),r=document.getElementById("revelar"),q=document.getElementById("pergunta"),pl=document.getElementById("planos");
+  if(!b||!pl||!q)return;
+  b.addEventListener("click",function(){r.style.display="none";q.hidden=false;q.scrollIntoView({behavior:"smooth",block:"center"});});
+  q.addEventListener("click",function(ev){
+    var bt=ev.target.closest("[data-resp]");if(!bt)return;
+    var sim=bt.getAttribute("data-resp")==="sim";
+    document.getElementById("plano-hub").hidden=!sim;
+    document.getElementById("plano-geral").hidden=sim;
+    q.hidden=true;pl.hidden=false;pl.scrollIntoView({behavior:"smooth",block:"start"});
+  });
 })();
 </script>
