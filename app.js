@@ -132,24 +132,29 @@
         diagnosticos: [], rascunho: null, cupons: [], encontrosVistos: [], individual: null };
       salvar(); ir("inicio");
     });
-    animarEntrada();
   }
 
   /* Abertura: as linhas se juntam, as cores chegam e a panela se forma até virar a logo. */
   function animarEntrada() {
-    var box = document.querySelector(".login2"), arte = document.querySelector(".l-arte"), img = document.querySelector(".l-poster");
-    if (!box || !arte || !img || !img.animate) return;
+    if (!document.body.animate) return;
     var reduz = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     var visto = false; try { visto = sessionStorage.getItem("panela-intro") === "1"; } catch (e) {}
     if (reduz || visto) return;
     try { sessionStorage.setItem("panela-intro", "1"); } catch (e) {}
-    box.classList.add("intro");
+    var box = document.createElement("div"); box.className = "abertura"; box.setAttribute("role", "presentation");
+    box.innerHTML = '<div class="ab-arte"><img class="ab-img" src="' + (window.LOGIN_ARTE_URI || "login-arte.jpg") + '" alt=""></div><button class="ab-pular" type="button">Pular</button>';
+    document.body.appendChild(box);
+    var arte = box.querySelector(".ab-arte"), img = box.querySelector(".ab-img");
     var anims = [], camada = null, acabou = false;
     function terminar() {
       if (acabou) return; acabou = true;
       anims.forEach(function (a) { try { a.finish(); } catch (e) {} });
-      if (camada) camada.remove();
-      box.classList.remove("intro");
+      sair();
+    }
+    function sair() {
+      if (box.classList.contains("saindo")) return;
+      box.classList.add("saindo");
+      setTimeout(function () { box.remove(); }, 650);
     }
     function rodar() {
       var ra = arte.getBoundingClientRect(), ri = img.getBoundingClientRect();
@@ -198,13 +203,13 @@
         { opacity: 1, clipPath: "inset(0% 0% 0% 0%)", filter: "grayscale(1) contrast(1.6) brightness(1.15)", offset: 0.55 },
         { opacity: 1, clipPath: "inset(0% 0% 0% 0%)", filter: "grayscale(0) contrast(1) brightness(1)" }], { duration: 2200, delay: 900, easing: "cubic-bezier(.3,.6,.2,1)", fill: "both" }));
       var ultima = anims[anims.length - 1];
-      setTimeout(function () { box.classList.remove("intro"); }, 2700);
-      ultima.onfinish = function () { setTimeout(function () { if (camada) camada.remove(); acabou = true; }, 900); };
-      arte.addEventListener("click", terminar, { once: true });
+      ultima.onfinish = function () { acabou = true; setTimeout(sair, 700); };
+      box.addEventListener("click", terminar, { once: true });
     }
     img.style.animation = "none";
     if (img.complete && img.naturalWidth) requestAnimationFrame(rodar); else { img.addEventListener("load", function () { requestAnimationFrame(rodar); }, { once: true }); img.addEventListener("error", terminar, { once: true }); }
-    setTimeout(function () { if (box.classList.contains("intro") && !camada) terminar(); }, 4000);
+    setTimeout(function () { if (!camada) terminar(); }, 4000);
+    setTimeout(sair, 7000);
   }
 
 
@@ -1006,4 +1011,5 @@
   }
 
   desenhar();
+  animarEntrada();
 })();
