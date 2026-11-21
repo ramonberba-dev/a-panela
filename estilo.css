@@ -494,3 +494,43 @@ html,body{overflow-x:hidden}
 @media (max-width:560px){.m-guia-g{grid-template-columns:minmax(0,1fr)}.m-topo img{height:30px}.m-topo b{font-size:16px}}
 .m-av img,.avatar>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .m-av{box-shadow:none}
+
+/* ===== Acesso com conta (Firebase) ===== */
+.l-abas{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--ink);border-radius:4px;overflow:hidden}
+.l-abas button{height:42px;border:0;background:#fff;font:700 11px var(--display);letter-spacing:.14em;text-transform:uppercase;cursor:pointer;color:var(--muted)}
+.l-abas button.on{background:var(--ink);color:#fff}
+#f-login[data-modo="entrar"] .so-cad{display:none}
+#f-login[data-modo="cadastro"] .so-entrar{display:none}
+.senha{position:relative}
+.senha input{padding-right:48px!important}
+.olho{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;background:transparent;cursor:pointer;border-radius:4px;
+  background:center/22px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23141414' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E")}
+.olho.aberto{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E2231A' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17.9 17.9A10.5 10.5 0 0 1 12 19c-7 0-11-7-11-7a19 19 0 0 1 5.1-5.9M9.9 5.2A9.9 9.9 0 0 1 12 5c7 0 11 7 11 7a19 19 0 0 1-2.2 3.2M14.1 14.1a3 3 0 1 1-4.2-4.2M1 1l22 22'/%3E%3C/svg%3E")}
+.olho:focus-visible{outline:2px solid var(--azul)}
+.l-esqueci{justify-self:start;border:0;background:none;padding:0;font-size:13px;color:var(--azul);text-decoration:underline;cursor:pointer}
+.l-ou{display:flex;align-items:center;gap:10px;color:var(--muted);font:600 10px var(--mono,monospace);letter-spacing:.2em;text-transform:uppercase}
+.l-ou::before,.l-ou::after{content:"";flex:1;height:1px;background:var(--line)}
+.l-google{display:flex;align-items:center;justify-content:center;gap:10px;height:50px;border:1px solid #CFCFC9;border-radius:3px;background:#fff;font:600 14px var(--texto);cursor:pointer}
+.l-google svg{width:22px;height:22px}
+.l-google:hover{border-color:var(--ink)}
+.carregando{min-height:100vh;display:grid;place-items:center;align-content:center;gap:16px}
+.carregando img{height:70px;mix-blend-mode:multiply;animation:pulsar 1.2s ease-in-out infinite}
+@keyframes pulsar{50%{opacity:.4}}
+.espera{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.espera-c{width:min(460px,100%);display:grid;gap:14px}
+.espera-c img{height:56px;mix-blend-mode:multiply}
+.espera-c h1{font-size:clamp(26px,7vw,34px);line-height:1}
+.espera-c p{margin:0}
+.m-acessos{padding-top:16px;padding-bottom:0}
+.m-pend{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--line)}
+.m-pend>div:first-child{display:grid}.m-pend small{color:var(--muted);font-size:12px}
+.m-pend-b{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.m-pend-b select{height:34px;border:1px solid var(--line);border-radius:4px;padding:0 8px}
+.m-novo{display:grid;grid-template-columns:1.2fr 1.4fr 1fr 1fr auto;gap:8px}
+.m-novo input,.m-novo select{height:42px;border:1px solid #CFCFC9;border-radius:3px;padding:0 10px;min-width:0;background:#fff}
+.m-conv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.m-link{border:0;background:none;color:var(--azul);text-decoration:underline;cursor:pointer;font-size:12.5px;padding:0}
+@media (max-width:800px){.m-novo{grid-template-columns:1fr}}
+
+.nv-mat.travado{border-left-color:#CFCFC9;background:var(--soft)}
+.nv-cadeado{font-size:20px;align-self:center}
+.nv-guia.travado{opacity:.75;background:var(--soft);cursor:not-allowed}

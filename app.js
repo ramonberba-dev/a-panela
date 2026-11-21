@@ -21,7 +21,21 @@
   var memoria = Armazem.ler();
 
   function dados() { return memoria; }
-  function salvar() { Armazem.gravar(memoria); }
+  var NV_ = window.NUVEM || null, usuarioNuvem = null, contaNuvem = null, timerNuvem = null, carregando = !!NV_;
+  function salvar() {
+    Armazem.gravar(memoria);
+    if (NV_ && usuarioNuvem && memoria && memoria.nuvem && !memoria.mentor) {
+      clearTimeout(timerNuvem);
+      var uid = usuarioNuvem.uid, txt = JSON.stringify(memoria);
+      timerNuvem = setTimeout(function () {
+        NV_.db.collection("progresso").doc(uid).set({ dados: txt, atualizado: NV_.agora() }).catch(function () { toast("Sem conexão: o progresso fica salvo aqui e sobe quando a internet voltar."); });
+      }, 900);
+    }
+  }
+  function sairConta() {
+    Armazem.apagar(); contaNuvem = null; atual = "inicio";
+    if (NV_ && usuarioNuvem) { NV_.auth.signOut(); } else desenhar();
+  }
 
   /* ---------- Utilidades ---------- */
   function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content; }
@@ -107,42 +121,166 @@
       '<span class="l-cruz l-x1"></span><span class="l-cruz l-x2"></span><img class="l-poster" src="panela-logo-arte.jpg" alt=""></section>' +
       '<section class="l-form"><div class="l-in">' +
       '<div class="l-topo"><span>Hub de Empreendedores Católicos</span><span>Nº 001</span></div>' +
-      '<div class="l-tit"><span class="l-num">01 — Acesso</span><h1>Área do<br>participante</h1><p>Entre com o e-mail da sua inscrição e o código de acesso que você recebeu.</p></div>' +
-      '<form id="f-login" class="l-campos" novalidate>' +
-      '<div class="campo"><label for="l-nome">Seu nome</label><input id="l-nome" autocomplete="name"></div>' +
-      '<div class="campo"><label for="l-email">E-mail</label><input id="l-email" type="email" autocomplete="email"></div>' +
-      '<div class="l-duas"><div class="campo"><label for="l-perfil">Seu momento</label><select id="l-perfil">' + P.perfis.map(function (x) { return '<option value="' + x.id + '">' + esc(x.nome) + "</option>"; }).join("") + "</select></div>" +
+      '<div class="l-tit"><span class="l-num">01 — Acesso</span><h1>Área do<br>participante</h1><p>Entre com o seu e-mail e senha ou com o Google. Primeira vez? Faça o pré-cadastro.</p></div>' +
+      '<div class="l-abas" role="tablist"><button type="button" role="tab" class="on" data-aba="entrar">Entrar</button><button type="button" role="tab" data-aba="cadastro">Pré-cadastro</button></div>' +
+      '<form id="f-login" class="l-campos" novalidate data-modo="entrar">' +
+      '<div class="campo so-cad"><label for="l-nome">Nome completo</label><input id="l-nome" autocomplete="name"></div>' +
+      '<div class="campo"><label for="l-email">E-mail</label><input id="l-email" type="email" autocomplete="email" inputmode="email"></div>' +
+      '<div class="campo so-cad"><label for="l-zap">WhatsApp</label><input id="l-zap" type="tel" autocomplete="tel" inputmode="tel" placeholder="(DDD) 9 0000-0000"></div>' +
+      '<div class="l-duas so-cad"><div class="campo"><label for="l-perfil">Seu momento</label><select id="l-perfil">' + P.perfis.map(function (x) { return '<option value="' + x.id + '">' + esc(x.nome) + "</option>"; }).join("") + "</select></div>" +
       '<div class="campo"><label for="l-turma">Como entrou</label><select id="l-turma"><option value="hub">Fui ao 1º Encontro do Hub (R$ 997)</option><option value="geral">Inscrição geral (R$ 1.697)</option></select></div></div>' +
+      '<div class="campo"><label for="l-senha">Senha</label><div class="senha"><input id="l-senha" type="password" autocomplete="current-password"><button type="button" class="olho" data-olho="l-senha" aria-label="Mostrar a senha" aria-pressed="false"></button></div></div>' +
+      '<div class="campo so-cad"><label for="l-senha2">Repita a senha</label><div class="senha"><input id="l-senha2" type="password" autocomplete="new-password"><button type="button" class="olho" data-olho="l-senha2" aria-label="Mostrar a senha" aria-pressed="false"></button></div></div>' +
       '<p class="erro" id="l-erro" role="alert"></p>' +
-      '<button class="l-entrar" type="submit"><span>Entrar na Panela</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>' +
+      '<button class="l-entrar" type="submit"><span id="l-acao">Entrar na Panela</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>' +
+      '<button type="button" class="l-esqueci so-entrar" id="b-esqueci">Esqueci minha senha</button>' +
+      '<div class="l-ou"><span>ou</span></div>' +
+      '<button type="button" class="l-google" id="b-google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span id="l-google-t">Entrar com o Google</span></button>' +
       '<button class="l-demo" type="button" id="b-demo">Entrar como participante de demonstração</button>' +
-      '<p class="l-nota">Demonstração: não é preciso código. Na versão no ar, o acesso é liberado depois da confirmação do pagamento.</p>' +
-      '</form><details class="l-mentor"><summary>Acesso do mentor</summary><div class="l-mentor-f"><input id="m-email" type="email" autocomplete="email" placeholder="E-mail do mentor" aria-label="E-mail do mentor"><button type="button" id="b-mentor">Entrar</button></div><p class="erro" id="m-erro" role="alert"></p></details><div class="l-rodape"><span>Orar · Trabalhar · Servir · Amar</span><span>Panela só é ruim pra quem tá de fora</span></div>' +
+      '<p class="l-nota" id="l-nota">No pré-cadastro, o seu acesso é liberado depois da confirmação da inscrição. A demonstração não precisa de senha.</p>' +
+      '</form><div class="l-rodape"><span>Orar · Trabalhar · Servir · Amar</span><span>Panela só é ruim pra quem tá de fora</span></div>' +
       "</div></section></div>"));
-    function entrarMentor() {
-      var em = (document.getElementById("m-email").value || "").trim().toLowerCase(), er = document.getElementById("m-erro");
-      if (!window.crypto || !crypto.subtle) { er.textContent = "Abra pelo endereço com cadeado (https) para entrar."; return; }
-      crypto.subtle.digest("SHA-256", new TextEncoder().encode(em)).then(function (b) {
-        var hx = Array.prototype.map.call(new Uint8Array(b), function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
-        if (hx !== MENTOR_ID) { er.textContent = "Esse e-mail não é de mentor."; return; }
-        memoria = { mentor: true, nome: "Ramon", desde: new Date().toISOString() }; salvar(); desenhar();
-      });
-    }
-    document.getElementById("b-mentor").addEventListener("click", entrarMentor);
-    document.getElementById("m-email").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); entrarMentor(); } });
     document.getElementById("b-demo").addEventListener("click", function () {
       if (!window.TEMPEROS_DATA && !CAT) { fetch("temperos.json").then(function (r) { return r.json(); }).then(function (j) { window.TEMPEROS_DATA = j; entrarDemo(); }).catch(entrarDemo); return; }
       if (!window.TEMPEROS_DATA) window.TEMPEROS_DATA = CAT; entrarDemo();
     });
-    document.getElementById("f-login").addEventListener("submit", function (e) {
-      e.preventDefault();
-      var nome = document.getElementById("l-nome").value.trim(), email = document.getElementById("l-email").value.trim();
-      if (!nome || !/^\S+@\S+\.\S+$/.test(email)) { document.getElementById("l-erro").textContent = "Preencha o seu nome e um e-mail válido."; return; }
-      var turma = document.getElementById("l-turma").value;
-      memoria = { aluno: { nome: nome, email: email, perfil: document.getElementById("l-perfil").value, turma: turma, valor: turma === "hub" ? 997 : 1697, inicio: new Date().toISOString() },
-        diagnosticos: [], rascunho: null, cupons: [], encontrosVistos: [], individual: null };
-      salvar(); ir("inicio");
+    ligarAcesso();
+  }
+
+  /* ---------- Acesso: entrar, pré-cadastro, Google, esqueci a senha ---------- */
+  var ERROS = { "auth/invalid-credential": "E-mail ou senha incorretos.", "auth/wrong-password": "E-mail ou senha incorretos.", "auth/user-not-found": "Não achamos esse e-mail. Faça o pré-cadastro.",
+    "auth/email-already-in-use": "Esse e-mail já tem cadastro. Use Entrar ou Esqueci minha senha.", "auth/weak-password": "A senha precisa ter pelo menos 6 caracteres.",
+    "auth/invalid-email": "Confira o e-mail digitado.", "auth/too-many-requests": "Muitas tentativas. Espere alguns minutos e tente de novo.",
+    "auth/popup-closed-by-user": "A janela do Google foi fechada antes de terminar.", "auth/network-request-failed": "Sem internet no momento. Tente de novo." };
+  function msgErro(e) { return ERROS[e && e.code] || "Não deu certo agora. Tente de novo em instantes."; }
+  function ligarOlhos(raiz) {
+    (raiz || document).querySelectorAll("[data-olho]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var i = document.getElementById(b.getAttribute("data-olho")), ver = i.type === "password";
+        i.type = ver ? "text" : "password"; b.setAttribute("aria-pressed", String(ver)); b.setAttribute("aria-label", ver ? "Esconder a senha" : "Mostrar a senha"); b.classList.toggle("aberto", ver);
+      });
     });
+  }
+  function ligarAcesso() {
+    var f = document.getElementById("f-login"), er = document.getElementById("l-erro");
+    function v(id) { return (document.getElementById(id).value || "").trim(); }
+    function modo(m) {
+      f.setAttribute("data-modo", m); er.textContent = "";
+      document.querySelectorAll("[data-aba]").forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-aba") === m); b.setAttribute("aria-selected", String(b.getAttribute("data-aba") === m)); });
+      document.getElementById("l-acao").textContent = m === "cadastro" ? "Fazer meu pré-cadastro" : "Entrar na Panela";
+      document.getElementById("l-google-t").textContent = m === "cadastro" ? "Cadastrar com o Google" : "Entrar com o Google";
+      document.getElementById("l-senha").setAttribute("autocomplete", m === "cadastro" ? "new-password" : "current-password");
+    }
+    document.querySelectorAll("[data-aba]").forEach(function (b) { b.addEventListener("click", function () { modo(b.getAttribute("data-aba")); }); });
+    ligarOlhos(f);
+    function ocupado(sim) { f.querySelectorAll("button").forEach(function (b) { b.disabled = sim; }); }
+    f.addEventListener("submit", function (e) {
+      e.preventDefault(); er.textContent = "";
+      var cad = f.getAttribute("data-modo") === "cadastro", email = v("l-email").toLowerCase(), senha = document.getElementById("l-senha").value;
+      if (!/^\S+@\S+\.\S+$/.test(email)) { er.textContent = "Digite um e-mail válido."; return; }
+      if (cad) {
+        if (!v("l-nome")) { er.textContent = "Digite o seu nome."; return; }
+        if (v("l-zap").replace(/\D/g, "").length < 10) { er.textContent = "Digite o WhatsApp com DDD."; return; }
+        if (senha.length < 6) { er.textContent = "A senha precisa ter pelo menos 6 caracteres."; return; }
+        if (senha !== document.getElementById("l-senha2").value) { er.textContent = "As duas senhas não são iguais."; return; }
+      } else if (!senha) { er.textContent = "Digite a sua senha."; return; }
+      if (!NV_) { // prévia sem internet: entra só neste navegador
+        var turma = document.getElementById("l-turma").value;
+        memoria = { aluno: { nome: v("l-nome") || email.split("@")[0], email: email, perfil: document.getElementById("l-perfil").value, turma: turma, valor: turma === "hub" ? 997 : 1697, inicio: new Date().toISOString() },
+          diagnosticos: [], rascunho: null, cupons: [], encontrosVistos: [], individual: null };
+        salvar(); ir("inicio"); return;
+      }
+      ocupado(true);
+      if (cad) {
+        dadosCadastro = { nome: v("l-nome"), whatsapp: v("l-zap"), perfil: document.getElementById("l-perfil").value, turma: document.getElementById("l-turma").value, metodo: "senha" };
+        NV_.auth.createUserWithEmailAndPassword(email, senha).then(function (r) { return r.user.updateProfile({ displayName: dadosCadastro.nome }); })
+          .catch(function (x) { er.textContent = msgErro(x); ocupado(false); });
+      } else {
+        NV_.auth.signInWithEmailAndPassword(email, senha).catch(function (x) { er.textContent = msgErro(x); ocupado(false); });
+      }
+    });
+    document.getElementById("b-esqueci").addEventListener("click", function () {
+      var email = v("l-email").toLowerCase();
+      if (!/^\S+@\S+\.\S+$/.test(email)) { er.textContent = "Digite o seu e-mail acima e toque de novo em Esqueci minha senha."; document.getElementById("l-email").focus(); return; }
+      if (!NV_) { er.textContent = "Na prévia não há envio de e-mail."; return; }
+      NV_.auth.sendPasswordResetEmail(email).then(function () { er.textContent = ""; toast("Se esse e-mail tiver cadastro, chega um link para criar uma senha nova. Veja também o spam."); }, function (x) { er.textContent = msgErro(x); });
+    });
+    document.getElementById("b-google").addEventListener("click", function () {
+      if (!NV_) { er.textContent = "Na prévia o login com o Google não funciona. Use a demonstração."; return; }
+      if (f.getAttribute("data-modo") === "cadastro") dadosCadastro = { nome: v("l-nome"), whatsapp: v("l-zap"), perfil: document.getElementById("l-perfil").value, turma: document.getElementById("l-turma").value, metodo: "google" };
+      NV_.auth.signInWithPopup(NV_.google).catch(function (x) {
+        if (x && (x.code === "auth/popup-blocked" || x.code === "auth/operation-not-supported-in-this-environment")) return NV_.auth.signInWithRedirect(NV_.google);
+        er.textContent = msgErro(x);
+      });
+    });
+  }
+  var dadosCadastro = null;
+
+  /* Depois do login: carrega o cadastro e decide a tela */
+  function sha256(t) { return crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)).then(function (b) { return Array.prototype.map.call(new Uint8Array(b), function (x) { return ("0" + x.toString(16)).slice(-2); }).join(""); }); }
+  function quandoEntrar(u) {
+    usuarioNuvem = u; carregando = true; desenharCarregando();
+    var email = (u.email || "").toLowerCase();
+    sha256(email).then(function (h) {
+      if (h === MENTOR_ID && u.emailVerified) { memoria = { mentor: true, nuvem: true, nome: u.displayName || "Ramon" }; Armazem.gravar(memoria); return carregarMentor().then(function () { carregando = false; desenhar(); }); }
+      var ref = NV_.db.collection("usuarios").doc(u.uid);
+      return ref.get().then(function (doc) {
+        if (doc.exists) return doc.data();
+        var dc = dadosCadastro || {};
+        if (!dc.whatsapp) { carregando = false; contaNuvem = null; return telaCompletar(u); }
+        return criarConta(u, dc);
+      }).then(function (conta) {
+        if (!conta) return;
+        contaNuvem = conta; dadosCadastro = null;
+        if (conta.status !== "liberado") { carregando = false; return telaAguardando(conta); }
+        return NV_.db.collection("progresso").doc(u.uid).get().then(function (p) {
+          var d = null; try { d = p.exists ? JSON.parse(p.data().dados) : null; } catch (e) {}
+          if (!d) d = { aluno: { nome: conta.nome, email: conta.email, perfil: conta.perfil, turma: conta.turma, valor: conta.valor, inicio: new Date().toISOString(), ramo: conta.ramo || null }, diagnosticos: [], rascunho: null, cupons: [], encontrosVistos: [], individual: null };
+          d.nuvem = true; memoria = d; carregando = false; salvar(); desenhar();
+        });
+      });
+    }).catch(function () { carregando = false; toast("Não consegui carregar a sua conta. Confira a internet e entre de novo."); NV_.auth.signOut(); });
+  }
+  function criarConta(u, dc) {
+    var email = (u.email || "").toLowerCase();
+    return NV_.db.collection("convites").doc(email).get().catch(function () { return null; }).then(function (cv) {
+      var c = cv && cv.exists ? cv.data() : null, turma = (c && c.turma) || dc.turma || "hub";
+      var conta = { nome: dc.nome || u.displayName || (c && c.nome) || email.split("@")[0], email: email, whatsapp: dc.whatsapp || (c && c.whatsapp) || "", perfil: dc.perfil || "negocio",
+        turma: turma, valor: turma === "hub" ? 997 : 1697, ramo: null, status: c ? "liberado" : "pendente", metodo: dc.metodo || "google", criadoEm: new Date().toISOString() };
+      if (c) conta.liberadoEm = new Date().toISOString();
+      return NV_.db.collection("usuarios").doc(u.uid).set(conta).then(function () { return conta; });
+    });
+  }
+  function desenharCarregando() {
+    document.getElementById("raiz").innerHTML = '<div class="carregando"><img src="logo-h-web.jpg" alt="A Panela"><span class="rot">Abrindo a sua Panela…</span></div>';
+  }
+  function cartaoSimples(html) {
+    var raiz = document.getElementById("raiz");
+    raiz.innerHTML = '<div class="espera"><div class="card espera-c"><img src="logo-h-web.jpg" alt="A Panela">' + html + '<button class="btn contorno" id="b-sair-espera" type="button">Sair</button></div></div>';
+    document.getElementById("b-sair-espera").onclick = sairConta;
+  }
+  function telaAguardando(conta) {
+    var pausado = conta.status === "pausado";
+    cartaoSimples('<span class="rot">' + (pausado ? "Acesso pausado" : "Pré-cadastro recebido") + "</span><h1>" + (pausado ? "Seu acesso está pausado" : "Quase lá, " + esc(conta.nome.split(" ")[0]) + "!") + "</h1>" +
+      (pausado ? '<p>Fale com o Ramon para reativar o seu acesso à Panela.</p>' :
+        '<p>Recebemos o seu pré-cadastro. Assim que a sua inscrição for confirmada, o Ramon libera o seu acesso e você recebe um aviso.</p><p class="muted">Já confirmou? Feche e abra a plataforma de novo daqui a pouco.</p>') +
+      '<button class="btn" id="b-atualizar" type="button">Ver se já foi liberado</button>');
+    document.getElementById("b-atualizar").onclick = function () { if (usuarioNuvem) quandoEntrar(usuarioNuvem); };
+  }
+  function telaCompletar(u) {
+    cartaoSimples('<span class="rot">Falta pouco</span><h1>Complete o seu cadastro</h1><form id="f-comp" class="l-campos" novalidate>' +
+      '<div class="campo"><label for="c-nome">Nome completo</label><input id="c-nome" autocomplete="name" value="' + esc(u.displayName || "") + '"></div>' +
+      '<div class="campo"><label for="c-zap">WhatsApp</label><input id="c-zap" type="tel" inputmode="tel" autocomplete="tel" placeholder="(DDD) 9 0000-0000"></div>' +
+      '<div class="campo"><label for="c-perfil">Seu momento</label><select id="c-perfil">' + P.perfis.map(function (x) { return '<option value="' + x.id + '">' + esc(x.nome) + "</option>"; }).join("") + "</select></div>" +
+      '<div class="campo"><label for="c-turma">Como entrou</label><select id="c-turma"><option value="hub">Fui ao 1º Encontro do Hub (R$ 997)</option><option value="geral">Inscrição geral (R$ 1.697)</option></select></div>' +
+      '<p class="erro" id="c-erro" role="alert"></p><button class="btn" type="submit">Enviar pré-cadastro</button></form>');
+    document.getElementById("f-comp").onsubmit = function (e) {
+      e.preventDefault();
+      var nome = document.getElementById("c-nome").value.trim(), zap = document.getElementById("c-zap").value.trim();
+      if (!nome || zap.replace(/\D/g, "").length < 10) { document.getElementById("c-erro").textContent = "Preencha o nome e o WhatsApp com DDD."; return; }
+      dadosCadastro = { nome: nome, whatsapp: zap, perfil: document.getElementById("c-perfil").value, turma: document.getElementById("c-turma").value, metodo: "google" };
+      quandoEntrar(u);
+    };
   }
 
   /* Abertura: as linhas se juntam, as cores chegam e a panela se forma até virar a logo. */
@@ -247,7 +385,7 @@
   /* Participante de demonstração (para o Meet de apresentação): entra já com histórico completo. */
   function entrarDemo() {
     function dia(n) { var x = new Date(); x.setDate(x.getDate() - n); return x.toISOString(); }
-    memoria = { aluno: { nome: "Ana Demonstração", email: "demo@apanela.com.br", perfil: "negocio", turma: "hub", valor: 997, inicio: dia(35), ramo: "confeitaria" },
+    memoria = { demo: true, aluno: { nome: "Ana Demonstração", email: "demo@apanela.com.br", perfil: "negocio", turma: "hub", valor: 997, inicio: dia(35), ramo: "confeitaria" },
       diagnosticos: [], rascunho: null, cupons: [{ mes: 1, codigo: "PANELA-ANA-M1-DEMO", resgate: dia(20) }], encontrosVistos: [1, 2, 3, 4, 5],
       individual: { dia: "Quarta", tema: "Organizar as encomendas de Natal", data: dia(6) },
       testes: { disc: [], animais: [] }, diasAtivos: [], temperosAbertos: [], temperosUsados: [] };
@@ -646,8 +784,11 @@
         '<div class="nv-pedido"><span class="rot">Pedido pronto para o Claude</span><p>' + esc(a.prompt) + '</p><button class="btn peq" id="nv-copiar-tudo">Copiar tudo do nivelamento</button></div></div>';
     }
     if (a.id === "planilha") h += planilhaHTML();
-    h += '<div class="card nv-mat"><div><span class="rot">Material de apoio · PDF</span><b>Aula ' + ("0" + (idx + 1)).slice(-2) + " · " + esc(a.titulo) + '</b><small class="muted">Explicação passo a passo, exemplos, a ferramenta para imprimir e os pedidos prontos para o Claude.</small></div>' +
-      '<div class="nv-mat-b"><a class="btn" href="' + pdfAula(idx) + '" target="_blank" rel="noopener">Abrir o PDF</a><a class="btn contorno" href="' + pdfAula(idx) + '" download>Baixar</a></div></div>';
+    var matLivre = idx === 0 || n.feitas.indexOf(aulas[idx - 1].id) >= 0;
+    h += '<div class="card nv-mat' + (matLivre ? "" : " travado") + '"><div><span class="rot">Material de apoio · PDF' + (matLivre ? "" : " · bloqueado") + '</span><b>Aula ' + ("0" + (idx + 1)).slice(-2) + " · " + esc(a.titulo) + '</b><small class="muted">' +
+      (matLivre ? "Explicação passo a passo, exemplos, a ferramenta para imprimir e os pedidos prontos para o Claude." : "Libera quando você concluir a aula anterior: " + esc(aulas[idx - 1].titulo) + ".") + "</small></div>" +
+      (matLivre ? '<div class="nv-mat-b"><a class="btn" href="' + pdfAula(idx) + '" target="_blank" rel="noopener">Abrir o PDF</a><a class="btn contorno" href="' + pdfAula(idx) + '" download>Baixar</a></div>' :
+        '<div class="nv-mat-b"><span class="nv-cadeado" aria-hidden="true">🔒</span><button class="btn contorno" type="button" data-nv-ir="' + (idx - 1) + '">Ir para a aula anterior</button></div>') + "</div>";
     h += '<div class="card"><span class="rot">Missão da aula</span><p style="margin:6px 0 0"><b>' + esc(a.tarefa) + '</b></p><p class="muted" style="font-size:12.5px;margin:8px 0 0">Ficou com dúvida? Leve para o grupo da Panela no WhatsApp ou para o seu encontro individual.</p></div>';
     h += '<div class="card"><label class="rot" for="nv-notas">Anotações</label><textarea id="nv-notas" class="nv-notas" rows="4" placeholder="Escreva aqui o que você quer lembrar desta aula. Só você vê.">' + esc(n.notas[a.id] || "") + '</textarea><div style="margin-top:10px"><button class="btn peq" id="nv-salvar">Salvar</button></div></div>';
     h += '</div><aside class="nv-lista" aria-label="Módulos e aulas">' + NV.modulos.map(function (m) {
@@ -657,7 +798,13 @@
         var ok = n.feitas.indexOf(x.id) >= 0;
         return '<button class="nv-item' + (x === a ? " at" : "") + (ok ? " ok" : "") + '" data-nv-aula="' + x.id + '"' + (x === a ? ' aria-current="true"' : "") + '><span class="nv-ck">' + (ok ? "✓" : "") + "</span><span>" + esc(x.titulo) + (n.fav.indexOf(x.id) >= 0 ? " ★" : "") + "</span><small>" + esc(x.dur) + "</small></button>";
       }).join("") + "</details>";
-    }).join("") + '<div class="nv-mod nv-guias"><span class="rot">Guias práticos</span>' + GUIAS.map(function (g) { return '<a class="nv-guia" href="' + BASE_MAT + g[0] + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z M15 3v4h4 M9 12h7 M9 16h7"/></svg><span>' + esc(g[1]) + "<small>PDF · " + g[2] + "</small></span></a>"; }).join("") + "</div>" + (NV.emBreve || []).map(function (t) { return '<div class="nv-mod nv-breve"><span class="nv-pct">🔒</span><span>' + esc(t) + "</span><small>em breve</small></div>"; }).join("") + "</aside></div>";
+    }).join("") + '<div class="nv-mod nv-guias"><span class="rot">Guias práticos</span>' + (function () {
+      var feitasT = aulas.filter(function (x) { return n.feitas.indexOf(x.id) >= 0; }).length, livre = feitasT === aulas.length;
+      return GUIAS.map(function (g) {
+        return livre ? '<a class="nv-guia" href="' + BASE_MAT + g[0] + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z M15 3v4h4 M9 12h7 M9 16h7"/></svg><span>' + esc(g[1]) + "<small>PDF · " + g[2] + "</small></span></a>"
+          : '<div class="nv-guia travado" aria-disabled="true"><span class="nv-cadeado" aria-hidden="true">🔒</span><span>' + esc(g[1]) + "<small>Libera ao concluir o nivelamento · " + feitasT + "/" + aulas.length + "</small></span></div>";
+      }).join("");
+    })() + "</div>" + (NV.emBreve || []).map(function (t) { return '<div class="nv-mod nv-breve"><span class="nv-pct">🔒</span><span>' + esc(t) + "</span><small>em breve</small></div>"; }).join("") + "</aside></div>";
     return h;
   }
   function ligarNivelamento() {
@@ -930,7 +1077,24 @@
   var MENTOR_ID = "a7a59f44c8ed4492fa10d5a7ffdbb7a3e79c84862eea1ca65c18d75c72ea97ea";
   var alunoSel = null, filtroM = "todos";
   function nomeAreaM(ar, a) { return ((ar[(a.aluno || {}).perfil] || ar.negocio || {}).nome) || ar.id; }
-  function turmaMentor() { return (window.TURMA_EXEMPLO || []).slice(); }
+  var MD = null, verExemplo = false;
+  function carregarMentor() {
+    var db = NV_.db;
+    return Promise.all([db.collection("usuarios").get(), db.collection("progresso").get(), db.collection("convites").get()]).then(function (r) {
+      var prog = {}; r[1].forEach(function (d) { try { prog[d.id] = JSON.parse(d.data().dados); } catch (e) {} });
+      MD = { usuarios: r[0].docs.map(function (d) { var x = d.data(); x.uid = d.id; return x; }), prog: prog, convites: r[2].docs.map(function (d) { var x = d.data(); x.email = d.id; return x; }) };
+    }).catch(function () { MD = { usuarios: [], prog: {}, convites: [], erro: true }; });
+  }
+  function turmaReal() {
+    return MD.usuarios.filter(function (u) { return u.status === "liberado" || u.status === "pausado"; }).map(function (u) {
+      var d = MD.prog[u.uid] || { aluno: {}, diagnosticos: [], testes: { disc: [], animais: [] }, encontrosVistos: [], cupons: [], diasAtivos: [] };
+      d.aluno = Object.assign({ nome: u.nome, email: u.email, perfil: u.perfil, turma: u.turma, valor: u.valor, inicio: u.liberadoEm || u.criadoEm }, d.aluno || {});
+      d.aluno.pagamento = u.pagamento || "avista"; d.aluno.parcelasPagas = u.parcelasPagas || 0;
+      d.testes = d.testes || { disc: [], animais: [] }; d.encontrosVistos = d.encontrosVistos || []; d.cupons = d.cupons || []; d.diagnosticos = d.diagnosticos || [];
+      d._uid = u.uid; d._status = u.status; d._zap = u.whatsapp; return d;
+    });
+  }
+  function turmaMentor() { return (memoria && memoria.nuvem && MD && !verExemplo) ? turmaReal() : (window.TURMA_EXEMPLO || []).slice(); }
   function comAluno(a, fn) { var m = memoria; memoria = a; try { return fn(); } finally { memoria = m; } }
   function diasSem(a) { var u = (a.diasAtivos || [])[0] || a.ultimoAcesso || a.aluno.inicio; return Math.floor((Date.now() - new Date(u).getTime()) / 864e5); }
   function recebido(a) { var v = a.aluno.valor || 0; return a.aluno.pagamento === "cartao6x" ? Math.round(v / 6 * (a.aluno.parcelasPagas || 0) * 100) / 100 : v; }
@@ -973,7 +1137,9 @@
       return filtroM === "todos" || (filtroM === "atencao" && x[1].alertas.length) || (filtroM === "hub" && x[0].aluno.turma === "hub") || (filtroM === "geral" && x[0].aluno.turma !== "hub");
     }).sort(function (x, y) { return y[1].pt.total - x[1].pt.total; });
     var h = '<div class="mentor"><header class="m-topo"><img src="logo-h-web.jpg" alt="A Panela"><div><span class="rot">Acesso do mentor</span><b>Painel do Ramon</b></div><button class="btn peq contorno" id="m-sair">Sair</button></header>';
-    h += '<div class="m-aviso">Dados de exemplo: a turma abaixo é fictícia. Quando o servidor da turma for ligado, os alunos reais aparecem aqui no mesmo formato.</div>';
+    var real = memoria && memoria.nuvem && MD && !verExemplo;
+    h += real ? "" : '<div class="m-aviso">Dados de exemplo: a turma abaixo é fictícia.' + (memoria && memoria.nuvem ? ' <button class="m-link" id="m-real">Voltar para a turma real</button>' : "") + "</div>";
+    if (memoria && memoria.nuvem && MD) h += painelAcessos();
     h += '<div class="m-corpo"><section class="m-kpis">' +
       [["Alunos", turma.length, turma.filter(function (a) { return a.aluno.turma === "hub"; }).length + " do 1º Encontro"], ["Faturamento contratado", moeda(contratado), "ticket médio " + moeda(turma.length ? contratado / turma.length : 0)],
        ["Recebido até hoje", moeda(rec), "a receber " + moeda(contratado - rec)], ["Ativos na semana", ativos + " de " + turma.length, Math.round(ativos / Math.max(1, turma.length) * 100) + "% entraram nos últimos 7 dias"],
@@ -1000,15 +1166,79 @@
       return '<div class="m-gcard"><b>' + k + " · " + esc(pf.nome) + "</b><p><strong>Comunicar:</strong> " + esc(g.comunicar || "") + "</p><p><strong>Motivar:</strong> " + esc(g.motivar || "") + "</p><p><strong>Cobrar:</strong> " + esc(g.cobrar || "") + "</p><p><strong>Evitar:</strong> " + esc(g.evitar || "") + "</p></div>";
     }).join("") + "</div></section></div></div>";
     raiz.innerHTML = h;
-    document.getElementById("m-sair").onclick = function () { Armazem.apagar(); alunoSel = null; desenhar(); };
+    document.getElementById("m-sair").onclick = function () { alunoSel = null; sairConta(); };
     raiz.querySelectorAll("[data-m-filtro]").forEach(function (b) { b.onclick = function () { filtroM = b.getAttribute("data-m-filtro"); telaMentor(); }; });
     raiz.querySelectorAll("[data-m-aluno]").forEach(function (b) {
       function abre() { alunoSel = +b.getAttribute("data-m-aluno"); telaMentor(); var d = document.getElementById("m-det"); if (d) d.scrollIntoView({ block: "start", behavior: "smooth" }); }
       b.onclick = abre; b.onkeydown = function (e) { if (e.key === "Enter") abre(); };
     });
+    ligarAcessos();
     var fx = document.getElementById("m-fechar"); if (fx) fx.onclick = function () { alunoSel = null; telaMentor(); };
     var cm = document.getElementById("m-copiar");
     if (cm) cm.onclick = function () { var t = cm.getAttribute("data-txt"); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast("Mensagem copiada. Cole no WhatsApp do aluno."); }, function () { window.prompt("Copie a mensagem:", t); }); };
+  }
+
+  /* Aba de acessos do mentor: pré-cadastros, novo aluno, pausar/reativar */
+  function painelAcessos() {
+    var pend = MD.usuarios.filter(function (u) { return u.status === "pendente"; }), paus = MD.usuarios.filter(function (u) { return u.status === "pausado"; });
+    var conv = MD.convites.filter(function (c) { return !MD.usuarios.some(function (u) { return u.email === c.email; }); });
+    var h = '<div class="m-corpo m-acessos"><section class="card"><div class="m-lista-topo"><span class="rot">Pré-cadastros aguardando liberação · ' + pend.length + '</span><button class="btn peq" id="m-atualizar" type="button">Atualizar</button></div>' +
+      (MD.erro ? '<p class="erro">Não consegui ler os cadastros. Confira se as regras do Firebase foram publicadas.</p>' : "") +
+      (pend.length ? pend.map(function (u) {
+        return '<div class="m-pend"><div><b>' + esc(u.nome) + '</b><small>' + esc(u.email) + " · " + esc(u.whatsapp || "sem WhatsApp") + " · " + (u.turma === "hub" ? "1º Encontro (R$ 997)" : "Inscrição geral (R$ 1.697)") + " · " + (u.metodo === "google" ? "Google" : "e-mail e senha") + "</small></div>" +
+          '<div class="m-pend-b"><select data-m-pag="' + u.uid + '" aria-label="Forma de pagamento"><option value="avista">À vista / Pix</option><option value="cartao6x">Cartão 6x</option></select><button class="btn peq" data-m-liberar="' + u.uid + '">Liberar acesso</button><button class="btn peq contorno" data-m-recusar="' + u.uid + '">Recusar</button></div></div>';
+      }).join("") : '<p class="muted">Nenhum pré-cadastro esperando.</p>') + "</section>" +
+      '<section class="card"><span class="rot">Novo aluno (acesso direto)</span><p class="muted" style="font-size:12.5px;margin:4px 0 10px">Para venda pelo WhatsApp ou cortesia. O aluno entra com esse e-mail (pré-cadastro ou Google) e já cai liberado.</p>' +
+      '<form id="m-novo" class="m-novo"><input id="mn-nome" placeholder="Nome" aria-label="Nome do aluno"><input id="mn-email" type="email" placeholder="E-mail" aria-label="E-mail do aluno"><input id="mn-zap" type="tel" placeholder="WhatsApp" aria-label="WhatsApp do aluno">' +
+      '<select id="mn-turma" aria-label="Turma"><option value="hub">1º Encontro (R$ 997)</option><option value="geral">Inscrição geral (R$ 1.697)</option></select><button class="btn" type="submit">Gerar acesso</button></form><div id="mn-msg"></div>' +
+      (conv.length ? '<p class="rot" style="margin-top:14px">Convites ainda não usados · ' + conv.length + "</p>" + conv.map(function (c) { return '<div class="m-conv"><span>' + esc(c.nome || "") + " · " + esc(c.email) + '</span><button class="m-link" data-m-apagar-conv="' + esc(c.email) + '">Cancelar</button></div>'; }).join("") : "") + "</section>" +
+      (paus.length ? '<section class="card"><span class="rot">Acessos pausados · ' + paus.length + "</span>" + paus.map(function (u) { return '<div class="m-conv"><span>' + esc(u.nome) + " · " + esc(u.email) + '</span><button class="btn peq" data-m-reativar="' + u.uid + '">Reativar</button></div>'; }).join("") + "</section>" : "") +
+      (MD.usuarios.filter(function (u) { return u.status === "liberado"; }).length ? "" : '<p class="muted" style="text-align:center">Ainda não há alunos liberados. <button class="m-link" id="m-exemplo">Ver o painel com a turma de exemplo</button></p>') + "</div>";
+    return h;
+  }
+  function msgAcesso(nome, email) {
+    return "Oi, " + nome.split(" ")[0] + "! Seu acesso à Panela está liberado 🍲\n\n1. Entre em https://panela.usevox.com.br\n2. Toque em Pré-cadastro e use o e-mail " + email + " (ou toque em Cadastrar com o Google, se esse e-mail for do Google).\n\nPanela só é ruim pra quem tá de fora. Te espero lá dentro!";
+  }
+  function ligarAcessos() {
+    if (!(memoria && memoria.nuvem)) return;
+    var db = NV_.db;
+    function recarregar() { carregarMentor().then(telaMentor); }
+    var at = document.getElementById("m-atualizar"); if (at) at.onclick = recarregar;
+    var ex = document.getElementById("m-exemplo"); if (ex) ex.onclick = function () { verExemplo = true; telaMentor(); };
+    var re = document.getElementById("m-real"); if (re) re.onclick = function () { verExemplo = false; telaMentor(); };
+    document.querySelectorAll("[data-m-liberar]").forEach(function (b) {
+      b.onclick = function () {
+        var uid = b.getAttribute("data-m-liberar"), pag = document.querySelector('[data-m-pag="' + uid + '"]').value;
+        b.disabled = true;
+        db.collection("usuarios").doc(uid).update({ status: "liberado", liberadoEm: new Date().toISOString(), pagamento: pag, parcelasPagas: pag === "cartao6x" ? 1 : 0 }).then(function () {
+          var u = MD.usuarios.filter(function (x) { return x.uid === uid; })[0];
+          toast("Acesso liberado para " + u.nome.split(" ")[0] + ".");
+          var t = msgAcesso(u.nome, u.email).replace("Toque em Pré-cadastro e use o e-mail " + u.email + " (ou toque em Cadastrar com o Google, se esse e-mail for do Google).", "Entre com o mesmo e-mail do seu pré-cadastro.");
+          if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { toast("Mensagem de aviso copiada para colar no WhatsApp dele."); }, function () {});
+          recarregar();
+        }, function () { b.disabled = false; toast("Não consegui liberar. Tente de novo."); });
+      };
+    });
+    document.querySelectorAll("[data-m-recusar]").forEach(function (b) {
+      b.onclick = function () { if (!confirm("Recusar este pré-cadastro? A pessoa não terá acesso.")) return; db.collection("usuarios").doc(b.getAttribute("data-m-recusar")).update({ status: "recusado" }).then(recarregar); };
+    });
+    document.querySelectorAll("[data-m-reativar]").forEach(function (b) { b.onclick = function () { db.collection("usuarios").doc(b.getAttribute("data-m-reativar")).update({ status: "liberado" }).then(recarregar); }; });
+    document.querySelectorAll("[data-m-apagar-conv]").forEach(function (b) { b.onclick = function () { db.collection("convites").doc(b.getAttribute("data-m-apagar-conv")).delete().then(recarregar); }; });
+    var fn = document.getElementById("m-novo");
+    if (fn) fn.onsubmit = function (e) {
+      e.preventDefault();
+      var nome = document.getElementById("mn-nome").value.trim(), email = document.getElementById("mn-email").value.trim().toLowerCase(), zap = document.getElementById("mn-zap").value.trim(), turma = document.getElementById("mn-turma").value;
+      if (!nome || !/^\S+@\S+\.\S+$/.test(email)) { toast("Preencha o nome e um e-mail válido."); return; }
+      db.collection("convites").doc(email).set({ nome: nome, whatsapp: zap, turma: turma, valor: turma === "hub" ? 997 : 1697, criadoEm: new Date().toISOString() }).then(function () {
+        var t = msgAcesso(nome, email);
+        document.getElementById("mn-msg").innerHTML = '<div class="m-msg"><span class="rot">Acesso gerado. Mande esta mensagem para ' + esc(nome.split(" ")[0]) + '</span><p>' + esc(t).replace(/\n/g, "<br>") + '</p><button class="btn peq" id="mn-copiar" type="button">Copiar para o WhatsApp</button></div>';
+        document.getElementById("mn-copiar").onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast("Mensagem copiada."); }, function () { window.prompt("Copie a mensagem:", t); }); };
+        MD.convites.push({ nome: nome, email: email, turma: turma });
+      }, function () { toast("Não consegui gerar o acesso. Confira as regras do Firebase."); });
+    };
+    // pausar a partir do detalhe do aluno
+    var pz = document.getElementById("m-pausar");
+    if (pz) pz.onclick = function () { if (!confirm("Pausar o acesso deste aluno?")) return; db.collection("usuarios").doc(pz.getAttribute("data-uid")).update({ status: "pausado" }).then(recarregar); };
   }
   function detalheAluno(a, i) {
     var g = window.GUIA_PERFIS || { disc: {}, animais: {} }, T2 = window.PANELA_TESTES, nd = a.diagnosticos.length;
@@ -1018,7 +1248,7 @@
       return '<div class="m-barra"><span>' + esc(nomeAreaM(ar, a)) + '</span><div><i class="b0" style="width:' + v0 + '%"></i><i class="b1" style="width:' + v1 + '%"></i></div><b>' + v1 + "</b></div>"; }).join("") : '<p class="muted">Ainda sem diagnóstico.</p>';
     var faltam = i.pt.itens.filter(function (x) { return x.pts < x.max; }).sort(function (x, y) { return (y.max - y.pts) - (x.max - x.pts); }).slice(0, 3);
     var msg = mensagemPara(a, i);
-    return '<section class="card m-det" id="m-det"><div class="m-det-topo">' + avatarDe(a) + "<div><span class=\"rot\">Aluno</span><h2>" + esc(a.aluno.nome) + '</h2><small class="muted">' + esc(a.aluno.ramo || "") + " · " + (a.aluno.turma === "hub" ? "1º Encontro do Hub" : "Inscrição geral") + " · " + i.pt.total + " pts · " + esc(i.nv) + '</small></div><button class="btn peq contorno" id="m-fechar">Fechar</button></div>' +
+    return '<section class="card m-det" id="m-det"><div class="m-det-topo">' + avatarDe(a) + "<div><span class=\"rot\">Aluno</span><h2>" + esc(a.aluno.nome) + '</h2><small class="muted">' + esc(a.aluno.ramo || "") + " · " + (a.aluno.turma === "hub" ? "1º Encontro do Hub" : "Inscrição geral") + " · " + i.pt.total + " pts · " + esc(i.nv) + '</small></div>' + (a._uid ? '<button class="btn peq contorno" id="m-pausar" data-uid="' + a._uid + '">Pausar acesso</button>' : "") + '<button class="btn peq contorno" id="m-fechar">Fechar</button></div>' +
       '<div class="m-det-g"><div><h3>Evolução por área</h3><p class="muted" style="font-size:12px;margin:2px 0 8px">Cinza: 1º diagnóstico · cor: último</p>' + barras + "</div>" +
       "<div><h3>Para ele progredir</h3><ul class=\"lista\">" + (i.fraca ? "<li>Área mais fraca: <b>" + esc(nomeAreaM(i.fraca, a)) + "</b>. Indique um tempero dessa área e leve o caso para o próximo encontro.</li>" : "") +
       faltam.map(function (x) { return "<li>" + esc(x.nome) + ": " + esc(x.detalhe) + " (vale até +" + (x.max - x.pts) + " pts)</li>"; }).join("") +
@@ -1031,13 +1261,14 @@
   /* ---------- Montagem ---------- */
   function desenhar() {
     var d = dados();
+    if (carregando && !d) return desenharCarregando();
     if (!d) return telaLogin();
     if (d.mentor) return telaMentor();
     marcarDia();
     var telas = { inicio: telaInicio, nivelamento: telaNivelamento, diagnostico: telaDiagnostico, plano: telaPlano, encontros: telaEncontros, temperos: telaTemperos, perfil: telaPerfil, conquistas: telaConquistas, cashback: telaCashback, individual: telaIndividual, regras: telaRegras };
     var menu = MENU.map(function (m) { return '<button data-ir="' + m[0] + '" class="' + (atual === m[0] ? "ativo" : "") + '"' + (atual === m[0] ? ' aria-current="page"' : "") + '><svg viewBox="0 0 24 24" aria-hidden="true">' + m[2] + "</svg>" + m[1] + "</button>"; }).join("");
     var raiz = document.getElementById("raiz");
-    raiz.innerHTML = '<div class="aviso-demo">Versão de demonstração: os dados ficam só neste navegador.</div>' +
+    raiz.innerHTML = (d.demo ? '<div class="aviso-demo">Participante de demonstração: os dados ficam só neste navegador.</div>' : "") +
       '<header class="topo-mob"><img src="logo-h-web.jpg" alt="A Panela"><button class="topo-mob-perfil" data-ir="conquistas" aria-label="Minhas conquistas">' + avatar() + "</button></header>" +
       '<div class="app"><aside class="lateral"><img src="logo-h-web.jpg" alt="A Panela"><nav class="menu" aria-label="Área do participante">' + menu + "</nav>" +
       '<div class="perfil"><div class="quem">' + avatar() + '<div><b>' + esc(d.aluno.nome) + "</b>" + (animalDe() ? "<small>" + esc(animalDe()) + "</small>" : "") + '</div></div><span class="muted">' + esc(d.aluno.email) + '</span><button class="btn peq contorno" id="b-sair">Sair</button></div></aside>' +
@@ -1054,9 +1285,9 @@
     if (bm) { bm.addEventListener("click", function () { folha(fo.hidden); }); ff.addEventListener("click", function () { folha(false); }); }
     document.body.classList.remove("sem-rolar");
     var sm = document.getElementById("b-sair-mob");
-    if (sm) sm.addEventListener("click", function () { Armazem.apagar(); atual = "inicio"; desenhar(); });
+    if (sm) sm.addEventListener("click", sairConta);
     var sair = document.getElementById("b-sair");
-    if (sair) sair.addEventListener("click", function () { Armazem.apagar(); atual = "inicio"; desenhar(); });
+    if (sair) sair.addEventListener("click", sairConta);
     var novo = document.getElementById("b-novo");
     if (novo) novo.addEventListener("click", function () { if (!d.rascunho) { d.rascunho = { resp: {} }; salvar(); } subDiag = 0; desenhar(); });
     var zerar = document.getElementById("b-zerar");
@@ -1147,6 +1378,16 @@
     });
   }
 
-  desenhar();
+  if (NV_) {
+    if (memoria && !memoria.demo) { memoria = null; }
+    desenhar();
+    NV_.auth.getRedirectResult().catch(function () {});
+    NV_.auth.onAuthStateChanged(function (u) {
+      if (u) return quandoEntrar(u);
+      usuarioNuvem = null; contaNuvem = null; carregando = false;
+      if (!(memoria && memoria.demo)) { Armazem.apagar(); }
+      desenhar();
+    });
+  } else desenhar();
   animarEntrada();
 })();
