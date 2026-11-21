@@ -246,12 +246,34 @@ footer small{display:block;margin-top:14px;font-size:12px;color:#8d8d88}
   footer{padding-bottom:90px}
 }
 @media (max-width:560px){.cozinha{grid-template-columns:1fr}}
+
+/* agenda dos 12 encontros */
+.agenda{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.agenda li{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;font-weight:600;line-height:1.35}
+.agenda li span{flex:none;font:800 13px var(--display);color:#fff;background:var(--ink);border-radius:6px;padding:4px 7px}
+.agenda li:nth-child(3n+1) span{background:var(--vermelho)}.agenda li:nth-child(3n+2) span{background:var(--azul)}.agenda li:nth-child(3n) span{background:var(--amarelo);color:var(--ink)}
+@media (max-width:900px){.agenda{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.agenda{grid-template-columns:1fr}}
+.topo nav a,.topo .btn{white-space:nowrap}
+
+@media (max-width:900px){
+  #temperos .wrap{grid-template-columns:minmax(0,1fr)!important}
+  #temperos .grade6{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #temperos .f{min-width:0}
+  .faixa .wrap>div{min-width:0}
+  .faixa .wrap>div>div{flex-wrap:wrap}
+}
+@media (max-width:420px){.faixa .wrap{grid-template-columns:minmax(0,1fr)!important}}
+@media (max-width:560px){
+  #temperos .f{grid-template-columns:1fr;padding:16px}
+  #temperos .f h3{font-size:14px;letter-spacing:.04em;overflow-wrap:anywhere}
+}
 </style>
 
 <header class="topo">
   <div class="wrap">
     <a class="marca" href="#inicio"><img src="logo-h-web.jpg" alt="A Panela"></a>
-    <nav aria-label="Seções"><a href="#inicio">Início</a><a href="#video">O vídeo</a><a href="#frentes">O que você trabalha</a><a href="#caminho">O caminho</a><a href="#area">Área do participante</a><a href="#investimento">Investimento</a><a href="entrar/">Já sou aluno</a></nav>
+    <nav aria-label="Seções"><a href="#video">Vídeo</a><a href="#frentes">O que aprende</a><a href="#caminho">Agenda</a><a href="#area">Plataforma</a><a href="#investimento">Investimento</a><a href="entrar/">Já sou aluno</a></nav>
     <a class="btn contorno" href="#investimento">Entra pra panela</a>
   </div>
 </header>
@@ -264,7 +286,7 @@ footer small{display:block;margin-top:14px;font-size:12px;color:#8d8d88}
         <span class="ola">Mentoria do Ramon Berba</span>
         <h1>Panela só é ruim <span>pra quem tá de fora</span></h1>
         <span class="sub">Mentoria de gestão, fé e IA</span>
-        <p class="desc">Mais tempo com a família e mais resultado. Um grupo seleto de empreendedores e profissionais que se ajudam. Diagnóstico do negócio, nova rota, estratégia, marketing, pessoas e lançamentos, com o Claude e o Grok trabalhando como funcionários de verdade.</p>
+        <p class="desc">Mais tempo com a família e mais resultado. Um grupo seleto de empreendedores e profissionais que se ajudam. Você aprende a fazer o seu site, o seu aplicativo, apresentações profissionais, tráfego pago, redes sociais com posts agendados e atendimento com resposta automática, com o Claude e o Grok trabalhando como funcionários de verdade.</p>
         <div class="acoes"><a class="btn cheio" href="#investimento">Quero entrar pra panela <span class="seta">&rarr;</span></a><a class="btn contorno" href="#video">Assistir ao vídeo &#9655;</a></div>
         <div class="vagas"><div class="bolinhas"><i style="background:var(--vermelho)">A</i><i style="background:var(--amarelo);color:var(--ink)">P</i><i style="background:var(--azul)">+</i></div><small>Turma fundadora<br>Vagas limitadas</small></div>
       </div>
@@ -282,22 +304,21 @@ footer small{display:block;margin-top:14px;font-size:12px;color:#8d8d88}
       <div class="cab"><span class="rot">Assista antes de tudo</span></div>
       <div class="video">
         <div class="player"><video controls playsinline preload="none" poster="capa-video.jpg" aria-label="Vídeo: o convite da Panela"><source src="video/a-panela-convite.mp4" type="video/mp4"></video></div>
-        <div class="card lado"><span class="rot">Em 4 minutos</span><h2>O que é a Panela e por que ela só é ruim pra quem tá de fora</h2><p>Assista ao convite e descubra no final uma surpresa sobre como este vídeo foi feito.</p><a class="btn cheio" href="#investimento" style="align-self:start">Quero entrar &rarr;</a></div>
+        <div class="card lado"><span class="rot">Em 4 minutos</span><h2>O que é a Panela e por que ela só é ruim pra quem tá de fora</h2><p>Como funciona a Panela, a área do participante, os encontros ao vivo, a aula do Kevin Eger e a condição para quem foi ao 1º Encontro do Hub.</p><a class="btn cheio" href="#investimento" style="align-self:start">Quero entrar &rarr;</a></div>
       </div>
     </div>
   </section>
 
   <section id="frentes">
     <div class="wrap frentes">
-      <div class="intro"><span class="rot">O que você trabalha</span><h2>Estratégia. Pessoas. Fé.</h2><p>Seis frentes para olhar o seu negócio de ponta a ponta.</p></div>
+      <div class="intro"><span class="rot">O que você aprende a fazer</span><h2>Na prática, com IA.</h2><p>Em cada encontro você sai com uma coisa pronta para o seu negócio.</p></div>
       <div class="grade6">
-        <div class="f ia"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="3"/><path d="M9 11h.01M15 11h.01M9 15h6M12 3v3"/></svg></span><h3>IA no negócio</h3><p>Claude e Grok como funcionários de verdade.</p></div>
-        <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></span><h3>Diagnóstico</h3><p>Um raio-X honesto de onde você está.</p></div>
-        <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 18c4 0 4-12 8-12s4 12 8 12"/><circle cx="12" cy="6" r="1.5"/></svg></span><h3>Nova rota</h3><p>O que cortar, dobrar e mudar.</p></div>
-        <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="8"/></svg></span><h3>Novos negócios</h3><p>Validar a ideia antes de investir.</p></div>
-        <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 19L19 5M9 5h10v10"/></svg></span><h3>Lançamentos</h3><p>Do produto à primeira venda.</p></div>
-        <div class="f fe"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M7 8h10"/></svg></span><h3>Fé no centro</h3><p>Um negócio que serve à sua casa.</p></div>
-      </div>
+        <div class="f ia"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18M7 21h10"/></svg></span><h3>O seu site</h3><p>Site e página de vendas no ar, feitos com o Claude.</p></div>
+        <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></span><h3>O seu aplicativo</h3><p>Um app do seu negócio, instalado no celular.</p></div>
+        <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1"/><path d="M12 16v4M8 20h8"/></svg></span><h3>Apresentações</h3><p>Propostas, palestras e reuniões com cara profissional.</p></div>
+        <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/></svg></span><h3>Tráfego pago</h3><p>Anúncios que trazem cliente, medindo cada real.</p></div>
+        <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><h3>Redes sociais</h3><p>Conteúdo profissional e posts agendados para o mês.</p></div>
+        <div class="f fe"><span class="ic"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><h3>Atendimento automático</h3><p>Respostas automáticas no WhatsApp e no Instagram.</p></div></div>
     </div>
   </section>
 
@@ -315,14 +336,8 @@ footer small{display:block;margin-top:14px;font-size:12px;color:#8d8d88}
 
   <section id="caminho" class="caminho">
     <div class="wrap">
-      <div class="cab"><div><span class="rot">O caminho</span><h2 style="margin-top:8px">Do diagnóstico ao crescimento</h2></div></div>
-      <div class="trilha">
-        <div class="passo ativo"><h3><span class="cor" style="background:var(--vermelho)"></span>Diagnosticar</h3><p>Onde o negócio está e o que rouba o seu tempo.</p></div>
-        <div class="passo"><h3><span class="cor" style="background:var(--amarelo)"></span>Contratar a IA</h3><p>O Claude e o Grok aprendendo como você trabalha.</p></div>
-        <div class="passo"><h3><span class="cor" style="background:var(--azul)"></span>Ajustar a rota</h3><p>Estratégia, posicionamento e prioridades.</p></div>
-        <div class="passo"><h3><span class="cor" style="background:var(--salvia-escura)"></span>Executar</h3><p>Marketing, vendas, pessoas e lançamentos.</p></div>
-        <div class="passo"><h3><span class="cor" style="background:var(--ink)"></span>Crescer</h3><p>Plano dos próximos meses, com fé e família no centro.</p></div>
-      </div>
+      <div class="cab"><div><span class="rot">A agenda</span><h2 style="margin-top:8px">Os 12 encontros ao vivo</h2><p style="color:var(--muted);margin:6px 0 0">Toda semana, às 20h, com gravação na área do participante.</p></div></div>
+      <div><ol class="agenda"><li><span>01</span>A tampa abre: o Claude trabalhando ao vivo para o seu negócio</li><li><span>02</span>Contratando o funcionário invisível: Claude e Grok</li><li><span>03</span>O manual da empresa e os seus temperos</li><li><span>04</span>Estratégia, posicionamento e nova rota</li><li><span>05</span>Apresentações profissionais com IA</li><li><span>06</span>O seu site e a sua página de vendas</li><li><span>07</span>Redes sociais profissionais e agendamento de posts</li><li><span>08</span>Geração de leads e demanda comercial · aula exclusiva com Kevin Eger</li><li><span>09</span>Tráfego pago na prática</li><li><span>10</span>Atendimento, vendas e resposta automática</li><li><span>11</span>O seu aplicativo e o lançamento</li><li><span>12</span>Pessoas, delegação e plano de 90 dias</li></ol></div>
     </div>
   </section>
 
@@ -358,7 +373,7 @@ footer small{display:block;margin-top:14px;font-size:12px;color:#8d8d88}
       <div><div><svg viewBox="0 0 24 24"><path d="M4 20V10l8-6 8 6v10H4z"/></svg><div><b>22+</b><small>Anos de varejo</small></div></div></div>
       <div><div><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="3"/><path d="M9 11h.01M15 11h.01"/></svg><div><b>2</b><small>Funcionários de IA</small></div></div></div>
       <div><div><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18"/></svg><div><b>BR</b><small>Online, Brasil inteiro</small></div></div></div>
-      <div><div><svg viewBox="0 0 24 24"><path d="M12 3v18M7 8h10"/></svg><div><b>&#10010;</b><small>Fé no centro</small></div></div></div>
+      <div><div><svg viewBox="0 0 24 24"><path d="M12 3v18M7 8h10"/></svg><div><b>Fé</b><small>No centro de tudo</small></div></div></div>
     </div>
   </section>
 
@@ -366,7 +381,7 @@ footer small{display:block;margin-top:14px;font-size:12px;color:#8d8d88}
   <section id="encontro">
     <div class="wrap">
       <div class="cab"><div><span class="rot">Onde a Panela nasceu</span><h2 style="margin-top:8px">O 1º Encontro do Hub</h2><p style="color:var(--muted);margin:6px 0 0">14 de novembro de 2026 · empreendedores e profissionais de todas as áreas à mesma mesa: fé, negócios e inteligência artificial.</p></div></div>
-      <div class="galeria-e"><figure><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/mesas.jpg" alt="Mesas cheias no 1º Encontro do Hub" loading="lazy"></figure><figure><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/sorrisos.jpg" alt="Participantes sorrindo no 1º Encontro" loading="lazy"></figure><figure><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/conversa.jpg" alt="Conversa entre participantes no 1º Encontro" loading="lazy"></figure><figure><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/grupo-final.jpg" alt="Foto do grupo no fim do 1º Encontro" loading="lazy"></figure></div>
+      <div class="galeria-e"><figure><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/mesas.jpg" alt="Mesas cheias no 1º Encontro do Hub" loading="lazy"></figure><figure><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/vista-baia.jpg" alt="O salão do 1º Encontro do Hub" loading="lazy"></figure><figure><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/conversa.jpg" alt="Conversa entre participantes no 1º Encontro" loading="lazy"></figure><figure><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/grupo-final.jpg" alt="Foto do grupo no fim do 1º Encontro" loading="lazy"></figure></div>
     </div>
   </section>
   <section id="area">
@@ -374,16 +389,17 @@ footer small{display:block;margin-top:14px;font-size:12px;color:#8d8d88}
       <div><span class="rot">Área do participante</span><h2 style="margin-top:8px">Você chega a cada encontro preparado</h2>
         <ul>
           <li><i style="background:var(--vermelho)">1</i><div><b>Diagnóstico automático do negócio</b><span>Responda, veja o resultado na hora e refaça quando quiser.</span></div></li>
-          <li><i style="background:var(--amarelo);color:var(--ink)">2</i><div><b>Questionários personalizados</b><span>Para a mentoria se adaptar ao seu negócio e ao seu momento.</span></div></li>
+          <li><i style="background:var(--amarelo);color:var(--ink)">2</i><div><b>Testes de perfil: DISC e 4 Animais</b><span>Entenda como você decide, vende e lidera. O seu animal vira a sua foto na plataforma.</span></div></li>
           <li><i style="background:var(--azul)">3</i><div><b>Gráficos da sua evolução</b><span>Acompanhe como o seu negócio e o seu plano estão sendo construídos.</span></div></li>
           <li><i style="background:var(--ink)">4</i><div><b>Temperos do seu negócio</b><span>Skills prontas para o seu tipo de negócio: dão sabor ao seu negócio e fazem o Claude entregar o que você não conseguiria sozinho.</span></div></li>
-          <li><i style="background:var(--vermelho)">5</i><div><b>Encontros gravados e o curso</b><span>Tudo num lugar só, com o material de apoio de cada encontro.</span></div></li>
+          <li><i style="background:var(--vermelho)">5</i><div><b>Nivelamento, encontros gravados e o curso</b><span>As aulas, as gravações e os PDFs de apoio num lugar só.</span></div></li>
           <li><i style="background:var(--salvia-escura)">6</i><div><b>Resgate do cashback VOX</b><span>Gere o cupom do mês com um clique.</span></div></li>
+          <li><i style="background:var(--azul)">7</i><div><b>Conquistas e prêmios</b><span>Quanto mais você aplica, mais pontos ganha, e os pontos viram prêmios.</span></div></li>
         </ul>
       </div>
       <div class="card painel" aria-hidden="true">
         <div class="bloco"><span class="rot">Diagnóstico</span>
-          <svg viewBox="0 0 200 180"><g fill="none" stroke="#DFDFDA"><polygon points="100,20 170,60 170,130 100,170 30,130 30,60"/><polygon points="100,55 140,77 140,113 100,135 60,113 60,77"/></g><polygon points="100,35 150,70 160,125 100,150 55,118 45,72" fill="rgba(45,91,215,.18)" stroke="#2D5BD7" stroke-width="2"/><g font-family="Inter" font-size="9" fill="#6A6A66" text-anchor="middle"><text x="100" y="14">Estratégia</text><text x="186" y="58">Marketing</text><text x="186" y="140">Pessoas</text><text x="100" y="180">Vendas</text><text x="14" y="140">Processos</text><text x="14" y="58">IA</text></g></svg>
+          <svg viewBox="0 0 200 180"><g fill="none" stroke="#DFDFDA"><polygon points="100,20 170,60 170,130 100,170 30,130 30,60"/><polygon points="100,55 140,77 140,113 100,135 60,113 60,77"/></g><polygon points="100,35 150,70 160,125 100,150 55,118 45,72" fill="rgba(45,91,215,.18)" stroke="#2D5BD7" stroke-width="2"/><g font-family="Inter" font-size="9" fill="#6A6A66" text-anchor="middle"><text x="100" y="14">Estratégia</text><text x="186" y="58">Marketing</text><text x="186" y="140">Pessoas</text><text x="100" y="180">Vendas</text><text x="14" y="140">Fé</text><text x="14" y="58">IA</text></g></svg>
         </div>
         <div class="bloco"><span class="rot">Sua evolução</span>
           <svg viewBox="0 0 200 150"><g stroke="#ECECE8"><line x1="10" y1="30" x2="190" y2="30"/><line x1="10" y1="70" x2="190" y2="70"/><line x1="10" y1="110" x2="190" y2="110"/></g><polyline points="10,120 50,105 90,95 130,70 170,52 190,40" fill="none" stroke="#E2231A" stroke-width="2.5"/><circle cx="190" cy="40" r="4" fill="#E2231A"/><g font-family="Inter" font-size="9" fill="#6A6A66"><text x="10" y="142">Teste 1</text><text x="150" y="142">Hoje</text></g></svg>
@@ -435,7 +451,7 @@ footer small{display:block;margin-top:14px;font-size:12px;color:#8d8d88}
 <footer>
   <div class="wrap">
     <div><span class="logo-rodape"><img src="logo-h-web.jpg" alt="A Panela"></span><small>Uma mentoria do Hub de Empreendedores Católicos<br>Padroeiro: São Josemaria Escrivá</small></div>
-    <div><h4>Navegação</h4><a href="#inicio">Início</a><a href="#frentes">O que você trabalha</a><a href="#caminho">O caminho</a><a href="#investimento">Investimento</a></div>
+    <div><h4>Navegação</h4><a href="#inicio">Início</a><a href="#frentes">O que você aprende</a><a href="#caminho">Agenda</a><a href="#investimento">Investimento</a></div>
     <div><h4>A Panela</h4><a href="#area">Área do participante</a><a href="#duvidas">Dúvidas</a><a href="#entrar">Quero entrar</a></div>
     <div><h4>Entre as panelas</h4><small style="margin-top:0">&ldquo;Entre as panelas também anda o Senhor.&rdquo; Santa Teresa d&rsquo;Ávila</small></div>
   </div>

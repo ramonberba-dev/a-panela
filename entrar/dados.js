@@ -231,7 +231,7 @@ window.PANELA = {
     { n: 5, titulo: "Apresentações profissionais com IA", area: "ia", prep: "Escolha uma apresentação que você precisa fazer (proposta, palestra ou reunião)." },
     { n: 6, titulo: "O seu site e a sua página de vendas", area: "marketing", prep: "Separe o seu logo, 10 fotos boas e os seus contatos." },
     { n: 7, titulo: "Redes sociais profissionais e agendamento de posts", area: "marketing", prep: "Anote os 3 assuntos que o seu cliente mais gosta de ver." },
-    { n: 8, titulo: "Fé, família e negócios · com Kevin Eger", area: "fe", prep: "Escreva como seria a sua semana ideal." },
+    { n: 8, titulo: "Geração de leads e demanda comercial · aula exclusiva com Kevin Eger", area: "vendas", prep: "Anote de onde vieram os seus últimos 10 clientes e quantos contatos novos você recebe por semana." },
     { n: 9, titulo: "Tráfego pago na prática", area: "marketing", prep: "Defina quanto pode investir por mês e qual produto quer anunciar." },
     { n: 10, titulo: "Atendimento, vendas e resposta automática", area: "vendas", prep: "Copie as 5 perguntas que os clientes mais fazem no WhatsApp e no Instagram." },
     { n: 11, titulo: "O seu aplicativo e o lançamento", area: "vendas", prep: "Escolha o produto, serviço ou ferramenta que você quer lançar." },
