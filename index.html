@@ -274,6 +274,18 @@ footer small{display:block;margin-top:14px;font-size:12px;color:#8d8d88}
 .zap:hover{transform:scale(1.08)}
 .zap svg{width:32px;height:32px;fill:#fff}
 @media (max-width:760px){.zap{bottom:calc(92px + env(safe-area-inset-bottom,0px));right:14px;width:54px;height:54px}}
+
+/* trava de compra até ver o vídeo */
+html:not(.liberado) a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4"]{opacity:.55;filter:grayscale(.6)}
+html:not(.liberado) a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4"]::before{content:"🔒 "}
+#aviso-video{position:fixed;left:50%;top:84px;transform:translate(-50%,-20px);opacity:0;pointer-events:none;z-index:90;background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-weight:600;font-size:14px;max-width:min(92vw,420px);text-align:center;transition:.3s;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+#aviso-video.on{opacity:1;transform:translate(-50%,0)}
+/* vídeo mais para cima */
+.hero .wrap{min-height:500px}
+.hero .texto{padding-block:36px;gap:16px}
+.hero .arte{min-height:440px}
+#video{padding-top:24px}
+@media (max-width:900px){.hero .arte{display:none}.hero .texto{padding-block:20px 4px;gap:12px}.hero p.desc,.hero .vagas{display:none}}
 </style>
 
 <header class="topo">
@@ -464,4 +476,38 @@ footer small{display:block;margin-top:14px;font-size:12px;color:#8d8d88}
   </div>
 </footer>
 
-
+<script>
+/* compra só depois de assistir ao vídeo (85% do tempo assistido de verdade, sem pular) */
+var CHAVE_VIDEO="panela-video-visto";
+function videoVisto(){try{if(localStorage.getItem(CHAVE_VIDEO)==="1")return true}catch(e){} return window.__videoVisto===true}
+function liberarCompra(){try{localStorage.setItem(CHAVE_VIDEO,"1")}catch(e){} window.__videoVisto=true;document.documentElement.classList.add("liberado");}
+function avisoVideo(){
+  var v=document.getElementById("video");if(v)v.scrollIntoView({behavior:"smooth",block:"start"});
+  var t=document.getElementById("aviso-video");
+  if(!t){t=document.createElement("div");t.id="aviso-video";document.body.appendChild(t);}
+  t.textContent="Assista ao vídeo até o fim para liberar a sua vaga na Panela.";
+  t.classList.add("on");clearTimeout(t._x);t._x=setTimeout(function(){t.classList.remove("on")},4200);
+}
+(function(){
+  if(videoVisto())document.documentElement.classList.add("liberado");
+  var vid=document.querySelector("#video video");if(!vid)return;
+  var visto=0,ultimo=null;
+  vid.addEventListener("timeupdate",function(){
+    var t=vid.currentTime;
+    if(ultimo!==null&&t>ultimo&&t-ultimo<1.5)visto+=t-ultimo;
+    ultimo=t;
+    if(vid.duration&&visto>=vid.duration*0.85&&!videoVisto())liberarCompra();
+  });
+  vid.addEventListener("seeking",function(){ultimo=vid.currentTime});
+})();
+/* botões de compra: colocam a Panela direto no carrinho da loja VOX (pula a página do produto) */
+document.addEventListener("click",function(ev){
+  var a=ev.target.closest&&ev.target.closest('a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4"]');
+  if(!a)return;
+  ev.preventDefault();
+  if(!videoVisto()){avisoVideo();return;}
+  var f=document.createElement("form");f.method="post";f.action="https://usevox.com.br/comprar/";
+  [["add_to_cart","382571596"],["quantity","1"]].forEach(function(c){var i=document.createElement("input");i.type="hidden";i.name=c[0];i.value=c[1];f.appendChild(i);});
+  document.body.appendChild(f);f.submit();
+});
+</script>
