@@ -33,7 +33,7 @@
     }
   }
   function sairConta() {
-    Armazem.apagar(); contaNuvem = null; atual = "inicio";
+    Armazem.apagar(); contaNuvem = null; atual = "inicio"; projNuvem = null;
     if (NV_ && usuarioNuvem) { NV_.auth.signOut(); } else desenhar();
   }
 
@@ -99,6 +99,7 @@
     ["nivelamento", "Nivelamento", '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/>'],
     ["diagnostico", "Diagnóstico", '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>'],
     ["perfil", "Testes de perfil", '<circle cx="9" cy="9" r="5"/><circle cx="15" cy="15" r="5"/>'],
+    ["projeto", "Meu projeto", '<path d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/><path d="M4 4h7M4 8h4"/>'],
     ["plano", "Meu plano", '<path d="M5 5h14v14H5zM9 9h6M9 13h6"/>'],
     ["via", "Via", '<circle cx="7" cy="5" r="2.2"/><circle cx="14" cy="19" r="2.2"/><path d="M8.5 6.5c4 1.5 8 3 6 6.5s-6 2.5-2 5" stroke-dasharray="2.4 2.2"/>'],
     ["praticas", "Boas práticas", '<path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/>'],
@@ -573,6 +574,133 @@
     if (abertas.length) h += '<div class="card" style="margin-top:16px"><h2>O que você nos contou</h2><p class="muted" style="margin:4px 0 10px">O Ramon lê estas respostas para personalizar os encontros e o seu individual.</p>' +
       abertas.map(function (x) { return '<div class="item"><span class="num" style="background:' + x[0].cor + ";border-color:" + x[0].cor + ';color:#fff"> </span><div><b>' + esc(A(x[0]).aberta) + "</b><p>" + esc(x[1]) + "</p></div></div>"; }).join("") + "</div>";
     return h;
+  }
+
+  /* ---------- Meu projeto: o aluno conta a vida dele, a IA monta 3 ou 4 projetos e o Ramon aprova ---------- */
+  var PERG_PROJ = [
+    ["trabalho", "O seu trabalho hoje", "Conte o que você faz, para quem, e como é um dia comum."],
+    ["vida", "A sua vida fora do trabalho", "Família, fé, saúde, tempo livre. O que está bom e o que falta?"],
+    ["deseja", "O que você deseja", "O que você quer de verdade, e como gostaria que isso acontecesse?"],
+    ["tres_meses", "Daqui a 3 meses", "O que precisa estar diferente para você dizer: valeu a pena?"],
+    ["construir", "O que você quer construir", "Um site, um aplicativo, uma loja online, um serviço novo, redes sociais que vendem..."],
+    ["ferramenta", "A ferramenta dos seus sonhos", "Se você pudesse criar do zero uma ferramenta para o seu dia a dia, como ela seria?"],
+    ["facilitar", "O que facilitaria a sua vida", "O que, se resolvido, mudaria a sua semana?"],
+    ["burocracia", "A burocracia que você quer eliminar", "Qual rotina chata e repetitiva você quer tirar da sua frente de vez?"],
+    ["sonho", "Um sonho que hoje parece difícil", "Uma profissão, uma meta, um projeto que você ainda não teve coragem ou estrutura para fazer."],
+    ["recursos", "Tempo e investimento", "Quantas horas por semana você consegue dedicar e quanto pode investir por mês (anúncios, ferramentas)?"]
+  ];
+  var projNuvem = null, projCarregando = false, projOpSel = null, projMes = 1;
+  function projD() { var d = dados(); if (!d.projeto) d.projeto = { resp: {}, feitas: {} }; if (!d.projeto.feitas) d.projeto.feitas = {}; return d.projeto; }
+  function projStatus() { return projNuvem ? projNuvem.status : (projD().demoStatus || "rascunho"); }
+  function projOpcoes() { var t = projNuvem ? projNuvem.opcoes : projD().demoOpcoes; try { return typeof t === "string" ? JSON.parse(t) : (t || []); } catch (e) { return []; } }
+  function projEscolha() { return projNuvem ? projNuvem.escolha : projD().demoEscolha; }
+  function carregarProjeto() {
+    if (!(NV_ && usuarioNuvem) || projCarregando) return;
+    projCarregando = true;
+    NV_.db.collection("projetos").doc(usuarioNuvem.uid).get().then(function (doc) { projNuvem = doc.exists ? doc.data() : { status: "rascunho" }; projCarregando = false; if (atual === "projeto") desenhar(); },
+      function () { projNuvem = { status: "rascunho" }; projCarregando = false; if (atual === "projeto") desenhar(); });
+  }
+  function telaProjeto() {
+    var nuvem = !!(NV_ && usuarioNuvem && dados().nuvem);
+    if (nuvem && !projNuvem) { carregarProjeto(); return cabecalho("Meu projeto", "Carregando...") + '<div class="vazio">Um instante...</div>'; }
+    var st = projStatus(), pd = projD();
+    var h = cabecalho("Meu projeto", "O que você vai tirar do papel nesses 3 meses. Você conta a sua história, a gente monta as opções, o Ramon revisa e você escolhe.");
+    h += '<div class="proj-passos">' + [["rascunho", "1. Você conta"], ["gerado", "2. O Ramon revisa"], ["pronto", "3. Você escolhe"], ["escolhido", "4. Mão na massa"]].map(function (p, i) {
+      var ordem = { rascunho: 0, enviado: 1, erro: 1, gerado: 1, pronto: 2, escolhido: 3 }[st] || 0;
+      return '<span class="' + (i < ordem ? "ok" : i === ordem ? "at" : "") + '">' + p[1] + "</span>"; }).join("") + "</div>";
+    if (st === "rascunho") {
+      var temVoz = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+      h += '<div class="dica"><span class="rot">Como funciona</span><p>Responda com calma e com as suas palavras. Quanto mais você contar, melhor fica o projeto.' + (temVoz ? " Prefere falar? Toque no microfone e conte em voz alta: a gente transcreve." : "") + " As respostas ficam salvas enquanto você escreve.</p></div>";
+      h += '<form id="f-proj" class="obj-form card">' + PERG_PROJ.map(function (q, i) {
+        return '<label class="proj-q"><span><b>' + (i + 1) + ". " + esc(q[1]) + "</b><small>" + esc(q[2]) + "</small></span>" +
+          '<div class="proj-campo"><textarea name="' + q[0] + '" rows="3">' + esc(pd.resp[q[0]] || "") + "</textarea>" + (temVoz ? '<button type="button" class="proj-mic" data-mic="' + q[0] + '" aria-label="Falar a resposta">🎤</button>' : "") + "</div></label>";
+      }).join("") + '<p class="erro" id="proj-erro" role="alert"></p><button class="btn" type="submit">Enviar para montar o meu projeto</button></form>';
+    } else if (st === "enviado" || st === "gerado" || st === "erro") {
+      h += '<div class="card proj-espera"><span class="rot">' + (st === "gerado" ? "Opções prontas, em revisão" : "Recebido") + "</span><h2>" + (st === "gerado" ? "O Ramon está revisando as suas opções" : "Estamos montando as opções do seu projeto") + "</h2>" +
+        "<p>" + (st === "gerado" ? "Assim que ele aprovar, as opções aparecem aqui para você escolher. Você também recebe um aviso." : "Em alguns minutos a gente monta de 3 a 4 opções de projeto a partir da sua história. Depois o Ramon revisa cada uma antes de liberar para você.") + "</p></div>";
+    } else if (st === "pronto") {
+      var ops = projOpcoes();
+      h += '<p class="muted" style="margin:0 0 12px">Escolha UM projeto. Ele vira o seu objetivo dos 3 meses, com uma entrega por mês e demandas toda semana.</p>';
+      h += '<div class="grid g2 proj-ops">' + ops.map(function (o, i) {
+        var aberto = projOpSel === i;
+        return '<div class="card proj-op' + (aberto ? " aberto" : "") + '"><span class="rot">Opção ' + (i + 1) + "</span><h2>" + esc(o.titulo) + "</h2><p><b>" + esc(o.resumo) + "</b></p><p class=\"muted\">" + esc(o.porque) + "</p>" +
+          (aberto ? '<div class="proj-det"><p><b>Em 3 meses:</b> ' + esc(o.resultado || "") + "</p>" + (o.meses || []).map(function (m) { return '<div class="item"><span class="num">' + m.n + "</span><div><b>" + esc(m.titulo) + "</b><p>Entrega: " + esc(m.entrega) + "</p></div></div>"; }).join("") +
+            ((o.ferramentas || []).length ? '<p class="muted" style="font-size:12.5px">Ferramentas: ' + esc(o.ferramentas.join(", ")) + "</p>" : "") + "</div>" : "") +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn peq contorno" data-proj-ver="' + i + '">' + (aberto ? "Fechar" : "Ver os 3 meses") + '</button><button class="btn peq" data-proj-escolher="' + i + '">Escolher este</button></div></div>';
+      }).join("") + "</div>";
+    } else if (st === "escolhido") {
+      var o2 = projOpcoes()[projEscolha()] || {}, meses = o2.meses || [];
+      var tot = 0, ok = 0;
+      meses.forEach(function (m) { (m.semanas || []).forEach(function (w) { (w.demandas || []).forEach(function (_, k) { tot++; if (pd.feitas[m.n + "-" + w.n + "-" + k]) ok++; }); }); });
+      var pct = tot ? Math.round(ok / tot * 100) : 0;
+      h += '<div class="card obj"><span class="rot">Meu projeto</span><p class="obj-frase">' + esc(o2.titulo) + '</p><p class="muted" style="margin:0 0 10px">' + esc(o2.resultado || o2.resumo || "") + '</p><div class="obj-meta"><span><b>' + ok + "/" + tot + "</b> demandas feitas</span><span><b>" + pct + '%</b> do projeto</span></div><div class="barra"><i style="width:' + pct + '%"></i></div></div>';
+      h += '<div class="via-abas" style="margin-top:16px">' + meses.map(function (m) { return '<button class="' + (projMes === m.n ? "on" : "") + '" data-proj-mes="' + m.n + '">Mês ' + m.n + "</button>"; }).join("") + "</div>";
+      var m = meses.filter(function (x) { return x.n === projMes; })[0] || meses[0];
+      if (m) h += '<div class="card"><span class="rot">Projeto do mês ' + m.n + "</span><h2>" + esc(m.titulo) + '</h2><p class="mod-entrega"><b>Sai pronto:</b> ' + esc(m.entrega) + "</p>" + (m.semanas || []).map(function (w) {
+        return '<div class="proj-sem"><b>Semana ' + w.n + " · " + esc(w.foco) + "</b>" + (w.demandas || []).map(function (dm, k) {
+          var id = m.n + "-" + w.n + "-" + k;
+          return '<label class="via-hab"><input type="checkbox" data-dem="' + id + '"' + (pd.feitas[id] ? " checked" : "") + "><span>" + esc(dm) + "</span></label>"; }).join("") + "</div>";
+      }).join("") + "</div>";
+    }
+    return h;
+  }
+  function amostraProjeto() {
+    function mes(n, t, e, focos) { return { n: n, titulo: t, entrega: e, semanas: focos.map(function (f, i) { return { n: i + 1, foco: f[0], demandas: f[1] }; }) }; }
+    return [
+      { titulo: "Loja de encomendas online que vende sozinha", resumo: "Site com cardápio e pedido, Instagram no automático e atendimento que responde por você.", porque: "Você contou que passa o dia no WhatsApp respondendo preço. Este projeto tira isso da sua mão.", resultado: "Pedidos entrando pelo site, posts agendados e respostas automáticas no WhatsApp.", ferramentas: ["Claude", "Grok", "Nuvemshop", "Metricool"],
+        meses: [mes(1, "A vitrine", "Site com cardápio no ar e Instagram com o mês agendado", [["Identidade", ["Escolher as 3 cores e as 2 fontes da marca", "Fotografar 10 produtos com luz natural"]], ["Site", ["Montar a página com o Claude", "Publicar no domínio próprio"]], ["Artes", ["Criar 8 posts com a identidade", "Agendar o mês no Metricool"]], ["Teste", ["Mandar o site para 10 clientes e anotar o que perguntaram", "Ajustar a página com as respostas"]]]),
+          mes(2, "A máquina de vendas", "Pedido com Pix pelo site e anúncio rodando", [["Pagamento", ["Ligar Pix e cartão no site", "Fazer um pedido de teste"]], ["Leads", ["Criar uma oferta de primeira compra", "Conseguir os primeiros 20 contatos"]], ["Anúncio", ["Rodar um anúncio de teste de R$ 50", "Anotar custo por contato"]], ["Atendimento", ["Escrever as 5 respostas automáticas", "Ligar a resposta automática no WhatsApp"]]]),
+          mes(3, "No automático", "Agente de pedidos e rotina de produção rodando", [["Agente", ["Criar o agente que anota encomendas", "Testar com 5 pedidos reais"]], ["Rotina", ["Relatório semanal de vendas automático", "Lembrete de retirada para clientes"]], ["App", ["Publicar o app de pedidos", "Divulgar para a lista de clientes"]], ["Plano", ["Comparar com o objetivo do encontro 1", "Montar o plano dos próximos 90 dias"]]])] },
+      { titulo: "Clube de assinatura de doces", resumo: "Receita recorrente todo mês com uma caixa surpresa.", porque: "Você quer previsibilidade de faturamento e mais tempo com a família.", resultado: "Assinantes pagando todo mês e produção planejada.", ferramentas: ["Claude", "Appmax", "Instagram"], meses: [] },
+      { titulo: "Curso online de confeitaria", resumo: "Transformar o seu saber em aulas gravadas.", porque: "Você contou que sonha em ensinar, mas não sabe por onde começar.", resultado: "Primeira turma vendida e aulas na plataforma.", ferramentas: ["Claude", "HeyGen", "Hotmart"], meses: [] }
+    ];
+  }
+  function ligarProjeto() {
+    var pd = projD(), f = document.getElementById("f-proj"), t = null;
+    if (f) {
+      var guardar = function () { PERG_PROJ.forEach(function (q) { pd.resp[q[0]] = f[q[0]].value; }); salvar(); };
+      f.addEventListener("input", function () { clearTimeout(t); t = setTimeout(guardar, 600); });
+      f.querySelectorAll("[data-mic]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var R = window.SpeechRecognition || window.webkitSpeechRecognition, campo = f[b.getAttribute("data-mic")];
+          if (b._rec) { b._rec.stop(); return; }
+          var r = new R(); r.lang = "pt-BR"; r.continuous = true; r.interimResults = false; b._rec = r; b.classList.add("gravando"); b.textContent = "■";
+          r.onresult = function (e) { for (var i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) campo.value = (campo.value ? campo.value.trim() + " " : "") + e.results[i][0].transcript.trim(); guardar(); };
+          r.onend = function () { b._rec = null; b.classList.remove("gravando"); b.textContent = "🎤"; };
+          r.onerror = function () { toast("Não consegui ouvir. Confira a permissão do microfone."); };
+          r.start();
+        });
+      });
+      f.addEventListener("submit", function (e) {
+        e.preventDefault(); guardar();
+        var vazias = PERG_PROJ.filter(function (q) { return !(pd.resp[q[0]] || "").trim(); }).length;
+        if (vazias > 3) { document.getElementById("proj-erro").textContent = "Responda pelo menos 7 das 10 perguntas para o projeto ficar com a sua cara."; return; }
+        var d = dados();
+        if (NV_ && usuarioNuvem && d.nuvem) {
+          var doc = { status: "enviado", respostas: JSON.stringify(pd.resp), nome: d.aluno.nome, email: d.aluno.email, perfil: d.aluno.perfil || "", ramo: d.aluno.ramo || "", enviadoEm: new Date().toISOString() };
+          NV_.db.collection("projetos").doc(usuarioNuvem.uid).set(doc).then(function () { projNuvem = doc; toast("Enviado! Agora é com a gente."); desenhar(); window.scrollTo(0, 0); },
+            function () { toast("Não consegui enviar. Confira a internet e tente de novo."); });
+        } else {
+          pd.demoStatus = "pronto"; pd.demoOpcoes = amostraProjeto(); salvar(); toast("Demonstração: estas são opções de exemplo."); desenhar(); window.scrollTo(0, 0);
+        }
+      });
+    }
+    document.querySelectorAll("[data-proj-ver]").forEach(function (b) { b.addEventListener("click", function () { var i = +b.getAttribute("data-proj-ver"); projOpSel = projOpSel === i ? null : i; desenhar(); }); });
+    document.querySelectorAll("[data-proj-escolher]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var i = +b.getAttribute("data-proj-escolher"), o = projOpcoes()[i];
+        if (!confirm("Seguir com \"" + o.titulo + "\"? Esse vira o seu projeto dos 3 meses.")) return;
+        var m = metaD(); if (!m.objetivo) m.objetivo = o.titulo + (o.resultado ? ": " + o.resultado : "");
+        (o.meses || []).forEach(function (x, k) { if (m.marcos[k] && !m.marcos[k].t) m.marcos[k].t = x.entrega; });
+        projMes = 1;
+        if (projNuvem) {
+          NV_.db.collection("projetos").doc(usuarioNuvem.uid).update({ status: "escolhido", escolha: i, escolhidoEm: new Date().toISOString() }).then(function () { projNuvem.status = "escolhido"; projNuvem.escolha = i; salvar(); toast("Projeto escolhido. Mão na massa!"); desenhar(); window.scrollTo(0, 0); },
+            function () { toast("Não consegui salvar a escolha. Tente de novo."); });
+        } else { pd.demoStatus = "escolhido"; pd.demoEscolha = i; salvar(); desenhar(); window.scrollTo(0, 0); }
+      });
+    });
+    document.querySelectorAll("[data-proj-mes]").forEach(function (b) { b.addEventListener("click", function () { projMes = +b.getAttribute("data-proj-mes"); desenhar(); }); });
+    document.querySelectorAll("[data-dem]").forEach(function (c) { c.addEventListener("change", function () { pd.feitas[c.getAttribute("data-dem")] = c.checked; salvar(); desenhar(); }); });
   }
 
   /* ---------- Objetivo com prazo (definido no 1º encontro) ---------- */
@@ -1221,9 +1349,9 @@
   var MD = null, verExemplo = false;
   function carregarMentor() {
     var db = NV_.db;
-    return Promise.all([db.collection("usuarios").get(), db.collection("progresso").get(), db.collection("convites").get()]).then(function (r) {
+    return Promise.all([db.collection("usuarios").get(), db.collection("progresso").get(), db.collection("convites").get(), db.collection("projetos").get().catch(function () { return { docs: [] }; })]).then(function (r) {
       var prog = {}; r[1].forEach(function (d) { try { prog[d.id] = JSON.parse(d.data().dados); } catch (e) {} });
-      MD = { usuarios: r[0].docs.map(function (d) { var x = d.data(); x.uid = d.id; return x; }), prog: prog, convites: r[2].docs.map(function (d) { var x = d.data(); x.email = d.id; return x; }) };
+      MD = { usuarios: r[0].docs.map(function (d) { var x = d.data(); x.uid = d.id; return x; }), prog: prog, convites: r[2].docs.map(function (d) { var x = d.data(); x.email = d.id; return x; }), projetos: r[3].docs.map(function (d) { var x = d.data(); x.uid = d.id; return x; }) };
     }).catch(function () { MD = { usuarios: [], prog: {}, convites: [], erro: true }; });
   }
   function turmaReal() {
@@ -1280,7 +1408,7 @@
     var h = '<div class="mentor"><header class="m-topo"><img src="logo-h-web.jpg" alt="A Panela"><div><span class="rot">Acesso do mentor</span><b>Painel do Ramon</b></div><button class="btn peq contorno" id="m-sair">Sair</button></header>';
     var real = memoria && memoria.nuvem && MD && !verExemplo;
     h += real ? "" : '<div class="m-aviso">Dados de exemplo: a turma abaixo é fictícia.' + (memoria && memoria.nuvem ? ' <button class="m-link" id="m-real">Voltar para a turma real</button>' : "") + "</div>";
-    if (memoria && memoria.nuvem && MD) h += painelAcessos();
+    if (memoria && memoria.nuvem && MD) h += painelAcessos() + painelProjetos();
     h += '<div class="m-corpo"><section class="m-kpis">' +
       [["Alunos", turma.length, turma.filter(function (a) { return a.aluno.turma === "hub"; }).length + " do 1º Encontro"], ["Faturamento contratado", moeda(contratado), "ticket médio " + moeda(turma.length ? contratado / turma.length : 0)],
        ["Recebido até hoje", moeda(rec), "a receber " + moeda(contratado - rec)], ["Ativos na semana", ativos + " de " + turma.length, Math.round(ativos / Math.max(1, turma.length) * 100) + "% entraram nos últimos 7 dias"],
@@ -1313,13 +1441,66 @@
       function abre() { alunoSel = +b.getAttribute("data-m-aluno"); telaMentor(); var d = document.getElementById("m-det"); if (d) d.scrollIntoView({ block: "start", behavior: "smooth" }); }
       b.onclick = abre; b.onkeydown = function (e) { if (e.key === "Enter") abre(); };
     });
-    ligarAcessos();
+    ligarAcessos(); ligarProjetosM();
     var fx = document.getElementById("m-fechar"); if (fx) fx.onclick = function () { alunoSel = null; telaMentor(); };
     var cm = document.getElementById("m-copiar");
     if (cm) cm.onclick = function () { var t = cm.getAttribute("data-txt"); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast("Mensagem copiada. Cole no WhatsApp do aluno."); }, function () { window.prompt("Copie a mensagem:", t); }); };
   }
 
   /* Aba de acessos do mentor: pré-cadastros, novo aluno, pausar/reativar */
+  /* Projetos dos alunos: o Ramon revisa as opções geradas pela IA antes de liberar */
+  var projAbertoM = null;
+  function painelProjetos() {
+    var lista = (MD.projetos || []).filter(function (p) { return ["gerado", "erro", "enviado"].indexOf(p.status) >= 0; });
+    var escolhidos = (MD.projetos || []).filter(function (p) { return p.status === "escolhido" || p.status === "pronto"; });
+    var h = '<div class="m-corpo m-acessos"><section class="card"><div class="m-lista-topo"><span class="rot">Projetos para aprovar · ' + lista.filter(function (p) { return p.status === "gerado"; }).length + "</span></div>";
+    if (!lista.length) h += '<p class="muted">Nenhum projeto esperando você.</p>';
+    lista.forEach(function (p) {
+      var ops = []; try { ops = JSON.parse(p.opcoes || "[]"); } catch (e) {}
+      var resp = {}; try { resp = JSON.parse(p.respostas || "{}"); } catch (e) {}
+      var aberto = projAbertoM === p.uid;
+      h += '<div class="m-proj"><div class="m-pend"><div><b>' + esc(p.nome || p.email || p.uid) + "</b><small>" + (p.status === "gerado" ? ops.length + " opções prontas para revisar" : p.status === "erro" ? "Deu erro ao gerar: " + esc(p.erro || "") : "Gerando as opções (o robô passa a cada 5 minutos)") + '</small></div><div class="m-pend-b"><button class="btn peq contorno" data-m-proj="' + p.uid + '">' + (aberto ? "Fechar" : "Revisar") + "</button></div></div>";
+      if (aberto) {
+        h += '<details class="m-resp"><summary>O que o aluno contou</summary>' + PERG_PROJ.map(function (q) { return resp[q[0]] ? "<p><b>" + esc(q[1]) + ":</b> " + esc(resp[q[0]]) + "</p>" : ""; }).join("") + "</details>";
+        h += ops.map(function (o, i) {
+          return '<div class="m-op"><b>Opção ' + (i + 1) + ": " + esc(o.titulo) + "</b><p>" + esc(o.resumo) + '</p><p class="muted">' + esc(o.porque) + "</p>" + (o.meses || []).map(function (m) {
+            return "<details><summary>Mês " + m.n + ": " + esc(m.titulo) + " · " + esc(m.entrega) + "</summary>" + (m.semanas || []).map(function (w) { return "<p><b>Semana " + w.n + " · " + esc(w.foco) + ":</b> " + esc((w.demandas || []).join(" · ")) + "</p>"; }).join("") + "</details>";
+          }).join("") + "</div>";
+        }).join("");
+        h += '<textarea class="m-obs" id="obs-' + p.uid + '" rows="2" placeholder="Se for gerar de novo: o que mudar? (ex.: foco em serviço, verba menor, incluir o curso)"></textarea>' +
+          '<div class="m-pend-b" style="margin-top:8px">' + (p.status === "gerado" ? '<button class="btn peq" data-m-aprovar="' + p.uid + '">Aprovar e liberar para o aluno</button>' : "") + '<button class="btn peq contorno" data-m-refazer="' + p.uid + '">Gerar de novo</button></div>';
+      }
+      h += "</div>";
+    });
+    h += "</section>";
+    if (escolhidos.length) h += '<section class="card"><span class="rot">Projetos liberados · ' + escolhidos.length + "</span>" + escolhidos.map(function (p) {
+      var ops = []; try { ops = JSON.parse(p.opcoes || "[]"); } catch (e) {}
+      return '<div class="m-conv"><span>' + esc(p.nome || p.email) + " · " + (p.status === "escolhido" ? "escolheu: <b>" + esc((ops[p.escolha] || {}).titulo || "") + "</b>" : "ainda escolhendo") + "</span></div>"; }).join("") + "</section>";
+    return h + "</div>";
+  }
+  function ligarProjetosM() {
+    if (!(memoria && memoria.nuvem && MD)) return;
+    var db = NV_.db;
+    function recarregar() { carregarMentor().then(telaMentor); }
+    document.querySelectorAll("[data-m-proj]").forEach(function (b) { b.onclick = function () { var u = b.getAttribute("data-m-proj"); projAbertoM = projAbertoM === u ? null : u; telaMentor(); }; });
+    document.querySelectorAll("[data-m-aprovar]").forEach(function (b) {
+      b.onclick = function () {
+        var u = b.getAttribute("data-m-aprovar"); b.disabled = true;
+        db.collection("projetos").doc(u).update({ status: "pronto", aprovadoEm: new Date().toISOString() }).then(function () {
+          var p = MD.projetos.filter(function (x) { return x.uid === u; })[0] || {}, nome = (p.nome || "").split(" ")[0];
+          var t = "Oi, " + nome + "! As opções do seu projeto na Panela estão prontas 🍲\nEntre em https://panela.usevox.com.br/entrar, aba Meu projeto, e escolha o seu. Qualquer dúvida, me chama aqui.";
+          if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { toast("Liberado! Aviso copiado para colar no WhatsApp do aluno."); }, function () {}); else toast("Liberado!");
+          projAbertoM = null; recarregar();
+        }, function () { b.disabled = false; toast("Não consegui aprovar. Tente de novo."); });
+      };
+    });
+    document.querySelectorAll("[data-m-refazer]").forEach(function (b) {
+      b.onclick = function () {
+        var u = b.getAttribute("data-m-refazer"), obs = (document.getElementById("obs-" + u) || {}).value || "";
+        db.collection("projetos").doc(u).update({ status: "enviado", obsRamon: obs, erro: "" }).then(function () { toast("Pedido enviado: o robô gera de novo em até 5 minutos."); projAbertoM = null; recarregar(); }, function () { toast("Não consegui pedir de novo."); });
+      };
+    });
+  }
   function painelAcessos() {
     var pend = MD.usuarios.filter(function (u) { return u.status === "pendente"; }), paus = MD.usuarios.filter(function (u) { return u.status === "pausado"; });
     var conv = MD.convites.filter(function (c) { return !MD.usuarios.some(function (u) { return u.email === c.email; }); });
@@ -1407,7 +1588,7 @@
     if (!d) return telaLogin();
     if (d.mentor) return telaMentor();
     marcarDia();
-    var telas = { inicio: telaInicio, nivelamento: telaNivelamento, diagnostico: telaDiagnostico, plano: telaPlano, via: telaVia, praticas: telaPraticas, encontros: telaEncontros, temperos: telaTemperos, perfil: telaPerfil, conquistas: telaConquistas, cashback: telaCashback, individual: telaIndividual, regras: telaRegras };
+    var telas = { inicio: telaInicio, nivelamento: telaNivelamento, diagnostico: telaDiagnostico, projeto: telaProjeto, plano: telaPlano, via: telaVia, praticas: telaPraticas, encontros: telaEncontros, temperos: telaTemperos, perfil: telaPerfil, conquistas: telaConquistas, cashback: telaCashback, individual: telaIndividual, regras: telaRegras };
     var menu = MENU.map(function (m) { return '<button data-ir="' + m[0] + '" class="' + (atual === m[0] ? "ativo" : "") + '"' + (atual === m[0] ? ' aria-current="page"' : "") + '><svg viewBox="0 0 24 24" aria-hidden="true">' + m[2] + "</svg>" + m[1] + "</button>"; }).join("");
     var raiz = document.getElementById("raiz");
     raiz.innerHTML = (d.demo ? '<div class="aviso-demo">Participante de demonstração: os dados ficam só neste navegador.</div>' : "") +
@@ -1421,7 +1602,7 @@
   function ligar() {
     var d = dados();
     ligarNivelamento();
-    ligarObjetivo(); ligarVia();
+    ligarObjetivo(); ligarVia(); ligarProjeto();
     document.querySelectorAll("[data-ir]").forEach(function (b) { b.addEventListener("click", function () { ir(b.getAttribute("data-ir")); }); });
     var bm = document.getElementById("b-mais"), fo = document.getElementById("folha-mais"), ff = document.getElementById("folha-fundo");
     function folha(abrir) { if (!fo) return; fo.hidden = !abrir; ff.hidden = !abrir; bm.setAttribute("aria-expanded", String(abrir)); document.body.classList.toggle("sem-rolar", abrir); }

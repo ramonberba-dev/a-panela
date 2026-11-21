@@ -584,3 +584,28 @@ html,body{overflow-x:hidden}
 .praticas .item p{font-size:13px}
 @media (max-width:900px){.via-abas{overflow-x:auto;flex-wrap:nowrap}.via-abas button{flex:none}}
 @media (max-width:600px){.modulo-enc .item{flex-wrap:wrap}.modulo-enc .item>div{flex:1 1 calc(100% - 50px)!important}.modulo-enc .item .btn{margin-left:48px}}
+
+/* ---------- Meu projeto ---------- */
+.proj-passos{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.proj-passos span{font-size:12px;font-weight:600;padding:6px 11px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--muted)}
+.proj-passos span.ok{background:var(--azul-claro);color:var(--azul);border-color:#c9d5f6}
+.proj-passos span.at{background:var(--azul);color:#fff;border-color:var(--azul)}
+.proj-q{display:grid;gap:6px;padding:10px 0;border-bottom:1px solid var(--line)}
+.proj-q>span{display:grid;gap:2px}.proj-q small{color:var(--muted);font-weight:400;font-size:12.5px}
+.proj-campo{display:flex;gap:8px;align-items:flex-start}
+.proj-campo textarea{flex:1}
+.proj-mic{flex:none;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--azul);background:var(--surface);font-size:18px;cursor:pointer}
+.proj-mic.gravando{background:var(--vermelho);border-color:var(--vermelho);color:#fff;animation:pulsa 1.2s infinite}
+@keyframes pulsa{50%{transform:scale(1.08)}}
+.proj-espera{border-left:4px solid var(--azul)}
+.proj-espera h2{margin:6px 0}
+.proj-op h2{margin:6px 0}
+.proj-op.aberto{border-color:var(--azul);box-shadow:0 0 0 1px var(--azul)}
+.proj-det{margin-top:10px;border-top:1px solid var(--line);padding-top:6px}
+.proj-sem{padding:12px 0;border-top:1px solid var(--line)}
+.m-proj{border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px}
+.m-resp,.m-op details{margin:8px 0;font-size:13px}
+.m-resp summary,.m-op summary{cursor:pointer;font-weight:600}
+.m-op{border:1px solid var(--line);border-radius:8px;padding:12px;margin:8px 0;font-size:13.5px}
+.m-op p{margin:4px 0}
+.m-obs{width:100%;font:inherit;font-size:13.5px;padding:9px 11px;border:1px solid var(--line);border-radius:6px;margin-top:6px}
