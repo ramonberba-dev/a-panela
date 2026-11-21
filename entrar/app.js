@@ -754,7 +754,7 @@
   }
 
   /* Material de apoio em PDF de cada aula e guias */
-  var BASE_MAT = (location.protocol === "https:" || location.protocol === "http:") && !/claude\.ai|claudeusercontent/.test(location.host) ? "materiais/" : "https://panela.usevox.com.br/materiais/";
+  var BASE_MAT = (location.protocol === "https:" || location.protocol === "http:") && !/claude\.ai|claudeusercontent/.test(location.host) ? "materiais/" : "https://panela.usevox.com.br/entrar/materiais/";
   var GUIAS = [["guia-claude.pdf", "Guia prático inicial do Claude", "32 páginas"], ["guia-grok-claude.pdf", "Grok + Claude: a dupla do seu negócio", "18 páginas"]];
   function pdfAula(idx) { return BASE_MAT + "aula-" + ("0" + (idx + 1)).slice(-2) + ".pdf"; }
   function telaNivelamento() {
@@ -1197,7 +1197,7 @@
     return h;
   }
   function msgAcesso(nome, email) {
-    return "Oi, " + nome.split(" ")[0] + "! Seu acesso à Panela está liberado 🍲\n\n1. Entre em https://panela.usevox.com.br\n2. Toque em Pré-cadastro e use o e-mail " + email + " (ou toque em Cadastrar com o Google, se esse e-mail for do Google).\n\nPanela só é ruim pra quem tá de fora. Te espero lá dentro!";
+    return "Oi, " + nome.split(" ")[0] + "! Seu acesso à Panela está liberado 🍲\n\n1. Entre em https://panela.usevox.com.br/entrar\n2. Toque em Pré-cadastro e use o e-mail " + email + " (ou toque em Cadastrar com o Google, se esse e-mail for do Google).\n\nPanela só é ruim pra quem tá de fora. Te espero lá dentro!";
   }
   function ligarAcessos() {
     if (!(memoria && memoria.nuvem)) return;

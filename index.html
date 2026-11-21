@@ -1,28 +1,444 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="A Panela: mentoria de IA, negócios e fé para empreendedores e profissionais de todas as áreas. Mais tempo com a família e mais resultado, com o Claude e o Grok trabalhando por você.">
+<meta property="og:title" content="A Panela · Mentoria de IA, negócios e fé">
+<meta property="og:description" content="Panela só é ruim pra quem tá de fora. Encontros ao vivo, individuais, nivelamento e mais de 800 temperos para o Claude.">
+<meta property="og:image" content="https://panela.usevox.com.br/panela-logo-arte.jpg">
 <meta name="theme-color" content="#141414">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="A Panela">
-<title>A Panela · Área do participante</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="estilo.css?v=202611202319">
-</head>
-<body>
-<div id="raiz"></div>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-<script src="nuvem.js?v=202611202319"></script>
-<script src="dados.js?v=202611202319"></script>
-<script src="testes.js?v=202611202319"></script>
-<script src="nivelamento.js?v=202611202319"></script>
-<script src="guia-perfis.js?v=202611202319"></script>
-<script src="app.js?v=202611202319"></script>
-<script>if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js");</script>
-</body>
-</html>
+<title>A Panela · Mentoria de IA, negócios e fé</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap">
+<style>
+/* Layout: portfólio claro (cinza-papel, cartões brancos, linhas finas, robô em traço ao fundo) com as cores da panela como acentos */
+:root{
+  --bg:#F1F1EE; --surface:#FFFFFF; --ink:#141414; --muted:#6A6A66; --line:#DFDFDA;
+  --azul:#2D5BD7; --salvia:#A7B39E; --salvia-escura:#7E8A75; --vermelho:#E2231A; --amarelo:#F5B800;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --texto:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--texto);font-size:15px;line-height:1.6;overflow-x:hidden}
+a{color:inherit}
+img{max-width:100%}
+:focus-visible{outline:2px solid var(--azul);outline-offset:3px}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.rot{font-family:var(--display);font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
+h2{font-size:clamp(28px,3.6vw,40px);font-weight:800;letter-spacing:-.01em;line-height:1.05}
+h3{font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.btn{display:inline-flex;align-items:center;gap:12px;font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:14px 22px;border-radius:4px;text-decoration:none;border:1.5px solid var(--azul);cursor:pointer;transition:transform .15s,box-shadow .15s,background .15s}
+.btn.cheio{background:var(--azul);color:#fff;box-shadow:0 10px 24px -12px rgba(45,91,215,.7)}
+.btn.contorno{color:var(--azul);background:transparent}
+.btn:hover{transform:translateY(-2px)}
+.btn .seta{font-size:16px;letter-spacing:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px}
+
+/* Topo */
+.topo{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rgba(241,241,238,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:31}
+.topo .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-block:12px}
+.marca img{height:58px;display:block;mix-blend-mode:multiply}
+.topo nav{display:flex;gap:28px}
+.topo nav a{font-family:var(--display);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;padding-block:6px;border-bottom:2px solid transparent}
+.topo nav a:hover{border-bottom-color:var(--azul);color:var(--azul)}
+
+/* Hero */
+.hero{position:relative;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.05fr 1fr;align-items:center;min-height:620px;position:relative}
+.vertical{white-space:nowrap;position:absolute;left:max(4px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%) rotate(180deg);writing-mode:vertical-rl;font-family:var(--display);font-size:10px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:14px}
+.vertical::after{content:"";width:1px;height:60px;background:var(--line)}
+.hero .texto{padding-block:56px;padding-left:28px;display:flex;flex-direction:column;gap:22px;position:relative;z-index:2;min-width:0}
+.hero .ola{font-size:17px;color:var(--muted)}
+.hero h1{font-size:clamp(44px,6.4vw,84px);font-weight:900;line-height:.94;letter-spacing:-.02em;text-transform:uppercase}
+.hero h1 span{color:var(--azul)}
+.hero .sub{font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:.32em;text-transform:uppercase;display:flex;align-items:center;gap:12px}
+.hero .sub::after{content:"";width:46px;height:2px;background:var(--azul)}
+.hero p.desc{max-width:46ch;margin:0;font-size:16px;color:#333}
+.acoes{display:flex;flex-wrap:wrap;gap:18px;align-items:center}
+.vagas{display:flex;align-items:center;gap:14px;margin-top:8px}
+.bolinhas{display:flex}
+.bolinhas i{width:34px;height:34px;border-radius:50%;border:2px solid var(--bg);margin-left:-8px;display:grid;place-items:center;font-style:normal;font-family:var(--display);font-weight:800;font-size:12px;color:#fff}
+.bolinhas i:first-child{margin-left:0}
+.vagas small{font-size:12px;color:var(--muted);line-height:1.4}
+.hero .arte{position:relative;height:100%;min-height:560px}
+.hero .circulo{position:absolute;width:min(430px,80%);aspect-ratio:1;border-radius:50%;background:var(--salvia);right:12%;top:12%}
+.hero .anel{position:absolute;width:min(520px,96%);aspect-ratio:1;border-radius:50%;border:1px solid var(--line);right:4%;top:4%}
+.hero .anel::after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:var(--azul);right:12%;top:13%}
+.hero .robo{position:absolute;right:14%;bottom:0;height:94%;z-index:2;opacity:.38;filter:grayscale(.55) contrast(.9);mix-blend-mode:multiply}
+.hero .pessoa{position:absolute;right:10%;bottom:0;height:92%;z-index:2;filter:drop-shadow(0 30px 40px rgba(0,0,0,.12))}
+.selo-lado{position:absolute;right:0;top:30%;z-index:3;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:6px;padding:14px 16px;width:150px;font-size:12px;line-height:1.45}
+.selo-lado b{display:block;font-family:var(--display);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.selo-lado hr{border:0;border-top:1px solid var(--line);margin:10px 0}
+
+section{padding-block:64px;border-top:1px solid var(--line)}
+.cab{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:28px;flex-wrap:wrap}
+.cab a{font-family:var(--display);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;text-decoration:none}
+
+/* Vídeo */
+.video{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;align-items:stretch}
+.player{position:relative;aspect-ratio:16/9;border-radius:6px;overflow:hidden;background:#1d1d1b;display:grid;place-items:center}
+.player img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.85}
+.player .play{position:relative;width:78px;height:78px;border-radius:50%;background:var(--surface);display:grid;place-items:center;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.player .play::after{content:"";border-left:20px solid var(--azul);border-top:12px solid transparent;border-bottom:12px solid transparent;margin-left:6px}
+.player .tag{position:absolute;left:16px;bottom:14px;color:#fff;font-family:var(--display);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:600}
+.video .lado{padding:28px;display:flex;flex-direction:column;gap:14px;justify-content:center}
+.video .lado p{margin:0;color:#333}
+
+/* Frentes */
+.frentes{display:grid;grid-template-columns:1fr 3fr;gap:30px;align-items:start}
+.frentes .intro h2{margin:8px 0 10px}
+.frentes .intro p{color:var(--muted);margin:0}
+.grade6{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.f{padding:22px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;grid-template-columns:44px 1fr;gap:6px 14px;align-items:start;min-width:0}
+.f:nth-child(3n){border-right:0}
+.f:nth-last-child(-n+3){border-bottom:0}
+.f .ic{grid-row:span 2;width:44px;height:44px;border-radius:6px;background:#EEF0EA;border:1px solid var(--line);display:grid;place-items:center}
+.f .ic svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.f p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5}
+.f.fe .ic{background:var(--ink)} .f.fe .ic svg{stroke:#fff}
+.f.ia .ic{background:var(--azul);border-color:var(--azul)} .f.ia .ic svg{stroke:#fff}
+
+/* Panela: ferramentas, citação, cashback */
+.trio{display:grid;grid-template-columns:1fr 1.35fr .8fr;gap:20px;align-items:stretch}
+.ferr{padding:4px 0}
+.ferr .rot{display:block;margin-bottom:18px}
+.marcas{display:grid;grid-template-columns:1fr 1fr;gap:22px 18px}
+.marcas span{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:.02em;display:flex;align-items:center;gap:8px;color:#2a2a28}
+.marcas span i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.citacao{background:var(--salvia);color:#fff;border-radius:6px;padding:30px;display:flex;flex-direction:column;justify-content:space-between;gap:20px;position:relative;overflow:hidden}
+.citacao .aspas{font-family:Georgia,serif;font-size:56px;line-height:.6;opacity:.8}
+.citacao q{font-size:20px;line-height:1.45;quotes:none;font-weight:400}
+.citacao .quem{display:flex;align-items:center;gap:12px;font-size:12px}
+.citacao .quem b{display:block;font-family:var(--display);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+.citacao .ponto{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.25);display:grid;place-items:center;font-family:Georgia,serif;font-size:20px}
+.anelcard{padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.anelcard svg{width:120px;height:120px}
+.anelcard .num{font-family:var(--display);font-weight:800;font-size:26px}
+.anelcard small{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:var(--display);font-weight:600}
+
+/* Caminho */
+.caminho{position:relative}
+.trilha{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;position:relative;padding-top:30px}
+.trilha::before{content:"";position:absolute;left:4%;right:4%;top:9px;height:1px;background:var(--line)}
+.passo{position:relative;padding:20px 18px;background:var(--surface);border:1px solid var(--line);border-radius:6px;min-width:0}
+.passo::before{content:"";position:absolute;top:-27px;left:20px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--muted)}
+.passo.ativo::before{border-color:var(--azul);background:var(--azul)}
+.passo h3{font-size:12px;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.passo p{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
+.passo .cor{width:8px;height:8px;border-radius:2px;display:inline-block}
+
+/* Faixa de números */
+.faixa{background:var(--salvia);color:#fff;border:0}
+.faixa .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.faixa div div{display:flex;align-items:center;gap:14px}
+.faixa b{font-family:var(--display);font-size:30px;font-weight:700;line-height:1}
+.faixa small{display:block;font-family:var(--display);font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.9;margin-top:4px}
+.faixa svg{width:34px;height:34px;stroke:#fff;fill:none;stroke-width:1.4}
+
+/* Área do participante */
+.area{display:grid;grid-template-columns:1fr 1.2fr;gap:28px;align-items:center}
+.area ul{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:14px}
+.area li{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start}
+.area li i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-family:var(--display);font-weight:800;font-size:12px;color:#fff}
+.area li b{display:block;font-family:var(--display);font-size:14px}
+.area li span{font-size:13.5px;color:var(--muted)}
+.painel{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.painel .bloco{border:1px solid var(--line);border-radius:6px;padding:14px;min-width:0}
+.painel .bloco.largo{grid-column:span 2}
+.painel .rot{display:block;margin-bottom:8px}
+.painel svg{width:100%;height:auto;display:block}
+.barras{display:grid;gap:8px}
+.barras div{display:grid;grid-template-columns:90px 1fr 34px;gap:8px;align-items:center;font-size:12px}
+.barras div span:nth-child(2){height:8px;border-radius:99px;background:#ECECE8;position:relative;overflow:hidden}
+.barras div span:nth-child(2) em{position:absolute;inset:0 auto 0 0;border-radius:99px}
+.cupom{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#FFF7DB;border:1px dashed var(--amarelo);border-radius:6px;padding:10px 12px;font-family:var(--display);font-weight:700;letter-spacing:.06em}
+
+/* Investimento */
+.planos{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;align-items:stretch}
+.plano{padding:28px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.plano .valor{font-family:var(--display);font-weight:800;font-size:44px;line-height:1;font-variant-numeric:tabular-nums}
+.plano .valor small{display:block;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.plano.destaque{border:2px solid var(--azul);position:relative}
+.plano.destaque::before{content:"Para quem foi ao Encontro do Hub";position:absolute;top:-12px;left:22px;background:var(--azul);color:#fff;font-family:var(--display);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:3px}
+.plano ul{margin:0;padding-left:18px;font-size:13.5px;color:#333;display:grid;gap:6px}
+.plano.escuro{background:var(--ink);color:#fff;border-color:var(--ink)}
+.plano.escuro .valor{color:var(--amarelo)}
+.garantia{margin-top:18px;font-size:13px;color:var(--muted)}
+
+/* Dúvidas */
+.faq details{border-bottom:1px solid var(--line);padding-block:4px}
+.faq summary{cursor:pointer;list-style:none;padding:16px 0;font-family:var(--display);font-weight:700;font-size:16px;display:flex;justify-content:space-between;gap:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--azul);font-size:20px;line-height:1}
+.faq details[open] summary::after{content:"\2013"}
+.faq p{margin:0 0 16px;color:#333;max-width:75ch}
+
+/* Contato */
+.contato{display:grid;grid-template-columns:1fr 1.3fr .9fr;gap:24px;align-items:start}
+.contato h2{font-size:24px;text-transform:uppercase;letter-spacing:.04em}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form input,.form select,.form textarea{width:100%;font:inherit;font-size:13.5px;padding:12px 14px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink)}
+.form textarea{grid-column:span 2;min-height:90px;resize:vertical}
+.form .cheio-l{grid-column:span 2}
+.form button{grid-column:span 2;justify-self:start}
+.box-panela{padding:16px;display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.box-panela img{width:100%;max-width:220px;mix-blend-mode:multiply}
+.box-panela small{font-family:var(--display);font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
+.aviso-form{grid-column:span 2;font-size:12px;color:var(--azul);min-height:1em;margin:0}
+
+footer{background:#1c1c1b;color:#d9d9d4;padding-block:40px 30px;margin-top:0}
+footer .wrap{display:grid;grid-template-columns:1.3fr 1fr 1fr 1.2fr;gap:24px}
+footer h4{font-family:var(--display);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#fff;margin:0 0 12px}
+footer a{display:block;text-decoration:none;font-size:13px;color:#bdbdb7;margin-bottom:6px}
+footer .logo-rodape{background:#fff;border-radius:6px;padding:8px 12px;display:inline-block}
+footer .logo-rodape img{height:52px;display:block}
+footer small{display:block;margin-top:14px;font-size:12px;color:#8d8d88}
+
+@media (max-width:980px){
+  #temperos .wrap{grid-template-columns:1fr!important}
+  .topo nav{display:none}
+  .hero .wrap{grid-template-columns:1fr;min-height:0}
+  .hero .arte{min-height:460px}
+  .vertical{display:none}
+  .hero .texto{padding-left:0}
+  .video,.frentes,.trio,.area,.planos,.contato{grid-template-columns:1fr}
+  .grade6{grid-template-columns:1fr 1fr}
+  .f{border-right:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important}
+  .f:nth-child(2n){border-right:0!important}
+  .trilha{grid-template-columns:1fr 1fr}
+  .trilha::before{display:none}
+  .faixa .wrap{grid-template-columns:1fr 1fr}
+  footer .wrap{grid-template-columns:1fr 1fr}
+}
+@media (max-width:560px){
+  .grade6,.trilha{grid-template-columns:1fr}
+  .f{border-right:0!important}
+  .form{grid-template-columns:1fr}
+  .form textarea,.form .cheio-l,.form button,.aviso-form{grid-column:auto}
+  .selo-lado{display:none}
+}
+@media (prefers-reduced-motion:reduce){.btn{transition:none}}
+
+/* ===== Conversão: vídeo, cozinha, prova social, compra ===== */
+.player video{width:100%;height:100%;object-fit:cover;display:block;background:#141414;border-radius:inherit}
+.cozinha{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.ck{display:grid;gap:8px;align-content:start}.ck h3{margin:0}.ck p{margin:0;color:#333}
+.ck .num{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 13px var(--display)}
+.kevin{display:grid;grid-template-columns:240px minmax(0,1fr);gap:22px;align-items:center;margin-top:16px;padding:0;overflow:hidden}
+.kevin img{width:100%;height:100%;min-height:200px;object-fit:cover;object-position:60% 25%;display:block}
+.kevin>div{padding:20px 20px 20px 0}.kevin h3{margin:6px 0}.kevin p{margin:0;color:#333}
+.galeria-e{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.galeria-e figure{margin:0;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:#ddd}
+.galeria-e img{width:100%;height:100%;object-fit:cover;display:block}
+.fim-acoes{display:grid;gap:12px;align-content:center}
+.fim-acoes .btn{justify-content:center}
+.barra-compra{display:none}
+@media (max-width:900px){
+  .cozinha,.galeria-e{grid-template-columns:1fr 1fr}
+  .kevin{grid-template-columns:1fr}.kevin>div{padding:0 18px 18px}.kevin img{min-height:220px}
+  .barra-compra{display:flex;position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:60;align-items:center;justify-content:space-between;gap:10px;background:var(--ink);color:#fff;border-radius:14px;padding:10px 10px 10px 16px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+  .barra-compra div{display:grid;line-height:1.2}.barra-compra small{color:#bbb;font-size:11.5px}
+  .barra-compra .btn{background:var(--amarelo);border-color:var(--amarelo);color:var(--ink);white-space:nowrap;padding:12px 14px;flex:none}
+  footer{padding-bottom:90px}
+}
+@media (max-width:560px){.cozinha{grid-template-columns:1fr}}
+</style>
+
+<header class="topo">
+  <div class="wrap">
+    <a class="marca" href="#inicio"><img src="logo-h-web.jpg" alt="A Panela"></a>
+    <nav aria-label="Seções"><a href="#inicio">Início</a><a href="#video">O vídeo</a><a href="#frentes">O que você trabalha</a><a href="#caminho">O caminho</a><a href="#area">Área do participante</a><a href="#investimento">Investimento</a><a href="entrar/">Já sou aluno</a></nav>
+    <a class="btn contorno" href="#investimento">Entra pra panela</a>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="hero" style="border-top:0;padding-block:0">
+    <div class="wrap">
+      <div class="vertical">Entre as panelas também anda o Senhor</div>
+      <div class="texto">
+        <span class="ola">Mentoria do Ramon Berba</span>
+        <h1>Panela só é ruim <span>pra quem tá de fora</span></h1>
+        <span class="sub">Mentoria de gestão, fé e IA</span>
+        <p class="desc">Mais tempo com a família e mais resultado. Um grupo seleto de empreendedores e profissionais que se ajudam. Diagnóstico do negócio, nova rota, estratégia, marketing, pessoas e lançamentos, com o Claude e o Grok trabalhando como funcionários de verdade.</p>
+        <div class="acoes"><a class="btn cheio" href="#investimento">Quero entrar pra panela <span class="seta">&rarr;</span></a><a class="btn contorno" href="#video">Assistir ao vídeo &#9655;</a></div>
+        <div class="vagas"><div class="bolinhas"><i style="background:var(--vermelho)">A</i><i style="background:var(--amarelo);color:var(--ink)">P</i><i style="background:var(--azul)">+</i></div><small>Turma fundadora<br>Vagas limitadas</small></div>
+      </div>
+      <div class="arte" aria-hidden="true">
+        <div class="anel"></div>
+        <div class="circulo"></div>
+        <img class="robo" src="robo.png" alt="" onerror="this.remove()">
+        <div class="selo-lado"><b>Online</b>Para o Brasil inteiro<hr><b>Ferramentas</b>Claude + Grok</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="video">
+    <div class="wrap">
+      <div class="cab"><span class="rot">Assista antes de tudo</span></div>
+      <div class="video">
+        <div class="player"><video controls playsinline preload="none" poster="capa-video.jpg" aria-label="Vídeo: o convite da Panela"><source src="video/a-panela-convite.mp4" type="video/mp4"></video></div>
+        <div class="card lado"><span class="rot">Em 4 minutos</span><h2>O que é a Panela e por que ela só é ruim pra quem tá de fora</h2><p>Assista ao convite e descubra no final uma surpresa sobre como este vídeo foi feito.</p><a class="btn cheio" href="#investimento" style="align-self:start">Quero entrar &rarr;</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="frentes">
+    <div class="wrap frentes">
+      <div class="intro"><span class="rot">O que você trabalha</span><h2>Estratégia. Pessoas. Fé.</h2><p>Seis frentes para olhar o seu negócio de ponta a ponta.</p></div>
+      <div class="grade6">
+        <div class="f ia"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="3"/><path d="M9 11h.01M15 11h.01M9 15h6M12 3v3"/></svg></span><h3>IA no negócio</h3><p>Claude e Grok como funcionários de verdade.</p></div>
+        <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></span><h3>Diagnóstico</h3><p>Um raio-X honesto de onde você está.</p></div>
+        <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 18c4 0 4-12 8-12s4 12 8 12"/><circle cx="12" cy="6" r="1.5"/></svg></span><h3>Nova rota</h3><p>O que cortar, dobrar e mudar.</p></div>
+        <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="8"/></svg></span><h3>Novos negócios</h3><p>Validar a ideia antes de investir.</p></div>
+        <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 19L19 5M9 5h10v10"/></svg></span><h3>Lançamentos</h3><p>Do produto à primeira venda.</p></div>
+        <div class="f fe"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M7 8h10"/></svg></span><h3>Fé no centro</h3><p>Um negócio que serve à sua casa.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="padroeiro">
+    <div class="wrap trio">
+      <div class="ferr"><span class="rot">As ferramentas da Panela</span>
+        <div class="marcas"><span><i style="background:var(--vermelho)"></i>Claude</span><span><i style="background:var(--azul)"></i>Grok</span><span><i style="background:var(--amarelo)"></i>Canva</span><span><i style="background:var(--salvia-escura)"></i>WhatsApp</span><span><i style="background:var(--ink)"></i>Planilhas</span><span><i style="background:var(--vermelho)"></i>Temperos</span></div>
+      </div>
+      <div class="citacao"><span class="aspas">&ldquo;</span><q>Santificar o trabalho, santificar-se no trabalho e santificar os outros com o trabalho.</q><div class="quem"><span class="ponto">&#10010;</span><div><b>São Josemaria Escrivá</b>Padroeiro da Panela</div></div></div>
+      <div class="card anelcard"><span class="rot">Cashback VOX</span>
+        <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="#ECECE8" stroke-width="8"/><circle cx="60" cy="60" r="50" fill="none" stroke="#2D5BD7" stroke-width="8" stroke-linecap="round" stroke-dasharray="94.2 314.2" transform="rotate(-90 60 60)"/><text x="60" y="68" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="800" font-size="26" fill="#141414">30%</text></svg>
+        <small>Do valor investido volta em cupons</small></div>
+    </div>
+  </section>
+
+  <section id="caminho" class="caminho">
+    <div class="wrap">
+      <div class="cab"><div><span class="rot">O caminho</span><h2 style="margin-top:8px">Do diagnóstico ao crescimento</h2></div></div>
+      <div class="trilha">
+        <div class="passo ativo"><h3><span class="cor" style="background:var(--vermelho)"></span>Diagnosticar</h3><p>Onde o negócio está e o que rouba o seu tempo.</p></div>
+        <div class="passo"><h3><span class="cor" style="background:var(--amarelo)"></span>Contratar a IA</h3><p>O Claude e o Grok aprendendo como você trabalha.</p></div>
+        <div class="passo"><h3><span class="cor" style="background:var(--azul)"></span>Ajustar a rota</h3><p>Estratégia, posicionamento e prioridades.</p></div>
+        <div class="passo"><h3><span class="cor" style="background:var(--salvia-escura)"></span>Executar</h3><p>Marketing, vendas, pessoas e lançamentos.</p></div>
+        <div class="passo"><h3><span class="cor" style="background:var(--ink)"></span>Crescer</h3><p>Plano dos próximos meses, com fé e família no centro.</p></div>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="cozinha">
+    <div class="wrap">
+      <div class="cab"><div><span class="rot">Como a gente cozinha junto</span><h2 style="margin-top:8px">Três meses, do zero ao negócio rodando com IA</h2></div></div>
+      <div class="cozinha">
+        <div class="card ck"><span class="num" style="background:var(--vermelho)">01</span><h3>Nivelamento</h3><p>12 aulas curtas antes do 1º encontro, cada uma com uma ferramenta para aplicar no seu negócio e material de apoio em PDF.</p></div>
+        <div class="card ck"><span class="num" style="background:var(--amarelo);color:var(--ink)">02</span><h3>12 encontros ao vivo</h3><p>Toda semana, à noite. Em cada encontro um problema real da turma é resolvido na frente de todos. Tudo fica gravado.</p></div>
+        <div class="card ck"><span class="num" style="background:var(--azul)">03</span><h3>3 encontros individuais</h3><p>Um por mês, só você e o Ramon, para olhar o seu negócio de perto.</p></div>
+        <div class="card ck"><span class="num" style="background:var(--ink)">04</span><h3>Grupo da Panela</h3><p>Dúvidas no meio da semana respondidas no grupo. Ninguém fica sozinho.</p></div>
+      </div>
+      <div class="card kevin"><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/kevin-palestra.jpg" alt="Kevin Eger palestrando no 1º Encontro do Hub" loading="lazy"><div><span class="rot" style="color:var(--vermelho)">Aula especial · ao vivo · só para a turma</span><h3>Kevin Eger: geração de leads e demanda comercial</h3><p>Uma das melhores aulas da mentoria dele, ao vivo para a Panela. Além de tirar a burocracia das suas costas, você aprende a encher a agenda de clientes.</p></div></div>
+    </div>
+  </section>
+  <section id="temperos">
+    <div class="wrap" style="display:grid;grid-template-columns:1fr 1.4fr;gap:28px;align-items:center">
+      <div><span class="rot">Os temperos da Panela</span><h2 style="margin:8px 0 12px">Tempero dá sabor ao negócio</h2><p style="color:#333;margin:0">Cada tempero é uma skill: um conjunto de instruções que você coloca no Claude e ele passa a entregar resultados extraordinários, que a maioria das pessoas não consegue sozinha. São <b>mais de 800 temperos prontos</b>, separados por ramo, e você escolhe, copia e usa no Claude.</p></div>
+      <div class="grade6" style="grid-template-columns:repeat(3,1fr)">
+        <div class="f"><span class="ic" style="background:#FDECEA"><svg viewBox="0 0 24 24"><path d="M8 3h8l-1 4H9z"/><rect x="7" y="7" width="10" height="14" rx="2"/></svg></span><h3>Padaria</h3><p>Encomendas, cardápio e posts do dia.</p></div>
+        <div class="f"><span class="ic" style="background:#FFF6D6"><svg viewBox="0 0 24 24"><path d="M8 3h8l-1 4H9z"/><rect x="7" y="7" width="10" height="14" rx="2"/></svg></span><h3>Salão</h3><p>Agenda, lembretes e pós-atendimento.</p></div>
+        <div class="f"><span class="ic" style="background:#E6EEFB"><svg viewBox="0 0 24 24"><path d="M8 3h8l-1 4H9z"/><rect x="7" y="7" width="10" height="14" rx="2"/></svg></span><h3>Advocacia</h3><p>Peças, prazos e atendimento ao cliente.</p></div>
+        <div class="f"><span class="ic" style="background:#EEF0EA"><svg viewBox="0 0 24 24"><path d="M8 3h8l-1 4H9z"/><rect x="7" y="7" width="10" height="14" rx="2"/></svg></span><h3>Loja</h3><p>Vitrine, promoções e equipe de vendas.</p></div>
+        <div class="f"><span class="ic" style="background:#FDECEA"><svg viewBox="0 0 24 24"><path d="M8 3h8l-1 4H9z"/><rect x="7" y="7" width="10" height="14" rx="2"/></svg></span><h3>Consultório</h3><p>Agenda, orientações e retorno.</p></div>
+        <div class="f fe"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><h3>O seu</h3><p>Temperos sob medida para o seu negócio.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="faixa">
+    <div class="wrap">
+      <div><div><svg viewBox="0 0 24 24"><path d="M4 20V10l8-6 8 6v10H4z"/></svg><div><b>22+</b><small>Anos de varejo</small></div></div></div>
+      <div><div><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="3"/><path d="M9 11h.01M15 11h.01"/></svg><div><b>2</b><small>Funcionários de IA</small></div></div></div>
+      <div><div><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18"/></svg><div><b>BR</b><small>Online, Brasil inteiro</small></div></div></div>
+      <div><div><svg viewBox="0 0 24 24"><path d="M12 3v18M7 8h10"/></svg><div><b>&#10010;</b><small>Fé no centro</small></div></div></div>
+    </div>
+  </section>
+
+
+  <section id="encontro">
+    <div class="wrap">
+      <div class="cab"><div><span class="rot">Onde a Panela nasceu</span><h2 style="margin-top:8px">O 1º Encontro do Hub</h2><p style="color:var(--muted);margin:6px 0 0">14 de novembro de 2026 · empreendedores e profissionais de todas as áreas à mesma mesa: fé, negócios e inteligência artificial.</p></div></div>
+      <div class="galeria-e"><figure><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/mesas.jpg" alt="Mesas cheias no 1º Encontro do Hub" loading="lazy"></figure><figure><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/sorrisos.jpg" alt="Participantes sorrindo no 1º Encontro" loading="lazy"></figure><figure><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/conversa.jpg" alt="Conversa entre participantes no 1º Encontro" loading="lazy"></figure><figure><img src="https://hubdeempreendedores.usevox.com.br/midia/encontro-1/grupo-final.jpg" alt="Foto do grupo no fim do 1º Encontro" loading="lazy"></figure></div>
+    </div>
+  </section>
+  <section id="area">
+    <div class="wrap area">
+      <div><span class="rot">Área do participante</span><h2 style="margin-top:8px">Você chega a cada encontro preparado</h2>
+        <ul>
+          <li><i style="background:var(--vermelho)">1</i><div><b>Diagnóstico automático do negócio</b><span>Responda, veja o resultado na hora e refaça quando quiser.</span></div></li>
+          <li><i style="background:var(--amarelo);color:var(--ink)">2</i><div><b>Questionários personalizados</b><span>Para a mentoria se adaptar ao seu negócio e ao seu momento.</span></div></li>
+          <li><i style="background:var(--azul)">3</i><div><b>Gráficos da sua evolução</b><span>Acompanhe como o seu negócio e o seu plano estão sendo construídos.</span></div></li>
+          <li><i style="background:var(--ink)">4</i><div><b>Temperos do seu negócio</b><span>Skills prontas para o seu tipo de negócio: dão sabor ao seu negócio e fazem o Claude entregar o que você não conseguiria sozinho.</span></div></li>
+          <li><i style="background:var(--vermelho)">5</i><div><b>Encontros gravados e o curso</b><span>Tudo num lugar só, com o material de apoio de cada encontro.</span></div></li>
+          <li><i style="background:var(--salvia-escura)">6</i><div><b>Resgate do cashback VOX</b><span>Gere o cupom do mês com um clique.</span></div></li>
+        </ul>
+      </div>
+      <div class="card painel" aria-hidden="true">
+        <div class="bloco"><span class="rot">Diagnóstico</span>
+          <svg viewBox="0 0 200 180"><g fill="none" stroke="#DFDFDA"><polygon points="100,20 170,60 170,130 100,170 30,130 30,60"/><polygon points="100,55 140,77 140,113 100,135 60,113 60,77"/></g><polygon points="100,35 150,70 160,125 100,150 55,118 45,72" fill="rgba(45,91,215,.18)" stroke="#2D5BD7" stroke-width="2"/><g font-family="Inter" font-size="9" fill="#6A6A66" text-anchor="middle"><text x="100" y="14">Estratégia</text><text x="186" y="58">Marketing</text><text x="186" y="140">Pessoas</text><text x="100" y="180">Vendas</text><text x="14" y="140">Processos</text><text x="14" y="58">IA</text></g></svg>
+        </div>
+        <div class="bloco"><span class="rot">Sua evolução</span>
+          <svg viewBox="0 0 200 150"><g stroke="#ECECE8"><line x1="10" y1="30" x2="190" y2="30"/><line x1="10" y1="70" x2="190" y2="70"/><line x1="10" y1="110" x2="190" y2="110"/></g><polyline points="10,120 50,105 90,95 130,70 170,52 190,40" fill="none" stroke="#E2231A" stroke-width="2.5"/><circle cx="190" cy="40" r="4" fill="#E2231A"/><g font-family="Inter" font-size="9" fill="#6A6A66"><text x="10" y="142">Teste 1</text><text x="150" y="142">Hoje</text></g></svg>
+        </div>
+        <div class="bloco largo"><span class="rot">Seu plano</span>
+          <div class="barras"><div><span>Estratégia</span><span><em style="width:72%;background:var(--azul)"></em></span><span>72%</span></div><div><span>Marketing</span><span><em style="width:48%;background:var(--vermelho)"></em></span><span>48%</span></div><div><span>Pessoas</span><span><em style="width:60%;background:var(--amarelo)"></em></span><span>60%</span></div></div>
+        </div>
+        <div class="bloco largo"><div class="cupom"><span>PANELA-M1-7K2Q</span><span style="font-family:var(--texto);font-weight:500;font-size:12px">Cupom VOX do mês</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="investimento">
+    <div class="wrap">
+      <div class="cab"><div><span class="rot">Investimento</span><h2 style="margin-top:8px">Entra pra panela</h2></div></div>
+      <div class="planos">
+        <div class="card plano destaque"><p class="valor"><small>3 meses de mentoria</small>R$ 997</p><p style="margin:0;color:var(--muted)">Com o cupom exclusivo que você recebeu no grupo do Encontro. Digite no carrinho, antes de pagar.</p><p style="margin:0"><b>R$ 299,10</b> de cashback na VOX</p><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Comprar com o cupom &rarr;</a></div>
+        <div class="card plano"><span class="rot">Inscrição geral</span><p class="valor"><small>3 meses de mentoria</small>R$ 1.697</p><p style="margin:0;color:var(--muted)">Pix, boleto ou cartão de crédito parcelado.</p><p style="margin:0"><b>R$ 509,10</b> de cashback na VOX</p><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Garantir minha vaga &rarr;</a></div>
+        <div class="card plano escuro"><span class="rot" style="color:#bbb">O que está incluído</span><ul style="color:#ddd"><li>Nivelamento: 12 aulas curtas com material em PDF</li><li>12 encontros ao vivo em grupo, às 20h, gravados</li><li>3 encontros individuais, um por mês</li><li>Grupo de dúvidas durante os 3 meses</li><li>Aula especial com Kevin Eger</li><li>Curso O Funcionário Invisível</li><li>Área do participante com diagnóstico e gráficos</li><li>Mais de 800 temperos (skills) por ramo</li><li>Guias práticos do Claude e do Grok</li><li>Cashback de 30% em 3 cupons mensais da VOX</li></ul></div>
+      </div>
+      <p class="garantia">Pagamento seguro pela loja da VOX. Assim que o pagamento é aprovado, você recebe por e-mail o link para criar a sua senha e entrar na área do participante. Garantia de 7 dias: entrou e viu que não é para você, devolvemos 100% do valor.</p>
+    </div>
+  </section>
+
+  <section id="duvidas">
+    <div class="wrap" style="max-width:900px">
+      <span class="rot">Dúvidas</span><h2 style="margin:8px 0 14px">Perguntas da turma</h2>
+      <div class="faq">
+        <details><summary>Preciso entender de tecnologia?</summary><p>Não. Se você sabe mandar mensagem no WhatsApp, consegue acompanhar. O curso começa do zero e os encontros são mão na massa.</p></details>
+        <details><summary>E se eu perder um encontro?</summary><p>A gravação fica na área do participante em até 48 horas. Você assiste e faz a tarefa do mesmo jeito.</p></details>
+        <details><summary>Quando começa?</summary><p>Assim que o pagamento é aprovado, você já entra na área do participante e começa o nivelamento. Os encontros em grupo começam em janeiro de 2027, toda semana, sempre às 20h; o dia é escolhido com a turma.</p></details><details><summary>Como recebo o acesso?</summary><p>Em poucos minutos depois da aprovação do pagamento chega um e-mail com o link para criar a sua senha. Você entra em panela.usevox.com.br/entrar com o e-mail da compra (ou com o Google). Não chegou? Veja o spam ou chame no WhatsApp.</p></details>
+        <details><summary>Ainda não abri o meu negócio. Posso entrar?</summary><p>Pode. A Panela também ajuda a validar e estruturar um novo negócio antes de você investir.</p></details>
+        <details><summary>Como funciona o cashback na VOX?</summary><p>30% do valor investido volta em cupons para compras na VOX, em 3 partes iguais, uma por mês. Você resgata o cupom na área do participante e ele vale por 30 dias, no site ou na loja.</p></details>
+        <details><summary>A mentoria é só para católicos?</summary><p>A Panela tem a fé como base, mas é aberta a todos que respeitam esse jeito de trabalhar.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section id="entrar">
+    <div class="wrap contato">
+      <div><h2>Vamos cozinhar algo extraordinário</h2><p style="color:var(--muted)">Turma pequena, porque eu quero olhar cada negócio de perto. Quando fechar, fechou.</p><p class="rot" style="margin-top:18px">Mentoria online · Brasil inteiro</p></div>
+      <div class="fim-acoes"><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Quero entrar pra panela &rarr;</a><a class="btn contorno" href="https://wa.me/5521996588197?text=Oi%2C%20Ramon%21%20Quero%20saber%20mais%20sobre%20a%20Panela." target="_blank" rel="noopener">Tirar uma dúvida no WhatsApp</a><small style="color:var(--muted)">Foi ao 1º Encontro? Use o seu cupom no carrinho e pague R$ 997.</small></div>
+      <div class="card box-panela"><img src="panela-logo-arte.jpg" alt=""><small>Vagas limitadas · turma fundadora</small></div>
+    </div>
+  </section>
+</main>
+
+<div class="barra-compra"><div><b>A Panela</b><small>Turma 01 · vagas limitadas</small></div><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Quero entrar</a></div>
+<footer>
+  <div class="wrap">
+    <div><span class="logo-rodape"><img src="logo-h-web.jpg" alt="A Panela"></span><small>Uma mentoria do Hub de Empreendedores Católicos<br>Padroeiro: São Josemaria Escrivá</small></div>
+    <div><h4>Navegação</h4><a href="#inicio">Início</a><a href="#frentes">O que você trabalha</a><a href="#caminho">O caminho</a><a href="#investimento">Investimento</a></div>
+    <div><h4>A Panela</h4><a href="#area">Área do participante</a><a href="#duvidas">Dúvidas</a><a href="#entrar">Quero entrar</a></div>
+    <div><h4>Entre as panelas</h4><small style="margin-top:0">&ldquo;Entre as panelas também anda o Senhor.&rdquo; Santa Teresa d&rsquo;Ávila</small></div>
+  </div>
+</footer>
+
+
