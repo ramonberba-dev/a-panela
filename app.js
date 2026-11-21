@@ -104,7 +104,7 @@
     raiz.appendChild(el(
       '<div class="login2">' +
       '<section class="l-arte" aria-hidden="true"><span class="l-cota l-c1">FIG. 01 · A PANELA</span><span class="l-cota l-c2">MENTORIA · TURMA 01</span>' +
-      '<span class="l-cruz l-x1"></span><span class="l-cruz l-x2"></span><img class="l-poster" src="login-arte.jpg" alt=""></section>' +
+      '<span class="l-cruz l-x1"></span><span class="l-cruz l-x2"></span><img class="l-poster" src="panela-logo-arte.jpg" alt=""></section>' +
       '<section class="l-form"><div class="l-in">' +
       '<div class="l-topo"><span>Hub de Empreendedores Católicos</span><span>Nº 001</span></div>' +
       '<div class="l-tit"><span class="l-num">01 — Acesso</span><h1>Área do<br>participante</h1><p>Entre com o e-mail da sua inscrição e o código de acesso que você recebeu.</p></div>' +
@@ -142,7 +142,7 @@
     if (reduz || visto) return;
     try { sessionStorage.setItem("panela-intro", "1"); } catch (e) {}
     var box = document.createElement("div"); box.className = "abertura"; box.setAttribute("role", "presentation");
-    box.innerHTML = '<div class="ab-arte"><img class="ab-img" src="' + (window.LOGIN_ARTE_URI || "login-arte.jpg") + '" alt=""></div><button class="ab-pular" type="button">Pular</button>';
+    box.innerHTML = '<div class="ab-arte"><img class="ab-img" src="' + (window.LOGIN_ARTE_URI || "panela-logo-arte.jpg") + '" alt=""></div><button class="ab-pular" type="button">Pular</button>';
     document.body.appendChild(box);
     var arte = box.querySelector(".ab-arte"), img = box.querySelector(".ab-img");
     var anims = [], camada = null, acabou = false;
@@ -186,16 +186,36 @@
         anims.push(g.animate([{ opacity: 0, transform: "rotate(-90deg) scale(2.5)", transformOrigin: cx + "px " + cy + "px" }, { opacity: 1, transform: "none", transformOrigin: cx + "px " + cy + "px" }], { duration: 700, delay: 300 + k * 120, easing: "ease-out", fill: "both" }));
         anims.push(g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 500, delay: 2600, fill: "forwards" }));
       });
-      // 2) blocos de cor chegando em volta da panela (posições da arte)
-      var BL = [["#E2231A", 0.04, 0.17, 0.26, 0.5], ["#F5B800", 0.14, 0.21, 0.07, 0.1], ["#2D5BD7", 0.39, 0.5, 0.14, 0.27], ["#2D5BD7", 0.73, 0.36, 0.14, 0.24], ["#E2231A", 0.27, 0.6, 0.11, 0.16], ["#F5B800", 0.24, 0.42, 0.04, 0.05], ["#E2231A", 0.04, 0.53, 0.14, 0.05]];
-      BL.forEach(function (b, k) {
-        var el = document.createElement("i"); el.className = "l-bloco";
-        el.style.cssText = "background:" + b[0] + ";left:" + b[1] * 100 + "%;top:" + b[2] * 100 + "%;width:" + b[3] * 100 + "%;height:" + b[4] * 100 + "%";
-        camada.appendChild(el);
-        var ang = rnd() * Math.PI * 2, dist = Math.max(W, H) * 0.9;
-        anims.push(el.animate([{ transform: "translate(" + Math.cos(ang) * dist + "px," + Math.sin(ang) * dist + "px) rotate(" + (rnd() * 80 - 40) + "deg) scale(.6)", opacity: 0 },
-          { transform: "none", opacity: 0.9, offset: 0.8 }, { transform: "none", opacity: 0.9 }], { duration: 1100, delay: 650 + k * 110, easing: "cubic-bezier(.2,.8,.2,1)", fill: "both" }));
-        anims.push(el.animate([{ opacity: 0.9 }, { opacity: 0 }], { duration: 700, delay: 2300 + k * 50, easing: "ease-in", fill: "forwards" }));
+      // 2) jatos de tinta espirrando nas cores da arte
+      var JATOS = [["#E2231A", 0.17, 0.38, 0.15], ["#F5B800", 0.175, 0.235, 0.06], ["#2D5BD7", 0.46, 0.575, 0.11], ["#2D5BD7", 0.8, 0.435, 0.1],
+        ["#E2231A", 0.325, 0.615, 0.08], ["#F5B800", 0.26, 0.4, 0.035], ["#E2231A", 0.1, 0.5, 0.055]];
+      function mancha(cx, cy, r) {
+        var n = 18, pts = [];
+        for (var k = 0; k < n; k++) { var a = k / n * Math.PI * 2, rr = r * (0.72 + rnd() * 0.5); pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); }
+        var d = "M" + ((pts[0][0] + pts[n - 1][0]) / 2) + " " + ((pts[0][1] + pts[n - 1][1]) / 2);
+        for (k = 0; k < n; k++) { var p = pts[k], q = pts[(k + 1) % n]; d += "Q" + p[0] + " " + p[1] + " " + (p[0] + q[0]) / 2 + " " + (p[1] + q[1]) / 2; }
+        return d + "Z";
+      }
+      JATOS.forEach(function (j, k) {
+        var cx = W * j[1], cy = H * j[2], r = W * j[3], cor = j[0], t0 = 600 + k * 140;
+        var g = document.createElementNS(NS, "g"); g.setAttribute("class", "tinta"); g.setAttribute("fill", cor); svg.appendChild(g);
+        var corpo = document.createElementNS(NS, "path"); corpo.setAttribute("d", mancha(cx, cy, r)); g.appendChild(corpo);
+        anims.push(corpo.animate([{ transform: "scale(0)", opacity: 0 }, { transform: "scale(1.12)", opacity: 0.92, offset: 0.55 }, { transform: "scale(1)", opacity: 0.88 }],
+          { duration: 520, delay: t0, easing: "cubic-bezier(.15,.9,.25,1)", fill: "both", transformOrigin: cx + "px " + cy + "px" }));
+        corpo.style.transformOrigin = cx + "px " + cy + "px";
+        var gotas = 10 + Math.round(r / W * 60);
+        for (var m = 0; m < gotas; m++) {
+          var ang = rnd() * Math.PI * 2, dist = r * (1.05 + rnd() * 1.4), gr = Math.max(1.5, r * (0.03 + rnd() * 0.1));
+          var gx = cx + Math.cos(ang) * dist, gy = cy + Math.sin(ang) * dist, el;
+          if (m % 4 === 0) {
+            el = document.createElementNS(NS, "ellipse"); el.setAttribute("cx", gx); el.setAttribute("cy", gy); el.setAttribute("rx", gr * 2.6); el.setAttribute("ry", gr * 0.7);
+            el.setAttribute("transform", "rotate(" + (ang * 180 / Math.PI) + " " + gx + " " + gy + ")");
+          } else { el = document.createElementNS(NS, "circle"); el.setAttribute("cx", gx); el.setAttribute("cy", gy); el.setAttribute("r", gr); }
+          g.appendChild(el);
+          anims.push(el.animate([{ translate: (cx - gx) + "px " + (cy - gy) + "px", scale: "0.2", opacity: 0 }, { translate: "0px 0px", scale: "1", opacity: 0.9 }],
+            { duration: 380 + rnd() * 260, delay: t0 + 60 + rnd() * 90, easing: "cubic-bezier(.1,.8,.2,1)", fill: "both" }));
+        }
+        anims.push(g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 800, delay: 2300 + k * 60, easing: "ease-in", fill: "forwards" }));
       });
       arte.appendChild(camada);
       // 3) a panela aparece em traço e depois ganha as cores
