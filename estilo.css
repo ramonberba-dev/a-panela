@@ -425,3 +425,13 @@ html,body{overflow-x:hidden}
   @page{size:A4 landscape;margin:10mm}
 }
 .pl-tit span{white-space:nowrap;flex:none}
+
+/* ===== Abertura animada da panela ===== */
+.l-anim{position:absolute;z-index:2;pointer-events:none}
+.l-anim svg{position:absolute;inset:0;overflow:visible}
+.l-anim .tl{stroke:#141414;stroke-width:.8;fill:none}
+.l-anim .tr{stroke:#E2231A;stroke-width:1.4;fill:none}
+.l-bloco{position:absolute;display:block;mix-blend-mode:multiply}
+.login2.intro .l-in>*{animation:none;opacity:0}
+.login2.intro .l-arte{cursor:pointer}
+.login2 .l-in{transition:opacity .4s}

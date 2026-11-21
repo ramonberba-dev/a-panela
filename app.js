@@ -132,6 +132,79 @@
         diagnosticos: [], rascunho: null, cupons: [], encontrosVistos: [], individual: null };
       salvar(); ir("inicio");
     });
+    animarEntrada();
+  }
+
+  /* Abertura: as linhas se juntam, as cores chegam e a panela se forma até virar a logo. */
+  function animarEntrada() {
+    var box = document.querySelector(".login2"), arte = document.querySelector(".l-arte"), img = document.querySelector(".l-poster");
+    if (!box || !arte || !img || !img.animate) return;
+    var reduz = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var visto = false; try { visto = sessionStorage.getItem("panela-intro") === "1"; } catch (e) {}
+    if (reduz || visto) return;
+    try { sessionStorage.setItem("panela-intro", "1"); } catch (e) {}
+    box.classList.add("intro");
+    var anims = [], camada = null, acabou = false;
+    function terminar() {
+      if (acabou) return; acabou = true;
+      anims.forEach(function (a) { try { a.finish(); } catch (e) {} });
+      if (camada) camada.remove();
+      box.classList.remove("intro");
+    }
+    function rodar() {
+      var ra = arte.getBoundingClientRect(), ri = img.getBoundingClientRect();
+      if (!ri.width) { terminar(); return; }
+      camada = document.createElement("div"); camada.className = "l-anim"; camada.setAttribute("aria-hidden", "true");
+      camada.style.cssText = "left:" + (ri.left - ra.left) + "px;top:" + (ri.top - ra.top) + "px;width:" + ri.width + "px;height:" + ri.height + "px";
+      var W = ri.width, H = ri.height, NS = "http://www.w3.org/2000/svg";
+      var svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", "0 0 " + W + " " + H); svg.setAttribute("width", W); svg.setAttribute("height", H);
+      camada.appendChild(svg);
+      var rnd = (function (x) { return function () { x = (x * 16807) % 2147483647; return (x - 1) / 2147483646; }; })(20261120);
+      // 1) linhas de prancheta convergindo
+      for (var i = 0; i < 34; i++) {
+        var vert = i % 2 === 0, ln = document.createElementNS(NS, "line");
+        if (vert) { var x = W * (0.06 + rnd() * 0.88), y1 = H * (0.02 + rnd() * 0.3), y2 = y1 + H * (0.25 + rnd() * 0.45); ln.setAttribute("x1", x); ln.setAttribute("x2", x); ln.setAttribute("y1", y1); ln.setAttribute("y2", Math.min(H * 0.86, y2)); }
+        else { var y = H * (0.06 + rnd() * 0.78), x1 = W * (rnd() * 0.3), x2 = x1 + W * (0.3 + rnd() * 0.5); ln.setAttribute("y1", y); ln.setAttribute("y2", y); ln.setAttribute("x1", x1); ln.setAttribute("x2", Math.min(W, x2)); }
+        ln.setAttribute("pathLength", "1"); ln.setAttribute("class", i % 5 === 0 ? "tr" : "tl"); if (i % 3 === 0) ln.setAttribute("stroke-dasharray", "0.02 0.012");
+        svg.appendChild(ln);
+        var dx = vert ? (rnd() < 0.5 ? -1 : 1) * W * (0.4 + rnd() * 0.5) : 0, dy = vert ? 0 : (rnd() < 0.5 ? -1 : 1) * H * (0.3 + rnd() * 0.4);
+        var d0 = 80 + i * 28;
+        anims.push(ln.animate([{ transform: "translate(" + dx + "px," + dy + "px)", opacity: 0, strokeDashoffset: 1 }, { transform: "translate(0,0)", opacity: 1, strokeDashoffset: 0 }],
+          { duration: 900, delay: d0, easing: "cubic-bezier(.2,.7,.2,1)", fill: "both" }));
+        anims.push(ln.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 600, delay: 2500 + (i % 6) * 40, easing: "ease-out", fill: "forwards" }));
+      }
+      // cruzinhas de marcação
+      [[0.08, 0.1], [0.92, 0.12], [0.06, 0.82], [0.94, 0.8], [0.5, 0.47]].forEach(function (p, k) {
+        var g = document.createElementNS(NS, "path"), cx = W * p[0], cy = H * p[1], r = Math.max(8, W * 0.018);
+        g.setAttribute("d", "M" + (cx - r) + " " + cy + "H" + (cx + r) + "M" + cx + " " + (cy - r) + "V" + (cy + r)); g.setAttribute("class", "tl");
+        svg.appendChild(g);
+        anims.push(g.animate([{ opacity: 0, transform: "rotate(-90deg) scale(2.5)", transformOrigin: cx + "px " + cy + "px" }, { opacity: 1, transform: "none", transformOrigin: cx + "px " + cy + "px" }], { duration: 700, delay: 300 + k * 120, easing: "ease-out", fill: "both" }));
+        anims.push(g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 500, delay: 2600, fill: "forwards" }));
+      });
+      // 2) blocos de cor chegando em volta da panela (posições da arte)
+      var BL = [["#E2231A", 0.04, 0.17, 0.26, 0.5], ["#F5B800", 0.14, 0.21, 0.07, 0.1], ["#2D5BD7", 0.39, 0.5, 0.14, 0.27], ["#2D5BD7", 0.73, 0.36, 0.14, 0.24], ["#E2231A", 0.27, 0.6, 0.11, 0.16], ["#F5B800", 0.24, 0.42, 0.04, 0.05], ["#E2231A", 0.04, 0.53, 0.14, 0.05]];
+      BL.forEach(function (b, k) {
+        var el = document.createElement("i"); el.className = "l-bloco";
+        el.style.cssText = "background:" + b[0] + ";left:" + b[1] * 100 + "%;top:" + b[2] * 100 + "%;width:" + b[3] * 100 + "%;height:" + b[4] * 100 + "%";
+        camada.appendChild(el);
+        var ang = rnd() * Math.PI * 2, dist = Math.max(W, H) * 0.9;
+        anims.push(el.animate([{ transform: "translate(" + Math.cos(ang) * dist + "px," + Math.sin(ang) * dist + "px) rotate(" + (rnd() * 80 - 40) + "deg) scale(.6)", opacity: 0 },
+          { transform: "none", opacity: 0.9, offset: 0.8 }, { transform: "none", opacity: 0.9 }], { duration: 1100, delay: 650 + k * 110, easing: "cubic-bezier(.2,.8,.2,1)", fill: "both" }));
+        anims.push(el.animate([{ opacity: 0.9 }, { opacity: 0 }], { duration: 700, delay: 2300 + k * 50, easing: "ease-in", fill: "forwards" }));
+      });
+      arte.appendChild(camada);
+      // 3) a panela aparece em traço e depois ganha as cores
+      anims.push(img.animate([{ opacity: 0, clipPath: "inset(48% 48% 48% 48%)", filter: "grayscale(1) contrast(1.6) brightness(1.15)" },
+        { opacity: 1, clipPath: "inset(0% 0% 0% 0%)", filter: "grayscale(1) contrast(1.6) brightness(1.15)", offset: 0.55 },
+        { opacity: 1, clipPath: "inset(0% 0% 0% 0%)", filter: "grayscale(0) contrast(1) brightness(1)" }], { duration: 2200, delay: 900, easing: "cubic-bezier(.3,.6,.2,1)", fill: "both" }));
+      var ultima = anims[anims.length - 1];
+      setTimeout(function () { box.classList.remove("intro"); }, 2700);
+      ultima.onfinish = function () { setTimeout(function () { if (camada) camada.remove(); acabou = true; }, 900); };
+      arte.addEventListener("click", terminar, { once: true });
+    }
+    img.style.animation = "none";
+    if (img.complete && img.naturalWidth) requestAnimationFrame(rodar); else { img.addEventListener("load", function () { requestAnimationFrame(rodar); }, { once: true }); img.addEventListener("error", terminar, { once: true }); }
+    setTimeout(function () { if (box.classList.contains("intro") && !camada) terminar(); }, 4000);
   }
 
 
