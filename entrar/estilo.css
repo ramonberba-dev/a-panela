@@ -534,3 +534,9 @@ html,body{overflow-x:hidden}
 .nv-mat.travado{border-left-color:#CFCFC9;background:var(--soft)}
 .nv-cadeado{font-size:20px;align-self:center}
 .nv-guia.travado{opacity:.75;background:var(--soft);cursor:not-allowed}
+
+/* botão flutuante do WhatsApp (fala com o Ramon) */
+.zap{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:42;width:56px;height:56px;border-radius:50%;background:#25D366;display:grid;place-items:center;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .2s}
+.zap:hover{transform:scale(1.08)}
+.zap svg{width:30px;height:30px;fill:#fff}
+@media (max-width:900px){.zap{bottom:calc(92px + env(safe-area-inset-bottom,0px));right:14px;width:52px;height:52px}}
