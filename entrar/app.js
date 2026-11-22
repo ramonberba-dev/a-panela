@@ -23,6 +23,7 @@
   function dados() { return memoria; }
   var NV_ = window.NUVEM || null, usuarioNuvem = null, contaNuvem = null, timerNuvem = null, carregando = !!NV_;
   function salvar() {
+    if (memoria && !memoria.demo && typeof acessoEncerrado === "function" && acessoEncerrado()) { toast("Os seus encontros terminaram: a plataforma está só para consulta."); return; }
     Armazem.gravar(memoria);
     if (NV_ && usuarioNuvem && memoria && memoria.nuvem && !memoria.mentor) {
       clearTimeout(timerNuvem);
@@ -105,6 +106,7 @@
     ["praticas", "Boas práticas", '<path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/>'],
     ["encontros", "Encontros", '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/>'],
     ["temperos", "Temperos", '<path d="M8 3h8l-1 4H9zM7 7h10v14H7z"/>'],
+    ["boosts", "Boosts", '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>'],
     ["cashback", "Cashback VOX", '<rect x="3" y="7" width="18" height="11" rx="2"/><path d="M8 12h.01M16 12h.01"/>'],
     ["individual", "Individual", '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/>'],
     ["conquistas", "Conquistas", '<path d="M8 4h8v5a4 4 0 01-8 0zM8 6H5a3 3 0 003 4M16 6h3a3 3 0 01-3 4M12 13v4M8 21h8M10 17h4v4h-4z"/>'],
@@ -420,6 +422,7 @@
     var d = dados(), u = ultimoDiag(), nome = esc(d.aluno.nome.split(" ")[0]);
     var prox = P.encontros.filter(function (e) { return d.encontrosVistos.indexOf(e.n) < 0; })[0];
     var h = '<div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:4px">' + avatar("grande") + '<div style="flex:1;min-width:240px">' + cabecalho("Olá, " + nome + "!", "Panela só é ruim pra quem tá de fora. Que bom ter você aqui dentro." + (animalDe() ? "" : ' <a href="#" data-ir="perfil">Faça o teste dos 4 animais</a> e ganhe a sua foto de perfil.')) + "</div></div>";
+    h += seloPlano(null, false);
     h += '<div class="grid g4" style="margin-bottom:16px">' +
       '<div class="card ind"><span class="rot">Nota geral</span><b>' + (u ? mediaGeral(u.notas) : "—") + "</b><small>" + (u ? "último diagnóstico" : "faça o diagnóstico") + "</small></div>" +
       '<div class="card ind" data-ir="conquistas" style="cursor:pointer"><span class="rot">Pontos</span><b>' + pontuacao().total + "</b><small>" + nivel(pontuacao().total) + " · ver prêmios</small></div>" +
@@ -533,7 +536,7 @@
   function animalDe() { var u = ultimoTeste("animais"); return u ? T.animais.perfis[u.principal].nome : ""; }
   function telaPerfil() {
     if (testeAtivo) return telaTeste();
-    var h = cabecalho("Testes de perfil", "Conhecer o seu jeito ajuda a liderar, vender e escolher os temperos certos. Refaça quando quiser.");
+    var h = cabecalho("Testes de perfil", "Conhecer o seu jeito ajuda a liderar, vender e escolher os temperos certos. Refaça quando quiser.") + seloPlano(null, true);
     h += '<div class="grid g2">' + ["disc", "animais"].map(function (id) {
       var t = T[id], u = ultimoTeste(id);
       var topo = '<div class="card"><div style="display:flex;justify-content:space-between;align-items:start;gap:10px;flex-wrap:wrap"><div><span class="rot">' + t.perguntas.length + " perguntas · 5 minutos</span><h2 style=\"margin-top:4px\">" + esc(t.nome) + '</h2><p class="muted" style="margin:2px 0 0">' + esc(t.sub) + '</p></div><button class="btn peq' + (u ? " contorno" : "") + '" data-teste="' + id + '">' + (u ? "Refazer" : "Fazer o teste") + "</button></div>";
@@ -630,12 +633,14 @@
       }).join("") + "</div>";
     } else if (st === "escolhido") {
       var o2 = projOpcoes()[projEscolha()] || {}, meses = o2.meses || [];
+      if (planoAtual() === "tempero") meses = meses.filter(function (x) { return x.n === 1; });
       var tot = 0, ok = 0;
       meses.forEach(function (m) { (m.semanas || []).forEach(function (w) { (w.demandas || []).forEach(function (_, k) { tot++; if (pd.feitas[m.n + "-" + w.n + "-" + k]) ok++; }); }); });
       var pct = tot ? Math.round(ok / tot * 100) : 0;
       h += '<div class="card obj"><span class="rot">Meu projeto</span><p class="obj-frase">' + esc(o2.titulo) + '</p><p class="muted" style="margin:0 0 10px">' + esc(o2.resultado || o2.resumo || "") + '</p><div class="obj-meta"><span><b>' + ok + "/" + tot + "</b> demandas feitas</span><span><b>" + pct + '%</b> do projeto</span></div><div class="barra"><i style="width:' + pct + '%"></i></div></div>';
       h += '<div class="via-abas" style="margin-top:16px">' + meses.map(function (m) { return '<button class="' + (projMes === m.n ? "on" : "") + '" data-proj-mes="' + m.n + '">Mês ' + m.n + "</button>"; }).join("") + "</div>";
       var m = meses.filter(function (x) { return x.n === projMes; })[0] || meses[0];
+      if (planoAtual() === "tempero") h += '<p class="muted" style="margin:10px 0 0">No ' + descPlano("tempero") + ' você faz o mês 1 do projeto. Os meses 2 e 3 abrem no ' + descPlano("panela") + '.</p>';
       if (m) h += '<div class="card"><span class="rot">Projeto do mês ' + m.n + "</span><h2>" + esc(m.titulo) + '</h2><p class="mod-entrega"><b>Sai pronto:</b> ' + esc(m.entrega) + "</p>" + (m.semanas || []).map(function (w) {
         return '<div class="proj-sem"><b>Semana ' + w.n + " · " + esc(w.foco) + "</b>" + (w.demandas || []).map(function (dm, k) {
           var id = m.n + "-" + w.n + "-" + k;
@@ -833,8 +838,80 @@
     return h;
   }
 
+  /* 3 planos. Chave interna: tempero (4 encontros), panela (15), anual (66).
+     NOMES DOS PLANOS: para trocar o nome que aparece nas telas, mude só a linha NOMES_PLANO.
+     Nos textos para o aluno, o plano é tratado pelo número de encontros (decisão do Ramon, 22/11). */
+  var NOMES_PLANO = { tempero: "Panela Bronze", panela: "Panela Silver", anual: "Panela Gold" };
+  var LOGO_PLANO = { tempero: "plano-bronze.jpg", panela: "plano-prata.jpg", anual: "plano-ouro.jpg" };
+  var ENCONTROS_PLANO = { tempero: 5, panela: 15, anual: 66 };
+  var COMPOSICAO_PLANO = { tempero: "4 encontros em grupo e 1 individual", panela: "12 encontros em grupo e 3 individuais", anual: "48 encontros em grupo, 12 individuais e 6 individuais extras" };
+  var MESES_PLANO = { tempero: 1, panela: 3, anual: 12 }; // só para calcular o fim do acesso; não aparece no texto
+  function planoAtual() {
+    var c = (typeof contaNuvem !== "undefined" && contaNuvem) || null, a = (dados() || {}).aluno || {};
+    return (c && c.plano) || a.plano || "panela";
+  }
+  function seloPlano(p, grande) {
+    p = p || planoAtual();
+    var fim = fimAcesso(p);
+    return '<div class="card selo-plano' + (grande ? " grande" : "") + '"><img src="' + LOGO_PLANO[p] + '" alt="' + esc(nomePlano(p)) + '" onerror="this.remove()"><div><span class="rot">Seu plano</span><h2>' + esc(nomePlano(p)) + "</h2><p class=\"muted\" style=\"margin:0\">" + ENCONTROS_PLANO[p] + " encontros: " + COMPOSICAO_PLANO[p] + (fim ? ". Acesso até " + fim.toLocaleDateString("pt-BR") : "") + ".</p></div></div>";
+  }
+  function nomePlano(p) { return NOMES_PLANO[p || planoAtual()] || ""; }
+  function descPlano(p) { return "plano de " + ENCONTROS_PLANO[p || planoAtual()] + " encontros"; }
+  /* Início da turma (dados.js: INICIO_TURMA). Sem data, nada é cortado e os Boosts mostram "N dias depois do início".
+     Na demonstração, sem data oficial, vale a data de entrada da participante de exemplo (ou a escolhida na faixa da demo). */
+  function inicioTurma() {
+    var d = dados() || {}, v = P.inicioTurma || (d.demo && d.aluno ? (d.demoInicio || d.aluno.inicio) : null);
+    if (v === "nulo") return null;
+    var t = v ? new Date(v) : null; return t && !isNaN(t) ? t : null;
+  }
+  function fimAcesso(p) { var i = inicioTurma(); if (!i) return null; var f = new Date(i); f.setMonth(f.getMonth() + (MESES_PLANO[p || planoAtual()] || 3)); return f; }
+  function acessoEncerrado() { var d = dados() || {}; if (d.mentor) return false; var f = fimAcesso(); return !!f && Date.now() >= f.getTime(); }
+  function zapUpgrade(alvo) { return "https://wa.me/5521996588197?text=" + encodeURIComponent("Oi, Ramon! Estou no " + descPlano() + " (" + nomePlano() + ") e quero passar para o " + descPlano(alvo) + " (" + nomePlano(alvo) + ")."); }
+  var ZAP_UPGRADE = zapUpgrade("panela");
+  function proximoPlano() { var p = planoAtual(); return p === "tempero" ? "panela" : "anual"; }
+  function cartaoUpgrade(alvo) {
+    alvo = alvo || proximoPlano();
+    if (alvo === "anual") return '<div class="card upgrade-c"><img class="logo-up" src="' + LOGO_PLANO.anual + '" alt="" onerror="this.remove()"><span class="rot">' + esc(nomePlano("anual")) + " · " + ENCONTROS_PLANO.anual + ' encontros</span><h2>Quer mais encontros?</h2><p>No ' + descPlano("anual") + ': ' + COMPOSICAO_PLANO.anual + ', todos online, com todos os Boosts e o menor valor por encontro.</p><a class="btn" href="' + zapUpgrade("anual") + '" target="_blank" rel="noopener">Quero o ' + descPlano("anual") + "</a></div>";
+    return '<div class="card upgrade-c"><img class="logo-up" src="' + LOGO_PLANO.panela + '" alt="" onerror="this.remove()"><span class="rot">' + esc(nomePlano("panela")) + " · " + ENCONTROS_PLANO.panela + ' encontros</span><h2>Quer continuar na Panela?</h2><p>O seu plano tem os 4 encontros do Módulo 1 e 1 individual. Para liberar A máquina de vendas e A empresa no automático, mais individuais, a aula do Kevin e todos os temperos, passe para o ' + descPlano("panela") + ' (' + COMPOSICAO_PLANO.panela + '). Em até 30 dias da compra, o valor que você pagou abate no novo plano.</p><a class="btn" href="' + zapUpgrade("panela") + '" target="_blank" rel="noopener">Quero o ' + descPlano("panela") + "</a></div>";
+  }
+  function faixaEncerrado() {
+    if (!acessoEncerrado()) return "";
+    var p = planoAtual();
+    return '<div class="faixa-fim"><b>Os seus ' + ENCONTROS_PLANO[p] + ' encontros terminaram.</b> A plataforma fica aberta só para consulta. ' +
+      (p === "anual" ? '<a href="https://wa.me/5521996588197?text=' + encodeURIComponent("Oi, Ramon! Terminei os meus " + ENCONTROS_PLANO.anual + " encontros e quero renovar.") + '" target="_blank" rel="noopener">Quero renovar</a>' : '<a href="' + zapUpgrade(proximoPlano()) + '" target="_blank" rel="noopener">Quero continuar no ' + descPlano(proximoPlano()) + "</a>") + "</div>";
+  }
+  /* Boosts. Plano de 66: todos desde o início. Plano de 15: só Site e Aplicativos, liberados ao longo da mentoria (contando do início da turma). Plano de 4: nenhum. */
+  var BOOSTS = [
+    { id: "site", nome: "Boost de Sites", desc: "Site e página de vendas no ar com o Claude, com domínio próprio.", dia: 7 },
+    { id: "app", nome: "Boost de Aplicativos", desc: "Do zero ao aplicativo instalado no celular dos seus clientes.", dia: 56 },
+    { id: "apres", nome: "Boost de Apresentações", desc: "Apresentações e propostas bonitas em minutos.", anual: true },
+    { id: "crm", nome: "Boost de CRM", desc: "Seus clientes organizados: cadastro, histórico e próximos passos.", anual: true },
+    { id: "zap", nome: "Boost de WhatsApp automático", desc: "Mensagens prontas e agendadas para os seus clientes, sem complicação.", anual: true }
+  ];
+  function diasDeMentoria() { var i = inicioTurma(); return i ? Math.floor((Date.now() - i.getTime()) / 864e5) : null; }
+  function estadoBoost(b) {
+    var pl = planoAtual();
+    if (pl === "anual") return { ok: true };
+    if (pl === "tempero") return { ok: false, txt: b.anual ? "Exclusivo do " + descPlano("anual") : "No " + descPlano("panela") };
+    if (b.anual) return { ok: false, txt: "Exclusivo do " + descPlano("anual") };
+    var dias = diasDeMentoria();
+    if (dias === null) return { ok: false, txt: "Libera " + b.dia + " dias depois do início da turma", breve: true };
+    var falta = b.dia - dias;
+    return falta <= 0 ? { ok: true } : { ok: false, txt: "Libera em " + falta + (falta === 1 ? " dia" : " dias"), breve: true };
+  }
+  function telaBoosts() {
+    var pl = planoAtual();
+    var h = cabecalho("Boosts", pl === "anual" ? "Todos os Boosts liberados: atalhos prontos para construir o que o seu negócio precisa." : "Atalhos prontos para construir o que o seu negócio precisa. Eles vão sendo liberados ao longo da mentoria.");
+    h += '<div class="grid g2 boosts">' + BOOSTS.map(function (b) {
+      var e = estadoBoost(b);
+      return '<div class="card boost' + (e.ok ? " ok" : "") + '"><span class="rot">' + (e.ok ? "⚡ Liberado" : "🔒 " + esc(e.txt)) + "</span><h2>" + esc(b.nome) + '</h2><p class="muted">' + esc(b.desc) + "</p>" +
+        (e.ok ? '<p class="muted" style="font-size:12.5px;margin:0">O passo a passo chega aqui. O Ramon avisa no grupo quando estiver pronto.</p>' : "") + "</div>";
+    }).join("") + "</div>";
+    if (pl !== "anual") h += cartaoUpgrade(pl === "tempero" ? "panela" : "anual");
+    return h;
+  }
   function telaEncontros() {
-    var d = dados();
+    var d = dados(), tempero = planoAtual() === "tempero";
     var h = cabecalho("Encontros", "Ao vivo às 20h. A gravação aparece aqui em até 48 horas. A cada módulo de 4 encontros, você constrói algo que fica funcionando no seu negócio.");
     function linhaEnc(e) {
       var visto = d.encontrosVistos.indexOf(e.n) >= 0;
@@ -844,12 +921,28 @@
     h += mods.map(function (m) {
       var lista = P.encontros.filter(function (e) { return (e.mod || 0) === m.n; });
       var feitos = lista.filter(function (e) { return d.encontrosVistos.indexOf(e.n) >= 0; }).length;
+      if (tempero && m.n > 1) return '<div class="card modulo-enc trancado"><div class="mod-topo"><div><span class="rot">' + esc(m.mes || "") + " · Módulo " + m.n + '</span><h2>' + esc(m.nome) + '</h2></div><span class="chip">🔒 No ' + descPlano("panela") + '</span></div>' +
+        lista.map(function (e) { return '<div class="item"><span class="num">' + e.n + '</span><div style="flex:1"><b>' + esc(e.titulo) + "</b></div></div>"; }).join("") + "</div>";
       return '<div class="card modulo-enc"><div class="mod-topo"><div><span class="rot">' + esc(m.mes || "") + " · Módulo " + m.n + '</span><h2>' + esc(m.nome) + '</h2></div><span class="chip">' + feitos + "/" + lista.length + " vistos</span></div>" +
         (m.entrega ? '<p class="mod-entrega"><b>Sai pronto:</b> ' + esc(m.entrega) + "</p>" : "") + lista.map(linhaEnc).join("") + "</div>";
-    }).join("") + '<p class="muted" style="font-size:12px;margin:12px 0 0">Os vídeos dos encontros entram aqui assim que forem gravados.</p>';
+    }).join("") + blocoAnual(linhaEnc) + (planoAtual() !== "anual" ? cartaoUpgrade() : "") + '<p class="muted" style="font-size:12px;margin:12px 0 0">Os vídeos dos encontros entram aqui assim que forem gravados.</p>';
     return h;
   }
 
+
+  /* Encontros 13 a 48 do plano de 66 (dados.js: encontrosAnual). Temas em proposta, a confirmar com o Ramon. */
+  function blocoAnual(linhaEnc) {
+    var L = P.encontrosAnual || [], blocos = P.blocosAnual || [], anual = planoAtual() === "anual", d = dados();
+    if (!L.length) return "";
+    if (!anual) return '<div class="card modulo-enc trancado"><div class="mod-topo"><div><span class="rot">Encontros ' + L[0].n + " a " + L[L.length - 1].n + " · " + L.length + ' encontros em grupo</span><h2>Mais ' + L.length + ' encontros em grupo</h2></div><span class="chip">🔒 No ' + descPlano("anual") + "</span></div>" +
+      blocos.map(function (m) { var l = L.filter(function (e) { return e.bloco === m.n; }); return '<div class="item"><span class="num">' + m.n + '</span><div style="flex:1"><b>' + esc(m.nome) + '</b><p class="muted" style="margin:2px 0 0">Encontros ' + l[0].n + " a " + l[l.length - 1].n + " · online · tema a confirmar</p></div></div>"; }).join("") + "</div>";
+    return blocos.map(function (m) {
+      var lista = L.filter(function (e) { return e.bloco === m.n; });
+      var feitos = lista.filter(function (e) { return d.encontrosVistos.indexOf(e.n) >= 0; }).length;
+      return '<div class="card modulo-enc"><div class="mod-topo"><div><span class="rot">Encontros ' + lista[0].n + " a " + lista[lista.length - 1].n + (m.ciclo ? " · " + esc(m.ciclo) : "") + '</span><h2>' + esc(m.nome) + '</h2></div><span class="chip">' + feitos + "/" + lista.length + ' vistos</span></div>' +
+        '<p class="mod-entrega"><span class="chip proposta">Tema a confirmar</span> ' + esc(m.entrega || "") + "</p>" + lista.map(linhaEnc).join("") + "</div>";
+    }).join("");
+  }
 
   /* ---------- Nivelamento: aulas em vídeo no formato "player + lista de módulos" (nivelamento.js) ---------- */
   var NV = window.NIVELAMENTO || { modulos: [], emBreve: [] };
@@ -1131,9 +1224,11 @@
     var alvo = []; fracas.forEach(function (a) { alvo = alvo.concat(AREA_PANELA[a.id] || []); });
     return CAT.skills.filter(function (x) { return x.biz === ramoSel && alvo.indexOf(x.area) >= 0 && x.lvl === "Iniciante"; }).slice(0, 3);
   }
-  function filtrarT() {
-    var q = semAcento(tBusca.trim());
+  function soAmostra() { return planoAtual() === "tempero"; }
+  function filtrarT(ignorarAmostra) {
+    var q = semAcento(tBusca.trim()), am = soAmostra() && !ignorarAmostra;
     return CAT.skills.filter(function (x) {
+      if (am && x.biz !== ramoSel) return false;
       if (!q && x.biz !== ramoSel) return false;
       if (q && semAcento(x.t + " " + x.d + " " + x.area + " " + nomeRamo(x.biz)).indexOf(q) < 0) return false;
       if (tAreas.length && tAreas.indexOf(x.area) < 0) return false;
@@ -1148,12 +1243,14 @@
   }
   function gradeT() {
     var lista = filtrarT(), q = tBusca.trim();
-    var topo = '<div class="tcab"><div><span class="rot">' + (q ? "Busca em todos os ramos" : "Seu ramo") + '</span><h2 style="margin-top:4px">' + (q ? "“" + esc(q) + "”" : esc(nomeRamo(ramoSel))) + '</h2></div><span class="chip">' + lista.length + " temperos</span></div>";
-    if (!lista.length) return topo + '<div class="vazio">Nenhum tempero com esses filtros. Tente limpar um filtro.</div>';
-    return topo + '<div class="tgrade">' + lista.map(function (x) { return cartaoT(x, !!q); }).join("") + "</div>";
+    var am = soAmostra(), fora = am && q ? filtrarT(true).length - lista.length : 0;
+    var trancado = am ? '<div class="card tranca-t"><span class="rot">🔒 Os outros ramos</span><p style="margin:6px 0 0">' + (fora > 0 ? "Achamos mais " + fora + " temperos com essa busca em outros ramos. " : "") + "No " + descPlano("tempero") + " você tem a amostra do seu ramo. A despensa completa, com " + CAT.skills.length + " temperos de " + CAT.biz.length + " ramos, abre no " + descPlano("panela") + ".</p></div>" + cartaoUpgrade("panela") : "";
+    var topo = '<div class="tcab"><div><span class="rot">' + (q ? (am ? "Busca no seu ramo" : "Busca em todos os ramos") : "Seu ramo") + '</span><h2 style="margin-top:4px">' + (q ? "“" + esc(q) + "”" : esc(nomeRamo(ramoSel))) + '</h2></div><span class="chip">' + lista.length + " temperos</span></div>";
+    if (!lista.length) return topo + '<div class="vazio">Nenhum tempero com esses filtros. Tente limpar um filtro.</div>' + trancado;
+    return topo + '<div class="tgrade">' + lista.map(function (x) { return cartaoT(x, !!q && !am); }).join("") + "</div>" + trancado;
   }
   function filtrosT() {
-    return '<div class="card tfiltros" style="margin-bottom:16px"><input id="t-busca" type="search" placeholder="Buscar tempero em todos os ramos (ex.: cardápio, orçamento, Instagram)" value="' + esc(tBusca) + '" aria-label="Buscar tempero">' +
+    return '<div class="card tfiltros" style="margin-bottom:16px"><input id="t-busca" type="search" placeholder="' + (soAmostra() ? "Buscar tempero no seu ramo" : "Buscar tempero em todos os ramos") + ' (ex.: cardápio, orçamento, Instagram)" value="' + esc(tBusca) + '" aria-label="Buscar tempero">' +
       '<div class="tchips">' + AREAS_T.map(function (a) { var on = tAreas.indexOf(a) >= 0; return '<button class="chip' + (on ? " on" : "") + '" data-tarea="' + a + '" aria-pressed="' + on + '">' + a + "</button>"; }).join("") + "</div>" +
       '<select id="t-nivel" aria-label="Nível"><option value="">Todos os níveis</option>' + ["Iniciante", "Intermediário", "Avançado"].map(function (n) { return "<option" + (tNivel === n ? " selected" : "") + ">" + n + "</option>"; }).join("") + "</select></div>";
   }
@@ -1169,10 +1266,12 @@
       '<div class="card ind"><span class="rot">Ramos</span><b>' + CAT.biz.length + '</b><small>tipos de negócio</small></div>' +
       '<div class="card ind"><span class="rot">Seu ramo</span><b class="ind-txt">' + (ramoSel ? esc(nomeRamo(ramoSel)) : "—") + "</b><small>" + (ramoSel ? noRamo + " temperos" : "escolha abaixo") + "</small></div>" +
       '<div class="card ind"><span class="rot">Como usar</span><b class="ind-txt">Copie ou baixe</b><small>e coloque no Claude</small></div></div>';
-    h += '<div class="card" style="margin-bottom:16px"><span class="rot">Escolha o seu ramo</span><div class="ramos">' + CAT.biz.map(function (b) {
-      return '<button class="ramo' + (b.key === ramoSel ? " ativo" : "") + '" data-ramo="' + b.key + '"><b>' + esc(b.nome) + "</b><small>" + esc(b.desc) + "</small></button>";
+    var am = soAmostra(), fixo = am && d.aluno.ramo;
+    h += '<div class="card" style="margin-bottom:16px"><span class="rot">' + (fixo ? "Seu ramo na amostra" : am ? "Escolha o seu ramo (no " + descPlano("tempero") + " vale um ramo)" : "Escolha o seu ramo") + '</span><div class="ramos">' + CAT.biz.map(function (b) {
+      var tr = fixo && b.key !== ramoSel;
+      return '<button class="ramo' + (b.key === ramoSel ? " ativo" : "") + (tr ? " tranca" : "") + '" data-ramo="' + b.key + '"' + (tr ? ' data-trancado="1"' : "") + "><b>" + (tr ? "🔒 " : "") + esc(b.nome) + "</b><small>" + esc(b.desc) + "</small></button>";
     }).join("") + "</div></div>";
-    if (!ramoSel) return h + '<div class="vazio" style="margin-bottom:16px">Escolha o seu ramo para ver os temperos feitos para o seu negócio. Não achou o seu? Use a busca: ela procura em todos os ramos.</div>' + filtrosT() + '<div id="t-grade"></div><dialog id="t-dlg" class="tdlg"></dialog>';
+    if (!ramoSel) return h + '<div class="vazio" style="margin-bottom:16px">Escolha o seu ramo para ver os temperos feitos para o seu negócio.' + (am ? " No " + descPlano("tempero") + " você recebe a amostra de um ramo; a despensa completa abre no " + descPlano("panela") + "." : " Não achou o seu? Use a busca: ela procura em todos os ramos.") + "</div>" + (am ? "" : filtrosT()) + '<div id="t-grade"></div><dialog id="t-dlg" class="tdlg"></dialog>';
     var ind = indicadas();
     if (ind.length) h += '<div class="card" style="margin-bottom:16px;border-top:3px solid var(--vermelho)"><span class="rot">Indicados pelo seu diagnóstico</span><div class="tgrade" style="margin-top:10px">' + ind.map(function (x) { return cartaoT(x, false); }).join("") + "</div></div>";
     h += filtrosT() + '<div id="t-grade">' + gradeT() + '</div><dialog id="t-dlg" class="tdlg"></dialog>';
@@ -1232,15 +1331,49 @@
     return h;
   }
 
+  /* Individuais. Plano de 15: 3 individuais (1 por mês). Plano de 66: 12 individuais + 6 extras, com pelo menos 1 mês entre um extra e outro.
+     O aluno pede (fica no progresso dele); o Ramon aprova no painel de mentor (grava em usuarios/{uid}.extras, que o aluno não pode mudar).
+     O extra só conta como usado depois da aprovação. */
+  var EXTRAS_TOTAL = 6;
+  function decisoesExtras() {
+    var d = dados() || {};
+    if (d.demo) return d.extrasDemo || [];
+    return (contaNuvem && contaNuvem.extras) || [];
+  }
+  function extrasDe(lista, decisoes) {
+    var dec = {}; (decisoes || []).forEach(function (x) { dec[x.id] = x; });
+    return (lista || []).map(function (x) { var k = dec[x.id]; return Object.assign({}, x, { status: k ? k.status : "pendente", decididoEm: k ? k.em : null }); });
+  }
+  function infoExtras(lista, decisoes) {
+    var l = extrasDe(lista, decisoes), aprov = l.filter(function (x) { return x.status === "aprovado"; }).length, pend = l.filter(function (x) { return x.status === "pendente"; });
+    var validos = l.filter(function (x) { return x.status !== "recusado"; }), ult = validos.length ? validos[validos.length - 1] : null;
+    var abre = null; if (ult) { abre = new Date(ult.pedidoEm); abre.setMonth(abre.getMonth() + 1); }
+    var restantes = EXTRAS_TOTAL - aprov, motivo = "";
+    if (pend.length) motivo = "Seu pedido está com o Ramon.";
+    else if (restantes <= 0) motivo = "Você já usou os " + EXTRAS_TOTAL + " individuais extras.";
+    else if (abre && Date.now() < abre.getTime()) motivo = "Abre em " + abre.toLocaleDateString("pt-BR") + " (1 mês depois do último extra).";
+    return { lista: l, aprovados: aprov, pendentes: pend.length, restantes: restantes, abre: abre, motivo: motivo, pode: !motivo };
+  }
   function telaIndividual() {
-    var d = dados();
-    var h = cabecalho("Encontro individual", "Uma conversa só sua por mês, em dia de semana às 20h.");
-    h += '<div class="grid g2"><div class="card"><h2>Pedir horário</h2><form id="f-ind" class="grid" style="margin-top:12px" novalidate>' +
+    var d = dados(), pl = planoAtual();
+    var h = cabecalho("Encontro individual", pl === "anual" ? "Uma conversa só sua por mês, online, em dia de semana às 20h. No " + descPlano("anual") + " você ainda tem " + EXTRAS_TOTAL + " individuais extras." : (pl === "tempero" ? "Um encontro individual, só seu, online, em dia de semana às 20h." : "Uma conversa só sua por mês, online, em dia de semana às 20h."));
+    h += '<div class="grid g2"><div class="card"><span class="rot">' + (pl === "tempero" ? "Seu individual" : "Individual do mês") + '</span><h2>Pedir horário</h2><form id="f-ind" class="grid" style="margin-top:12px" novalidate>' +
       '<div class="campo"><label for="i-dia">Dia que prefere</label><select id="i-dia"><option>Segunda</option><option>Terça</option><option>Quarta</option><option>Quinta</option><option>Sexta</option></select></div>' +
       '<div class="campo"><label for="i-tema">O que você quer levar para a conversa?</label><textarea id="i-tema" rows="4"></textarea></div>' +
       '<button class="btn" type="submit">Enviar pedido</button></form></div>' +
       '<div class="card"><h2>Seu pedido</h2>' + (d.individual ? '<div class="item"><span class="num">20h</span><div><b>' + esc(d.individual.dia) + "</b><p>" + esc(d.individual.tema || "Sem tema") + "</p><p>Pedido em " + dataBR(d.individual.data) + "</p></div></div>" : '<div class="vazio">Nenhum pedido ainda.</div>') +
       '<p class="muted" style="font-size:12px">Para remarcar, avise com 24 horas. Sem aviso, o encontro do mês conta como realizado.</p></div></div>';
+    if (pl !== "anual") return h + '<div style="margin-top:16px">' + cartaoUpgrade(pl === "tempero" ? "panela" : "anual") + "</div>";
+    var ie = infoExtras(d.extras, decisoesExtras());
+    h += '<div class="card extras" style="margin-top:16px"><div class="mod-topo"><div><span class="rot">Individuais extras</span><h2>Precisa de mais uma conversa?</h2></div><span class="chip">' + ie.restantes + " de " + EXTRAS_TOTAL + ' restantes</span></div>' +
+      '<p class="muted" style="margin:0 0 12px">Além do individual do mês, você pode pedir até ' + EXTRAS_TOTAL + ' individuais extras, com pelo menos 1 mês entre um extra e outro. O Ramon confirma o horário; o extra só conta depois da confirmação.</p>' +
+      '<form id="f-extra" class="grid g2" novalidate><div class="campo"><label for="x-dia">Dia que prefere</label><select id="x-dia"' + (ie.pode ? "" : " disabled") + '><option>Segunda</option><option>Terça</option><option>Quarta</option><option>Quinta</option><option>Sexta</option></select></div>' +
+      '<div class="campo"><label for="x-tema">Assunto</label><input id="x-tema" type="text"' + (ie.pode ? "" : " disabled") + '></div>' +
+      '<div><button class="btn" type="submit"' + (ie.pode ? "" : " disabled") + ">" + (ie.pode ? "Pedir individual extra" : "🔒 Pedir individual extra") + "</button>" + (ie.motivo ? '<p class="muted" style="font-size:12.5px;margin:8px 0 0">' + esc(ie.motivo) + "</p>" : "") + "</div></form>" +
+      (ie.lista.length ? '<div style="margin-top:12px">' + ie.lista.slice().reverse().map(function (x) {
+        return '<div class="item"><span class="num ' + (x.status === "aprovado" ? "ok" : "") + '">' + (x.status === "aprovado" ? "✓" : x.status === "recusado" ? "×" : "…") + '</span><div style="flex:1"><b>' + esc(x.dia) + " · " + esc(x.tema || "Sem assunto") + "</b><p>Pedido em " + dataBR(x.pedidoEm) + " · " + (x.status === "aprovado" ? "confirmado pelo Ramon" : x.status === "recusado" ? "não confirmado (não conta)" : "aguardando o Ramon") + "</p></div>" +
+          (d.demo && x.status === "pendente" ? '<button class="btn peq contorno" data-demo-aprovar="' + esc(x.id) + '">Simular aprovação</button>' : "") + "</div>";
+      }).join("") + "</div>" : "") + "</div>";
     return h;
   }
 
@@ -1360,7 +1493,7 @@
       d.aluno = Object.assign({ nome: u.nome, email: u.email, perfil: u.perfil, turma: u.turma, valor: u.valor, inicio: u.liberadoEm || u.criadoEm }, d.aluno || {});
       d.aluno.pagamento = u.pagamento || "avista"; d.aluno.parcelasPagas = u.parcelasPagas || 0;
       d.testes = d.testes || { disc: [], animais: [] }; d.encontrosVistos = d.encontrosVistos || []; d.cupons = d.cupons || []; d.diagnosticos = d.diagnosticos || [];
-      d._uid = u.uid; d._status = u.status; d._zap = u.whatsapp; return d;
+      d._uid = u.uid; d._status = u.status; d._zap = u.whatsapp; d._plano = u.plano || "panela"; d._extras = u.extras || []; return d;
     });
   }
   function turmaMentor() { return (memoria && memoria.nuvem && MD && !verExemplo) ? turmaReal() : (window.TURMA_EXEMPLO || []).slice(); }
@@ -1381,6 +1514,8 @@
       if (nd > 1 && atu < mediaGeral(a.diagnosticos[nd - 2].notas)) alertas.push(["caiu", "Nota caiu no último diagnóstico"]);
       if (a.individual && !a.individual.feito) alertas.push(["ind", "Pediu individual: " + (a.individual.tema || "sem tema")]);
       if (a.respostaAberta) alertas.push(["duv", "Dúvida sem resposta"]);
+      var pendX = extrasDe(a.extras, a._extras).filter(function (x) { return x.status === "pendente"; }).length;
+      if (pendX) alertas.push(["ind", "Pediu individual extra (" + pendX + ")"]);
       if (a.aluno.pagamento === "cartao6x" && (a.aluno.parcelasPagas || 0) < Math.min(6, 1 + Math.floor((Date.now() - new Date(a.aluno.inicio)) / (30 * 864e5)))) alertas.push(["pag", "Parcela em aberto"]);
       return { pt: pt, nv: nivel(pt.total), ini: ini, atu: atu, evol: nd > 1 ? atu - ini : 0, disc: disc, ani: ani, prox: prox, fraca: fraca, alertas: alertas, ds: ds, np: nivProg() };
     });
@@ -1561,6 +1696,23 @@
     // pausar a partir do detalhe do aluno
     var pz = document.getElementById("m-pausar");
     if (pz) pz.onclick = function () { if (!confirm("Pausar o acesso deste aluno?")) return; db.collection("usuarios").doc(pz.getAttribute("data-uid")).update({ status: "pausado" }).then(recarregar); };
+    // individuais extras: a decisão fica em usuarios/{uid}.extras (o aluno não consegue mudar)
+    document.querySelectorAll("[data-m-extra]").forEach(function (b) {
+      b.onclick = function () {
+        var uid = b.getAttribute("data-uid"), u = MD.usuarios.filter(function (x) { return x.uid === uid; })[0] || {};
+        var lista = (u.extras || []).filter(function (x) { return x.id !== b.getAttribute("data-id"); }).concat([{ id: b.getAttribute("data-id"), status: b.getAttribute("data-m-extra"), em: new Date().toISOString() }]);
+        db.collection("usuarios").doc(uid).update({ extras: lista }).then(function () { toast(b.getAttribute("data-m-extra") === "aprovado" ? "Extra aprovado." : "Extra recusado."); recarregar(); }, function () { toast("Não consegui gravar. Confira as regras do Firebase."); });
+      };
+    });
+  }
+  function blocoExtrasMentor(a) {
+    var ie = infoExtras(a.extras, a._extras);
+    if (!ie.lista.length && a._plano !== "anual") return "";
+    return '<div class="m-msg" style="margin:0 0 14px"><span class="rot">' + ENCONTROS_PLANO[a._plano || "panela"] + " encontros · individuais extras: " + ie.aprovados + " usados, " + ie.restantes + " de " + EXTRAS_TOTAL + " restantes</span>" +
+      (ie.lista.length ? ie.lista.slice().reverse().map(function (x) {
+        return "<p><b>" + esc(x.dia) + " · " + esc(x.tema || "sem assunto") + "</b><br><small>Pedido em " + dataBR(x.pedidoEm) + " · " + (x.status === "pendente" ? "aguardando você" : x.status === "aprovado" ? "aprovado" : "recusado") + "</small>" +
+          (x.status === "pendente" && a._uid ? '<br><button class="btn peq" data-m-extra="aprovado" data-uid="' + a._uid + '" data-id="' + esc(x.id) + '">Aprovar</button> <button class="btn peq contorno" data-m-extra="recusado" data-uid="' + a._uid + '" data-id="' + esc(x.id) + '">Recusar</button>' : "") + "</p>";
+      }).join("") : '<p class="muted">Nenhum pedido de extra.</p>') + "</div>";
   }
   function detalheAluno(a, i) {
     var g = window.GUIA_PERFIS || { disc: {}, animais: {} }, T2 = window.PANELA_TESTES, nd = a.diagnosticos.length;
@@ -1572,6 +1724,7 @@
     var msg = mensagemPara(a, i);
     return '<section class="card m-det" id="m-det"><div class="m-det-topo">' + avatarDe(a) + "<div><span class=\"rot\">Aluno</span><h2>" + esc(a.aluno.nome) + '</h2><small class="muted">' + esc(a.aluno.ramo || "") + " · " + (a.aluno.turma === "hub" ? "1º Encontro do Hub" : "Inscrição geral") + " · " + i.pt.total + " pts · " + esc(i.nv) + '</small></div>' + (a._uid ? '<button class="btn peq contorno" id="m-pausar" data-uid="' + a._uid + '">Pausar acesso</button>' : "") + '<button class="btn peq contorno" id="m-fechar">Fechar</button></div>' +
       (a.meta && a.meta.objetivo ? '<div class="m-msg" style="margin:0 0 14px"><span class="rot">Objetivo do aluno' + (a.meta.prazo ? " · até " + a.meta.prazo.split("-").reverse().join("/") : "") + "</span><p><b>" + esc(a.meta.objetivo) + "</b>" + (a.meta.hoje ? "<br><small>Hoje: " + esc(a.meta.hoje) + "</small>" : "") + "<br><small>Marcos: " + a.meta.marcos.filter(function (x) { return x.t && x.ok; }).length + "/" + a.meta.marcos.filter(function (x) { return x.t; }).length + " concluídos</small></p></div>" : '<p class="muted" style="margin:0 0 14px">Ainda não definiu o objetivo com prazo.</p>') +
+      blocoExtrasMentor(a) +
       '<div class="m-det-g"><div><h3>Evolução por área</h3><p class="muted" style="font-size:12px;margin:2px 0 8px">Cinza: 1º diagnóstico · cor: último</p>' + barras + "</div>" +
       "<div><h3>Para ele progredir</h3><ul class=\"lista\">" + (i.fraca ? "<li>Área mais fraca: <b>" + esc(nomeAreaM(i.fraca, a)) + "</b>. Indique um tempero dessa área e leve o caso para o próximo encontro.</li>" : "") +
       faltam.map(function (x) { return "<li>" + esc(x.nome) + ": " + esc(x.detalhe) + " (vale até +" + (x.max - x.pts) + " pts)</li>"; }).join("") +
@@ -1588,10 +1741,14 @@
     if (!d) return telaLogin();
     if (d.mentor) return telaMentor();
     marcarDia();
-    var telas = { inicio: telaInicio, nivelamento: telaNivelamento, diagnostico: telaDiagnostico, projeto: telaProjeto, plano: telaPlano, via: telaVia, praticas: telaPraticas, encontros: telaEncontros, temperos: telaTemperos, perfil: telaPerfil, conquistas: telaConquistas, cashback: telaCashback, individual: telaIndividual, regras: telaRegras };
+    var telas = { inicio: telaInicio, nivelamento: telaNivelamento, diagnostico: telaDiagnostico, projeto: telaProjeto, plano: telaPlano, via: telaVia, praticas: telaPraticas, boosts: telaBoosts, encontros: telaEncontros, temperos: telaTemperos, perfil: telaPerfil, conquistas: telaConquistas, cashback: telaCashback, individual: telaIndividual, regras: telaRegras };
     var menu = MENU.map(function (m) { return '<button data-ir="' + m[0] + '" class="' + (atual === m[0] ? "ativo" : "") + '"' + (atual === m[0] ? ' aria-current="page"' : "") + '><svg viewBox="0 0 24 24" aria-hidden="true">' + m[2] + "</svg>" + m[1] + "</button>"; }).join("");
     var raiz = document.getElementById("raiz");
-    raiz.innerHTML = (d.demo ? '<div class="aviso-demo">Participante de demonstração: os dados ficam só neste navegador.</div>' : "") +
+    var enc = acessoEncerrado();
+    document.body.classList.toggle("so-leitura", enc);
+    var dataDemo = function (dias) { return new Date(Date.now() + dias * 864e5).toISOString().slice(0, 10); };
+    raiz.innerHTML = (d.demo ? '<div class="aviso-demo">Participante de demonstração: os dados ficam só neste navegador. Ver como: ' + ["tempero", "panela", "anual"].map(function (k) { return '<button class="demo-pl' + (planoAtual() === k ? " on" : "") + '" data-demo-plano="' + k + '">' + ENCONTROS_PLANO[k] + " encontros</button>"; }).join("") +
+      ' · Início da turma: <select id="demo-inicio" aria-label="Início da turma na demonstração">' + [["entrada", "data de entrada"], ["nulo", "sem data"], [dataDemo(-400), "há 13 meses"], [dataDemo(-100), "há 100 dias"], [dataDemo(40), "daqui a 40 dias"]].map(function (o) { var v = d.demoInicio || "entrada"; return '<option value="' + o[0] + '"' + (v === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></div>" : "") + faixaEncerrado() +
       '<header class="topo-mob"><img src="logo-h-web.jpg" alt="A Panela"><button class="topo-mob-perfil" data-ir="conquistas" aria-label="Minhas conquistas">' + avatar() + "</button></header>" +
       '<div class="app"><aside class="lateral"><img src="logo-h-web.jpg" alt="A Panela"><nav class="menu" aria-label="Área do participante">' + menu + "</nav>" +
       '<div class="perfil"><div class="quem">' + avatar() + '<div><b>' + esc(d.aluno.nome) + "</b>" + (animalDe() ? "<small>" + esc(animalDe()) + "</small>" : "") + '</div></div><span class="muted">' + esc(d.aluno.email) + '</span><button class="btn peq contorno" id="b-sair">Sair</button></div></aside>' +
@@ -1646,6 +1803,7 @@
     });
     document.querySelectorAll("[data-ramo]").forEach(function (b) {
       b.addEventListener("click", function () {
+        if (b.getAttribute("data-trancado")) { toast("No " + descPlano("tempero") + " a amostra é do seu ramo. Os outros ramos abrem no " + descPlano("panela") + "."); return; }
         ramoSel = b.getAttribute("data-ramo"); d.aluno.ramo = ramoSel; tBusca = ""; salvar(); desenhar();
         var g = document.getElementById("t-grade"); if (g) g.scrollIntoView({ behavior: "smooth", block: "start" });
       });
@@ -1700,6 +1858,22 @@
       d.individual = { dia: document.getElementById("i-dia").value, tema: document.getElementById("i-tema").value.trim(), data: new Date().toISOString() };
       salvar(); toast("Pedido enviado!"); desenhar();
     });
+    var fx = document.getElementById("f-extra");
+    if (fx) fx.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!infoExtras(d.extras, decisoesExtras()).pode) return;
+      d.extras = d.extras || [];
+      d.extras.push({ id: Date.now().toString(36), dia: document.getElementById("x-dia").value, tema: document.getElementById("x-tema").value.trim(), pedidoEm: new Date().toISOString() });
+      salvar(); toast("Pedido de individual extra enviado ao Ramon."); desenhar();
+    });
+    document.querySelectorAll("[data-demo-aprovar]").forEach(function (b) {
+      b.addEventListener("click", function () { d.extrasDemo = (d.extrasDemo || []).concat([{ id: b.getAttribute("data-demo-aprovar"), status: "aprovado", em: new Date().toISOString() }]); salvar(); toast("Demonstração: o Ramon aprovou."); desenhar(); });
+    });
+    document.querySelectorAll("[data-demo-plano]").forEach(function (b) {
+      b.addEventListener("click", function () { d.aluno.plano = b.getAttribute("data-demo-plano"); salvar(); desenhar(); });
+    });
+    var di = document.getElementById("demo-inicio");
+    if (di) di.addEventListener("change", function () { d.demoInicio = di.value === "entrada" ? null : di.value; salvar(); desenhar(); });
   }
 
   if (NV_) {

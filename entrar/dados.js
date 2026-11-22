@@ -2,7 +2,14 @@
    Para mudar perguntas, encontros ou temperos, edite só este arquivo.
    O diagnóstico tem 3 perfis: quem tem negócio, quem é profissional (sem negócio próprio)
    e quem quer abrir um negócio. Cada área tem as perguntas de cada perfil. */
+/* INÍCIO DA TURMA: data do 1º encontro, no formato "AAAA-MM-DD" (ex.: "2027-01-12").
+   Hoje: janeiro de 2027, a confirmar com o Ramon. Enquanto for null, a plataforma não corta o acesso
+   e os Boosts mostram "N dias depois do início da turma". É daqui que contam os Boosts e o fim de cada plano. */
+var INICIO_TURMA = null;
+
 window.PANELA = {
+  inicioTurma: INICIO_TURMA,
+
   escala: ["Nunca / não tenho", "Raramente", "Às vezes", "Quase sempre", "Sempre / está pronto"],
 
   perfis: [
@@ -242,6 +249,58 @@ window.PANELA = {
     { n: 10, mod: 3, titulo: "Agentes: os seus funcionários invisíveis", area: "ia", prep: "Liste as 5 tarefas que mais tomam o seu tempo e de quem são hoje." },
     { n: 11, mod: 3, titulo: "Rotinas que rodam sozinhas", area: "ia", prep: "Anote o que você faz todo dia ou toda semana do mesmo jeito: relatórios, cobranças, lembretes, posts." },
     { n: 12, mod: 3, titulo: "Painel do dono e plano de 90 dias", area: "estrategia", prep: "Refaça o diagnóstico e revise o objetivo que você marcou no 1º encontro: onde chegou e o que falta." }
+  ],
+
+  /* Encontros 13 a 48: só no plano de 66 encontros (4 por mês, online e gravados).
+     TEMAS EM PROPOSTA, a confirmar com o Ramon. "bloco" agrupa de 4 em 4. */
+  blocosAnual: [
+    {"n": 1, "nome": "Clientes que voltam", "ciclo": "Revisão do 1º ciclo", "entrega": "Sai pronto: pós-venda e indicação funcionando sozinhos."},
+    {"n": 2, "nome": "Os números do negócio", "ciclo": "Revisão do 1º ciclo", "entrega": "Sai pronto: o painel com caixa, margem e metas."},
+    {"n": 3, "nome": "Equipe e processos", "ciclo": "Revisão do trimestre", "entrega": "Sai pronto: processos escritos e a revisão do trimestre feita."},
+    {"n": 4, "nome": "O 2º ciclo: um novo projeto", "ciclo": "2º ciclo", "entrega": "Sai pronto: o 2º projeto escolhido, com o plano das próximas semanas."},
+    {"n": 5, "nome": "Novos canais de venda", "ciclo": "2º ciclo", "entrega": "Sai pronto: um canal novo de vendas testado."},
+    {"n": 6, "nome": "Marca e autoridade", "ciclo": "Revisão do trimestre", "entrega": "Sai pronto: a sua marca com voz própria e a revisão do trimestre."},
+    {"n": 7, "nome": "Automação avançada", "ciclo": "2º ciclo", "entrega": "Sai pronto: agentes trabalhando juntos e relatórios chegando sozinhos."},
+    {"n": 8, "nome": "O fim de ano que vende", "ciclo": "2º ciclo", "entrega": "Sai pronto: a campanha de fim de ano agendada."},
+    {"n": 9, "nome": "O fechamento do ano", "ciclo": "Revisão final", "entrega": "Sai pronto: o balanço do ano e o plano dos próximos 12 meses."}
+  ],
+  encontrosAnual: [
+    {"n": 13, "bloco": 1, "titulo": "Pós-venda no automático", "area": "vendas", "prep": "Liste o que acontece hoje depois que alguém compra de você."},
+    {"n": 14, "bloco": 1, "titulo": "Programa de indicação", "area": "vendas", "prep": "Anote 5 clientes que já indicaram você e o que eles ganharam com isso."},
+    {"n": 15, "bloco": 1, "titulo": "Conteúdo que educa o cliente", "area": "marketing", "prep": "Separe as 10 perguntas que os clientes mais fazem."},
+    {"n": 16, "bloco": 1, "titulo": "Pesquisa de satisfação com o Claude", "area": "ia", "prep": "Escolha 3 clientes para ouvir nesta semana."},
+    {"n": 17, "bloco": 2, "titulo": "Fluxo de caixa simples", "area": "estrategia", "prep": "Junte as entradas e saídas do último mês."},
+    {"n": 18, "bloco": 2, "titulo": "Preço e margem com o Claude", "area": "estrategia", "prep": "Liste os seus 5 produtos ou serviços que mais vendem e quanto custam."},
+    {"n": 19, "bloco": 2, "titulo": "Os indicadores da semana", "area": "estrategia", "prep": "Escolha os 3 números que você quer olhar toda segunda-feira."},
+    {"n": 20, "bloco": 2, "titulo": "Metas do próximo trimestre", "area": "estrategia", "prep": "Reveja o objetivo do seu projeto e onde você está."},
+    {"n": 21, "bloco": 3, "titulo": "Processos escritos com a IA", "area": "ia", "prep": "Anote as 3 tarefas que só você sabe fazer hoje."},
+    {"n": 22, "bloco": 3, "titulo": "Treinar a equipe com o Claude", "area": "pessoas", "prep": "Pense em quem poderia assumir uma dessas tarefas."},
+    {"n": 23, "bloco": 3, "titulo": "Delegar sem perder o controle", "area": "pessoas", "prep": "Escolha uma tarefa para delegar nesta semana."},
+    {"n": 24, "bloco": 3, "titulo": "Revisão do trimestre", "area": "estrategia", "prep": "Refaça o diagnóstico e traga o que mudou desde o começo."},
+    {"n": 25, "bloco": 4, "titulo": "Diagnóstico do meio do caminho", "area": "estrategia", "prep": "Refaça o diagnóstico antes do encontro."},
+    {"n": 26, "bloco": 4, "titulo": "A escolha do 2º projeto", "area": "estrategia", "prep": "Responda de novo o Meu projeto, pensando no próximo passo."},
+    {"n": 27, "bloco": 4, "titulo": "O plano do novo ciclo", "area": "estrategia", "prep": "Traga o projeto escolhido e as datas que importam para você."},
+    {"n": 28, "bloco": 4, "titulo": "A primeira entrega do ciclo", "area": "ia", "prep": "Separe 2 horas na semana para construir."},
+    {"n": 29, "bloco": 5, "titulo": "Parcerias e vendas para empresas", "area": "vendas", "prep": "Liste 10 empresas ou parceiros que atendem o mesmo cliente que você."},
+    {"n": 30, "bloco": 5, "titulo": "Loja online e marketplace", "area": "vendas", "prep": "Veja onde o seu cliente já compra pela internet."},
+    {"n": 31, "bloco": 5, "titulo": "Ações e eventos que vendem", "area": "marketing", "prep": "Pense numa data do próximo mês para uma ação."},
+    {"n": 32, "bloco": 5, "titulo": "Anúncios que crescem com segurança", "area": "marketing", "prep": "Traga o resultado dos anúncios que você já rodou."},
+    {"n": 33, "bloco": 6, "titulo": "Vídeos curtos com o Claude", "area": "marketing", "prep": "Grave 1 vídeo de 30 segundos contando o que você faz."},
+    {"n": 34, "bloco": 6, "titulo": "LinkedIn e autoridade", "area": "marketing", "prep": "Atualize a sua foto e o seu título no LinkedIn."},
+    {"n": 35, "bloco": 6, "titulo": "Histórias de clientes", "area": "marketing", "prep": "Peça a 2 clientes para contar como foi trabalhar com você."},
+    {"n": 36, "bloco": 6, "titulo": "Revisão do trimestre", "area": "estrategia", "prep": "Refaça o diagnóstico e traga o que mudou no 2º ciclo."},
+    {"n": 37, "bloco": 7, "titulo": "Agentes que trabalham juntos", "area": "ia", "prep": "Liste as rotinas que já rodam sozinhas no seu negócio."},
+    {"n": 38, "bloco": 7, "titulo": "Ferramentas conversando entre si", "area": "ia", "prep": "Anote onde você copia e cola a mesma informação."},
+    {"n": 39, "bloco": 7, "titulo": "Relatórios que chegam sozinhos", "area": "ia", "prep": "Escolha o relatório que você mais gostaria de receber pronto."},
+    {"n": 40, "bloco": 7, "titulo": "Cuidado com os dados dos clientes", "area": "ia", "prep": "Veja onde os dados dos seus clientes estão guardados hoje."},
+    {"n": 41, "bloco": 8, "titulo": "O planejamento da temporada", "area": "estrategia", "prep": "Traga as vendas do fim de ano passado, se tiver."},
+    {"n": 42, "bloco": 8, "titulo": "A campanha de fim de ano", "area": "marketing", "prep": "Pense na oferta principal da temporada."},
+    {"n": 43, "bloco": 8, "titulo": "Atendimento no pico de vendas", "area": "vendas", "prep": "Liste as perguntas que mais chegam nas semanas de pico."},
+    {"n": 44, "bloco": 8, "titulo": "Gratidão e fidelização", "area": "fe", "prep": "Escolha os clientes que vão receber um agradecimento seu."},
+    {"n": 45, "bloco": 9, "titulo": "O balanço do ano", "area": "estrategia", "prep": "Refaça o diagnóstico e compare com o primeiro."},
+    {"n": 46, "bloco": 9, "titulo": "O plano dos próximos 12 meses", "area": "estrategia", "prep": "Escreva aonde você quer chegar no ano que vem."},
+    {"n": 47, "bloco": 9, "titulo": "Família, fé e ritmo para o novo ano", "area": "fe", "prep": "Converse com a sua família sobre o ritmo do próximo ano."},
+    {"n": 48, "bloco": 9, "titulo": "A celebração da turma", "area": "fe", "prep": "Traga uma conquista do ano para contar à turma."}
   ],
 
   temperos: [

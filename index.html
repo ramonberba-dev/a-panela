@@ -310,6 +310,20 @@ html:not(.liberado) a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi
 .mods .agenda{grid-template-columns:1fr!important;margin:4px 0 0}
 .mods .agenda li{background:transparent;border:0;border-top:1px solid var(--line);border-radius:0;padding:10px 0}
 @media (max-width:900px){.mods{grid-template-columns:1fr}}
+
+/* 3 planos */
+#planos{grid-template-columns:1fr 1.12fr 1fr;align-items:stretch}
+@media (max-width:900px){#planos{grid-template-columns:1fr}#planos .p-panela{order:-2}#planos .p-barro{order:-1}}
+.plano .mes{margin:0;font-size:14px;color:var(--muted)}
+#planos .plano .valor{font-size:clamp(26px,2.5vw,36px)}
+.plano .upgrade{margin:0;font-size:13.5px;padding:10px 12px;border-radius:8px;background:#FFF7DB}
+.plano .btn{margin-top:auto;justify-content:center}
+.plano.destaque::before{content:none}
+.plano .plano-logo{display:block;width:100%;aspect-ratio:620/550;object-fit:cover;border-radius:10px;background:#fff;margin:0 0 12px}.comparar{margin:26px 0 0}.comparar h3{margin:0 0 12px;font-family:var(--display);font-size:clamp(20px,2.2vw,26px)}.tab-wrap{overflow-x:auto;border-radius:12px;border:1px solid rgba(0,0,0,.08);background:#fff}.tab-cmp{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}.tab-cmp th,.tab-cmp td{padding:10px 12px;border-top:1px solid rgba(0,0,0,.07);text-align:center;vertical-align:middle}.tab-cmp thead th{border-top:0;padding-top:14px;font-weight:700}.tab-cmp thead img{display:block;width:64px;height:57px;object-fit:cover;border-radius:8px;margin:0 auto 6px}.tab-cmp thead span{display:block;font-size:15px}.tab-cmp thead small{display:block;font-weight:400;color:#777;font-size:12px}.tab-cmp tbody th{text-align:left;font-weight:500;color:#333;width:42%}.tab-cmp .dest{background:rgba(37,99,235,.05)}.tab-cmp i{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-style:normal;font-weight:800;font-size:13px;color:#fff;line-height:1}.tab-cmp i.ok{background:#1f9d55}.tab-cmp i.no{background:#d62828}.tab-cmp td small{display:block;margin-top:4px;font-size:12px;color:#444;line-height:1.25}@media(max-width:640px){.tab-cmp{font-size:12px;min-width:0;table-layout:fixed}.tab-cmp tbody th{width:37%;font-size:12px}.tab-cmp th,.tab-cmp td{padding:7px 3px}.tab-cmp tbody th{padding-left:9px}.tab-cmp thead img{width:40px;height:36px}.tab-cmp thead span{font-size:13px}.tab-cmp thead small{font-size:10.5px}.tab-cmp i{width:20px;height:20px;font-size:12px}.tab-cmp td small{font-size:10.5px}}.plano .btn-pix{margin-top:8px;justify-content:center;width:100%;cursor:pointer;font:inherit;background:transparent}.plano.escuro .btn-pix{color:var(--amarelo);border-color:var(--amarelo)}.pix-fundo{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:999;padding:16px}.pix-fundo.aberto{display:flex}.pix-caixa{background:#fff;color:#111;border-radius:14px;max-width:420px;width:100%;max-height:92vh;overflow:auto;padding:20px;text-align:center;position:relative}.pix-caixa h3{margin:0 0 4px;font-size:20px}.pix-caixa .pix-valor{font-size:28px;font-weight:800;margin:4px 0 10px}.pix-caixa #pix-qr{display:flex;justify-content:center;margin:8px 0 12px}.pix-caixa textarea{width:100%;height:88px;font:12px/1.35 monospace;border:1px solid #ccc;border-radius:8px;padding:8px;resize:none}.pix-caixa .btn{width:100%;justify-content:center;margin-top:8px;cursor:pointer;font:inherit}.pix-fechar{position:absolute;top:8px;right:12px;border:0;background:none;font-size:26px;cursor:pointer;color:#555}.pix-caixa small{display:block;color:#666;margin-top:10px;line-height:1.4}.pos-pagto{margin:18px 0 0;padding:12px 14px;border-radius:10px;background:#FFF7DB;font-size:15px}.plano .selo{position:absolute;top:-12px;left:22px;background:var(--azul);color:#fff;font-family:var(--display);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:3px}
+#planos.hub .so-geral,#planos.geral .so-hub{display:none!important}
+.cashback{margin:14px 0 0;font-weight:700}
+html:not(.liberado) a[href*="usevox.com.br/produtos/a-panela-"]{opacity:.55;filter:grayscale(.6)}
+html:not(.liberado) a[href*="usevox.com.br/produtos/a-panela-"]::before{content:"🔒 "}
 </style>
 
 <header class="topo">
@@ -460,10 +474,14 @@ html:not(.liberado) a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi
       <div class="revelar" id="revelar"><p>Tudo o que está incluído na sua vaga e as formas de pagamento.</p><button type="button" class="btn cheio" id="btn-revelar">Garantir minha vaga &rarr;</button></div>
       <div class="revelar pergunta" id="pergunta" hidden><p class="q">Você participou do 1º Encontro do Hub Católico?</p><div class="sim-nao"><button type="button" class="btn cheio" data-resp="sim">Sim, participei</button><button type="button" class="btn contorno" data-resp="nao">Não</button></div></div>
       <div class="planos" id="planos" hidden>
-        <div class="card plano destaque" id="plano-hub"><p class="valor"><small>3 meses de mentoria · em até 6x no cartão</small>6x de R$ 190,99</p><p style="margin:0;font-weight:700">Ou R$ 997 à vista, com o desconto de quem participou do 1º Encontro.</p><p style="margin:0;color:var(--muted)">Com o cupom exclusivo que você recebeu no grupo do Encontro. Digite no carrinho, antes de pagar.</p><p style="margin:0"><b>R$ 299,10</b> de cashback na VOX</p><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Comprar com o cupom &rarr;</a></div>
-        <div class="card plano" id="plano-geral"><span class="rot">Inscrição geral</span><p class="valor"><small>3 meses de mentoria · em até 6x no cartão</small>6x de R$ 325,09</p><p class="pix"><b>À vista no Pix: 15% de desconto.</b> Use o cupom <b>PANELAPIX</b> no carrinho e pague R$ 1.442,45.</p><p style="margin:0"><b>R$ 509,10</b> de cashback na VOX</p><a class="btn cheio" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Garantir minha vaga &rarr;</a></div>
-        <div class="card plano escuro"><span class="rot" style="color:#bbb">O que está incluído</span><ul style="color:#ddd"><li>Nivelamento: 12 aulas curtas com material em PDF</li><li>12 encontros ao vivo em grupo, às 20h, gravados</li><li>3 encontros individuais, um por mês</li><li>Grupo de dúvidas durante os 3 meses</li><li>Aula especial com Kevin Eger</li><li>Curso O Funcionário Invisível</li><li>Área do participante com diagnóstico e gráficos</li><li>Mais de 800 temperos (skills) por ramo</li><li>Guias práticos do Claude e do Grok</li><li>Cashback de 30% em 3 cupons mensais da VOX</li></ul></div>
+        <div class="card plano p-tempero"><img class="plano-logo" src="plano-bronze.jpg" alt="Panela Bronze" loading="lazy"><span class="rot">Panela Bronze</span><p class="valor"><small>5 encontros · em até 12x</small>12x de R$ 41,42</p><p class="mes so-geral">Sai <b>R$ 99,40</b> por encontro</p><p class="upgrade">Gostou? Em até 30 dias o valor pago abate na Panela Silver.</p><a class="btn contorno" data-plano="bronze" href="https://usevox.com.br/produtos/a-panela-primeiro-tempero-4-aulas-1r1mt/" target="_blank" rel="noopener">Começar pela Bronze &rarr;</a><button type="button" class="btn contorno btn-pix" data-pix="bronze">Pagar no Pix: R$ 422,45</button></div>
+        <div class="card plano p-panela destaque"><span class="selo">Mais escolhido</span><img class="plano-logo" src="plano-prata.jpg" alt="Panela Silver" loading="lazy"><span class="rot">Panela Silver</span>
+          <div class="so-hub"><p class="valor"><small>15 encontros · em até 12x</small>12x de R$ 83,08</p><p style="margin:0;font-weight:700">Ou R$ 997 à vista, com o desconto de quem participou do 1º Encontro.</p><p style="margin:0;color:var(--muted);font-size:14px">O desconto de quem participou do 1º Encontro já está nos botões abaixo.</p></div>
+          <div class="so-geral"><p class="valor"><small>15 encontros · em até 12x</small>12x de R$ 141,42</p><p class="mes">Sai <b>R$ 113,13</b> por encontro</p><p class="pix"><b>À vista no Pix: 15% de desconto.</b> Toque em Pagar no Pix e pague R$ 1.442,45.</p></div>
+          <a class="btn cheio" data-plano="silver" href="https://usevox.com.br/produtos/a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4/" target="_blank" rel="noopener">Garantir minha vaga &rarr;</a><button type="button" class="btn contorno btn-pix so-hub" data-pix="silver_hub">Pagar no Pix: R$ 847,45</button><button type="button" class="btn contorno btn-pix so-geral" data-pix="silver">Pagar no Pix: R$ 1.442,45</button></div>
+        <div class="card plano p-barro escuro"><img class="plano-logo" src="plano-ouro.jpg" alt="Panela Gold" loading="lazy"><span class="rot" style="color:#bbb">Panela Gold</span><p class="valor"><small style="color:#bbb">66 encontros · em até 12x</small>12x de R$ 416,42</p><p class="mes so-geral" style="color:#ddd">Sai <b style="color:var(--amarelo)">R$ 75,71</b> por encontro: <b>o menor valor por encontro</b> de todos os planos.</p><a class="btn cheio" data-plano="gold" href="https://usevox.com.br/produtos/a-panela-panela-de-barro-anual-9irsd/" target="_blank" rel="noopener">Quero a Panela Gold &rarr;</a><button type="button" class="btn contorno btn-pix" data-pix="gold">Pagar no Pix: R$ 4.247,45</button></div>
       </div>
+      <p class="pos-pagto"><b>Pagou?</b> Mande o comprovante no <a href="https://wa.me/5521996588197?text=Oi%2C%20Ramon!%20Paguei%20a%20Panela.%20Segue%20o%20comprovante%2C%20meu%20nome%20e%20meu%20e-mail%3A" target="_blank" rel="noopener">WhatsApp (21) 99658-8197</a> com o seu nome e e-mail. Conferimos o pagamento e você recebe o acesso à plataforma e o contrato para assinar.</p><div class="comparar"><h3>Compare as três panelas</h3><div class="tab-wrap"><table class="tab-cmp"><thead><tr><th></th><th><img src="plano-bronze.jpg" alt=""><span>Bronze</span><small>5 encontros</small></th><th class="dest"><img src="plano-prata.jpg" alt=""><span>Silver</span><small>15 encontros</small></th><th><img src="plano-ouro.jpg" alt=""><span>Gold</span><small>66 encontros</small></th></tr></thead><tbody><tr><th scope="row">Encontros ao vivo em grupo, online e gravados</th><td><i class="ok">✓</i><small>4</small></td><td class="dest"><i class="ok">✓</i><small>12</small></td><td><i class="ok">✓</i><small>48</small></td></tr><tr><th scope="row">Encontros individuais com o Ramon, online</th><td><i class="ok">✓</i><small>1</small></td><td class="dest"><i class="ok">✓</i><small>3</small></td><td><i class="ok">✓</i><small>12</small></td></tr><tr><th scope="row">Individuais extras, agendados quando precisar</th><td><i class="no">✕</i></td><td class="dest"><i class="no">✕</i></td><td><i class="ok">✓</i><small>6</small></td></tr><tr><th scope="row">Módulo 1: A vitrine</th><td><i class="ok">✓</i></td><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Módulos 2 e 3: A máquina de vendas e A empresa no automático</th><td><i class="no">✕</i></td><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Aula ao vivo com Kevin Eger</th><td><i class="no">✕</i></td><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Nivelamento e área do participante</th><td><i class="ok">✓</i></td><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Meu projeto</th><td><i class="ok">✓</i><small>1ª etapa</small></td><td class="dest"><i class="ok">✓</i><small>Completo</small></td><td><i class="ok">✓</i><small>Completo, com revisão a cada trimestre</small></td></tr><tr><th scope="row">Temperos (skills prontas para o Claude)</th><td><i class="ok">✓</i><small>Amostra do seu ramo</small></td><td class="dest"><i class="ok">✓</i><small>Mais de 800</small></td><td><i class="ok">✓</i><small>Mais de 800, os novos primeiro</small></td></tr><tr><th scope="row">Curso O Funcionário Invisível e guias do Claude e do Grok</th><td><i class="no">✕</i></td><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Grupo de dúvidas</th><td><i class="ok">✓</i></td><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Boosts de Sites e de Aplicativos</th><td><i class="no">✕</i></td><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Boosts de Apresentações, CRM e WhatsApp automático</th><td><i class="no">✕</i></td><td class="dest"><i class="no">✕</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Ingresso dos Encontros do Hub</th><td><i class="no">✕</i></td><td class="dest"><i class="ok">✓</i><small>O próximo Encontro</small></td><td><i class="ok">✓</i><small>Todos durante o ano</small></td></tr><tr><th scope="row">30% de cashback na VOX</th><td><i class="ok">✓</i></td><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr></tbody></table></div></div><p class="cashback">Em todos os planos, 30% do valor investido volta em cashback na VOX.</p>
       <p class="garantia">Pagamento seguro pela loja da VOX. Assim que o pagamento é aprovado, você recebe por e-mail o link para criar a sua senha e entrar na área do participante. Garantia de 7 dias: entrou e viu que não é para você, devolvemos 100% do valor.</p>
     </div>
   </section>
@@ -526,14 +544,27 @@ function avisoVideo(){
   });
   vid.addEventListener("seeking",function(){ultimo=vid.currentTime});
 })();
-/* botões de compra: colocam a Panela direto no carrinho da loja VOX (pula a página do produto) */
+/* ===== LINKS DE PAGAMENTO NO CARTÃO (InfinitePay, criados pelo Ramon em 22/11) =====
+   O Pix sai pelo copia e cola (PIX_CHAVE, no fim da página). Plano sem link = carrinho da loja VOX. */
+var LINKS_CARTAO = {
+  bronze:     "https://link.infinitepay.io/ramon-berba-vieira/VC1DLUMtSQ-qfPTg9fhON-497,00",
+  silver:     "https://link.infinitepay.io/ramon-berba-vieira/VC1DLUMtSQ-Khpmwe6tv2-1697,00",
+  silver_hub: "https://link.infinitepay.io/ramon-berba-vieira/VC1DLUMtSQ-u2HCcULydw-997,00",
+  gold:       "https://link.infinitepay.io/ramon-berba-vieira/VC1DLUMtSQ-vx5SJTSlB6-4997,00"
+};
+/* botões de compra: link da InfinitePay; sem link, carrinho da loja VOX */
 document.addEventListener("click",function(ev){
-  var a=ev.target.closest&&ev.target.closest('a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi4"]');
+  var a=ev.target.closest&&ev.target.closest('a[href*="usevox.com.br/produtos/a-panela-"]');
   if(!a)return;
   ev.preventDefault();
   if(!videoVisto()){avisoVideo();return;}
+  var pl=a.getAttribute("data-plano")||"silver", grade=document.getElementById("planos");
+  if(pl==="silver"&&grade&&/hub/.test(grade.className))pl="silver_hub";
+  if(LINKS_CARTAO[pl]){window.location.href=LINKS_CARTAO[pl];return;}
+  var ids={"primeiro-tempero":"382642835","panela-de-barro":"382642841"},pid="382571596";
+  for(var k in ids)if(a.href.indexOf(k)>-1)pid=ids[k];
   var f=document.createElement("form");f.method="post";f.action="https://usevox.com.br/comprar/";
-  [["add_to_cart","382571596"],["quantity","1"]].forEach(function(c){var i=document.createElement("input");i.type="hidden";i.name=c[0];i.value=c[1];f.appendChild(i);});
+  [["add_to_cart",pid],["quantity","1"]].forEach(function(c){var i=document.createElement("input");i.type="hidden";i.name=c[0];i.value=c[1];f.appendChild(i);});
   document.body.appendChild(f);f.submit();
 });
 </script>
@@ -546,9 +577,70 @@ document.addEventListener("click",function(ev){
   q.addEventListener("click",function(ev){
     var bt=ev.target.closest("[data-resp]");if(!bt)return;
     var sim=bt.getAttribute("data-resp")==="sim";
-    document.getElementById("plano-hub").hidden=!sim;
-    document.getElementById("plano-geral").hidden=sim;
+    pl.className="planos "+(sim?"hub":"geral");
     q.hidden=true;pl.hidden=false;pl.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+})();
+</script>
+<div class="pix-fundo" id="pix-fundo" role="dialog" aria-modal="true" aria-labelledby="pix-titulo"><div class="pix-caixa">
+<button type="button" class="pix-fechar" id="pix-fechar" aria-label="Fechar">&times;</button>
+<h3 id="pix-titulo">Pague no Pix</h3><p id="pix-plano" style="margin:0;color:#555"></p><p class="pix-valor" id="pix-valor"></p>
+<div id="pix-qr"></div>
+<label for="pix-codigo" style="display:block;text-align:left;font-weight:700;margin:0 0 6px">Pix copia e cola</label>
+<textarea id="pix-codigo" readonly></textarea>
+<button type="button" class="btn cheio" id="pix-copiar">Copiar código Pix</button>
+<a class="btn contorno" id="pix-paguei" target="_blank" rel="noopener">Já paguei: enviar comprovante</a>
+<small>Abra o app do seu banco, escolha Pix &gt; Pix copia e cola (ou leia o QR Code) e confira o valor. Depois de pagar, mande o comprovante no WhatsApp para liberarmos o seu acesso.</small>
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ===== PIX COPIA E COLA (15% de desconto em todos os planos) =====
+   PIX_CHAVE: o Ramon preenche (CNPJ da VOX REMY, e-mail ou chave aleatória). Vazia = o Pix mostra "em configuração". */
+var PIX_CHAVE = "";
+var PIX_NOME = "VOX REMY", PIX_CIDADE = "NITEROI";
+var PIX_PLANOS = {
+  bronze:     { nome: "Panela Bronze", valor: 422.45 },
+  silver:     { nome: "Panela Silver", valor: 1442.45 },
+  silver_hub: { nome: "Panela Silver (1º Encontro)", valor: 847.45 },
+  gold:       { nome: "Panela Gold", valor: 4247.45 }
+};
+function pixCampo(id, v){ v=String(v); return id + (v.length<10?"0":"") + v.length + v; }
+function pixCRC(s){ var c=0xFFFF; for(var i=0;i<s.length;i++){ c^=s.charCodeAt(i)<<8; for(var j=0;j<8;j++){ c=(c&0x8000)?((c<<1)^0x1021):(c<<1); c&=0xFFFF; } } return ("000"+c.toString(16).toUpperCase()).slice(-4); }
+function pixSemAcento(s){ return s.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9 ]/g,"").toUpperCase(); }
+function pixCodigo(chave, valor, txid){
+  var s = pixCampo("00","01") + pixCampo("26", pixCampo("00","br.gov.bcb.pix") + pixCampo("01",chave)) +
+    pixCampo("52","0000") + pixCampo("53","986") + pixCampo("54", valor.toFixed(2)) + pixCampo("58","BR") +
+    pixCampo("59", pixSemAcento(PIX_NOME).slice(0,25)) + pixCampo("60", pixSemAcento(PIX_CIDADE).slice(0,15)) +
+    pixCampo("62", pixCampo("05", txid)) + "6304";
+  return s + pixCRC(s);
+}
+(function(){
+  var fundo=document.getElementById("pix-fundo"); if(!fundo) return;
+  function brl(v){ return "R$ " + v.toFixed(2).replace(".",",").replace(/\B(?=(\d{3})+(?!\d))/g,"."); }
+  function fechar(){ fundo.classList.remove("aberto"); }
+  document.getElementById("pix-fechar").addEventListener("click",fechar);
+  fundo.addEventListener("click",function(e){ if(e.target===fundo) fechar(); });
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape") fechar(); });
+  document.getElementById("pix-copiar").addEventListener("click",function(){
+    var t=document.getElementById("pix-codigo"); t.select();
+    var ok=function(){ document.getElementById("pix-copiar").textContent="Código copiado!"; };
+    if(navigator.clipboard) navigator.clipboard.writeText(t.value).then(ok,function(){ document.execCommand("copy"); ok(); }); else { document.execCommand("copy"); ok(); }
+  });
+  document.addEventListener("click",function(ev){
+    var b=ev.target.closest&&ev.target.closest("[data-pix]"); if(!b) return;
+    ev.preventDefault();
+    if(typeof videoVisto==="function" && !videoVisto()){ avisoVideo(); return; }
+    var p=PIX_PLANOS[b.getAttribute("data-pix")]; if(!p) return;
+    var txid=("PANELA"+b.getAttribute("data-pix").replace(/[^a-z]/g,"").toUpperCase()+Date.now().toString(36).toUpperCase()).slice(0,25);
+    document.getElementById("pix-plano").textContent=p.nome+" · 15% de desconto no Pix";
+    document.getElementById("pix-valor").textContent=brl(p.valor);
+    var qr=document.getElementById("pix-qr"); qr.innerHTML="";
+    var cod=document.getElementById("pix-codigo"), cop=document.getElementById("pix-copiar");
+    cop.textContent="Copiar código Pix";
+    if(!PIX_CHAVE){ cod.value="O Pix está em configuração. Fale com a gente no WhatsApp (21) 99658-8197."; cop.disabled=true; }
+    else { var c=pixCodigo(PIX_CHAVE,p.valor,txid); cod.value=c; cop.disabled=false; if(window.QRCode) new QRCode(qr,{text:c,width:220,height:220,correctLevel:QRCode.CorrectLevel.M}); }
+    document.getElementById("pix-paguei").href="https://wa.me/5521996588197?text="+encodeURIComponent("Oi, Ramon! Paguei a "+p.nome+" no Pix ("+brl(p.valor)+"). Código do pedido: "+txid+". Segue o comprovante:");
+    fundo.classList.add("aberto");
   });
 })();
 </script>

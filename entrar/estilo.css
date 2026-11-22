@@ -609,3 +609,27 @@ html,body{overflow-x:hidden}
 .m-op{border:1px solid var(--line);border-radius:8px;padding:12px;margin:8px 0;font-size:13.5px}
 .m-op p{margin:4px 0}
 .m-obs{width:100%;font:inherit;font-size:13.5px;padding:9px 11px;border:1px solid var(--line);border-radius:6px;margin-top:6px}
+
+/* 21/11: 3 planos (Primeiro Tempero trancado nos módulos 2 e 3) */
+.modulo-enc.trancado{opacity:.6}
+.modulo-enc.trancado .item{padding-block:6px}
+.upgrade-c{border:2px solid var(--azul,#2D5BD7)}
+.upgrade-c p{margin:6px 0 12px}
+.boost{opacity:.62}.boost.ok{opacity:1;border:2px solid #F5B800}.boost h2{margin:4px 0}
+
+/* 22/11 revisão: fim do acesso, amostra de temperos, extras, demo */
+.faixa-fim{background:#FFF3E0;border-bottom:1px solid #F0C48A;padding:10px max(16px,env(safe-area-inset-left,0px));font-size:14px;text-align:center}
+.faixa-fim a{font-weight:700;margin-left:6px}
+body.so-leitura main.conteudo form,body.so-leitura main.conteudo [data-visto],body.so-leitura main.conteudo [data-resgatar],body.so-leitura main.conteudo [data-premio]{pointer-events:none;opacity:.5}
+.ramo.tranca{opacity:.5}
+.tranca-t{margin:16px 0;border-top:3px solid var(--muted,#999)}
+.chip.proposta{background:#FFF7DB;color:#7a5b00}
+.extras .btn[disabled]{opacity:.55;cursor:not-allowed}
+.aviso-demo .demo-pl{font:inherit;margin:0 2px;padding:1px 8px;border:1px solid #EBD58A;border-radius:10px;background:#fff;cursor:pointer}
+.aviso-demo .demo-pl.on{background:#EBD58A;font-weight:700}
+.aviso-demo select{font:inherit;padding:0 4px}
+.selo-plano{display:flex;gap:14px;align-items:center;margin-bottom:16px}
+.selo-plano img{width:76px;height:auto;border-radius:10px;background:#fff;flex:none}
+.selo-plano.grande img{width:110px}
+.selo-plano h2{margin:2px 0 4px}
+.upgrade-c .logo-up{float:right;width:64px;height:auto;margin:0 0 6px 10px;border-radius:8px;background:#fff}
