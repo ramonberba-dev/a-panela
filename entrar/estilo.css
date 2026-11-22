@@ -633,3 +633,14 @@ body.so-leitura main.conteudo form,body.so-leitura main.conteudo [data-visto],bo
 .selo-plano.grande img{width:110px}
 .selo-plano h2{margin:2px 0 4px}
 .upgrade-c .logo-up{float:right;width:64px;height:auto;margin:0 0 6px 10px;border-radius:8px;background:#fff}
+
+/* Vídeos: gravação dos encontros e painel de links do mentor */
+.enc-grav{margin:4px 0 12px 48px}
+.enc-grav.muted{font-size:12.5px}
+.enc-player .nv-player{margin-top:10px}
+.m-videos .m-video{padding:12px 0;border-top:1px solid rgba(0,0,0,.08)}
+.m-video-tit{font-size:14px}
+.m-video-form{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.m-video-form input{flex:1;min-width:200px;padding:8px 10px;border:1px solid rgba(0,0,0,.2);border-radius:3px;font:inherit;font-size:14px;background:#fff}
+.m-video-prev{display:block;color:var(--muted);margin-top:4px;word-break:break-all;font-size:12px}
+@media (max-width:600px){.enc-grav{margin-left:0}}

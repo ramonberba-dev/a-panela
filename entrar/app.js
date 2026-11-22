@@ -227,7 +227,7 @@
     usuarioNuvem = u; carregando = true; desenharCarregando();
     var email = (u.email || "").toLowerCase();
     sha256(email).then(function (h) {
-      if (h === MENTOR_ID && u.emailVerified) { memoria = { mentor: true, nuvem: true, nome: u.displayName || "Ramon" }; Armazem.gravar(memoria); return carregarMentor().then(function () { carregando = false; desenhar(); }); }
+      if (h === MENTOR_ID && u.emailVerified) { memoria = { mentor: true, nuvem: true, nome: u.displayName || "Ramon" }; Armazem.gravar(memoria); return carregarMentor().then(function () { carregando = false; desenhar(); carregarVideos(); }); }
       var ref = NV_.db.collection("usuarios").doc(u.uid);
       return ref.get().then(function (doc) {
         if (doc.exists) return doc.data();
@@ -241,7 +241,7 @@
         return NV_.db.collection("progresso").doc(u.uid).get().then(function (p) {
           var d = null; try { d = p.exists ? JSON.parse(p.data().dados) : null; } catch (e) {}
           if (!d) d = { aluno: { nome: conta.nome, email: conta.email, perfil: conta.perfil, turma: conta.turma, valor: conta.valor, inicio: new Date().toISOString(), ramo: conta.ramo || null }, diagnosticos: [], rascunho: null, cupons: [], encontrosVistos: [], individual: null };
-          d.nuvem = true; memoria = d; carregando = false; salvar(); desenhar();
+          d.nuvem = true; memoria = d; carregando = false; salvar(); desenhar(); carregarVideos();
         });
       });
     }).catch(function () { carregando = false; toast("Não consegui carregar a sua conta. Confira a internet e entre de novo."); NV_.auth.signOut(); });
@@ -915,7 +915,7 @@
     var h = cabecalho("Encontros", "Ao vivo às 20h. A gravação aparece aqui em até 48 horas. A cada módulo de 4 encontros, você constrói algo que fica funcionando no seu negócio.");
     function linhaEnc(e) {
       var visto = d.encontrosVistos.indexOf(e.n) >= 0;
-      return '<div class="item"><span class="num ' + (visto ? "ok" : e.kevin ? "br" : "") + '">' + e.n + '</span><div style="flex:1"><b>' + esc(e.titulo) + '</b><p><span class="chip">' + esc(A(area(e.area)).nome) + "</span> Prepare-se: " + esc(e.prep) + '</p></div><button class="btn peq ' + (visto ? "" : "contorno") + '" data-visto="' + e.n + '">' + (visto ? "Visto" : "Marcar como visto") + "</button></div>";
+      return '<div class="item"><span class="num ' + (visto ? "ok" : e.kevin ? "br" : "") + '">' + e.n + '</span><div style="flex:1"><b>' + esc(e.titulo) + '</b><p><span class="chip">' + esc(A(area(e.area)).nome) + "</span> Prepare-se: " + esc(e.prep) + '</p></div><button class="btn peq ' + (visto ? "" : "contorno") + '" data-visto="' + e.n + '">' + (visto ? "Visto" : "Marcar como visto") + "</button></div>" + blocoGravacao(e);
     }
     var mods = P.modulos || [{ n: 0, nome: "Encontros", entrega: "" }];
     h += mods.map(function (m) {
@@ -943,6 +943,61 @@
         '<p class="mod-entrega"><span class="chip proposta">Tema a confirmar</span> ' + esc(m.entrega || "") + "</p>" + lista.map(linhaEnc).join("") + "</div>";
     }).join("");
   }
+
+  /* ---------- Vídeos (links colados pelo Ramon no painel do mentor) ----------
+     Ficam no Firestore em config/videos = { nivelamento: {idDaAula: url}, encontros: {"n": url} }.
+     Sem Firebase (demonstração), ficam no armazenamento do navegador. Aceita YouTube, Vimeo, Bunny Stream, Google Drive ou qualquer https. */
+  var VIDEOS = { nivelamento: {}, encontros: {} }, CHAVE_VIDEOS = "panela-videos-demo";
+  function videosLocais() { try { return JSON.parse(localStorage.getItem(CHAVE_VIDEOS)) || null; } catch (e) { return null; } }
+  function usaNuvemVideos() { return !!(NV_ && usuarioNuvem && memoria && memoria.nuvem); }
+  function carregarVideos() {
+    if (!usaNuvemVideos()) { var l = videosLocais() || {}; VIDEOS = { nivelamento: l.nivelamento || {}, encontros: l.encontros || {} }; return Promise.resolve(); }
+    return NV_.db.collection("config").doc("videos").get().then(function (doc) {
+      var x = doc.exists ? doc.data() : {}; VIDEOS = { nivelamento: x.nivelamento || {}, encontros: x.encontros || {} };
+      if (["nivelamento", "encontros"].indexOf(atual) >= 0 || (memoria && memoria.mentor)) desenhar();
+    }).catch(function () {});
+  }
+  function salvarVideo(tipo, chave, url) { /* url vazio = remover */
+    VIDEOS[tipo] = VIDEOS[tipo] || {};
+    if (url) VIDEOS[tipo][chave] = url; else delete VIDEOS[tipo][chave];
+    if (!usaNuvemVideos()) { try { localStorage.setItem(CHAVE_VIDEOS, JSON.stringify(VIDEOS)); } catch (e) {} return Promise.resolve(); }
+    var ref = NV_.db.collection("config").doc("videos"), o = {};
+    if (url) { o[tipo] = {}; o[tipo][chave] = url; return ref.set(o, { merge: true }); }
+    o[tipo + "." + chave] = firebase.firestore.FieldValue.delete(); return ref.update(o);
+  }
+  /* Link comum -> link de incorporação. Só https; o resto vem como veio. */
+  function linkEmbed(u) {
+    u = String(u || "").trim(); if (!/^https:\/\/[^\s"'<>]+$/i.test(u)) return null;
+    var m;
+    if ((m = u.match(/^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?(?:[^#]*&)?v=([\w-]{6,})/i)) || (m = u.match(/^https:\/\/youtu\.be\/([\w-]{6,})/i)) ||
+        (m = u.match(/^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/(?:shorts|live|embed)\/([\w-]{6,})/i))) return "https://www.youtube-nocookie.com/embed/" + m[1];
+    if ((m = u.match(/^https:\/\/(?:www\.)?vimeo\.com\/(\d+)/i))) return "https://player.vimeo.com/video/" + m[1];
+    if ((m = u.match(/^https:\/\/iframe\.mediadelivery\.net\/(?:play|embed)\/(\d+)\/([\w-]+)/i))) return "https://iframe.mediadelivery.net/embed/" + m[1] + "/" + m[2];
+    if ((m = u.match(/^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/i))) return "https://drive.google.com/file/d/" + m[1] + "/preview";
+    return u;
+  }
+  window.panelaLinkEmbed = linkEmbed;
+  function iframeVideo(url, titulo) {
+    var e = linkEmbed(url); if (!e) return "";
+    return '<iframe src="' + esc(e) + '" loading="lazy" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" title="' + esc(titulo || "Vídeo") + '"></iframe>';
+  }
+  function videoAula(a) { return (VIDEOS.nivelamento || {})[a.id] || a.video || ""; }
+  /* Data do encontro n: um por semana a partir do início da turma, às 20h. Sem início da turma = sem data. */
+  function dataEncontro(n) { var i = inicioTurma(); if (!i) return null; var d = new Date(i); d.setDate(d.getDate() + 7 * (n - 1)); d.setHours(20, 0, 0, 0); return d; }
+  function blocoGravacao(e) {
+    var u = (VIDEOS.encontros || {})[String(e.n)];
+    if (u && linkEmbed(u)) return '<div class="enc-grav"><button class="btn peq contorno" data-grav="' + e.n + '" aria-expanded="false">▶ Assistir à gravação</button><div class="enc-player" id="grav-' + e.n + '" hidden></div></div>';
+    var dt = dataEncontro(e.n);
+    if (dt && Date.now() > dt.getTime() + 2 * 3600e3) return '<p class="enc-grav muted">Gravação disponível em até 48 horas depois do encontro.</p>';
+    return "";
+  }
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest && ev.target.closest("[data-grav]"); if (!b) return;
+    var n = b.getAttribute("data-grav"), box = document.getElementById("grav-" + n); if (!box) return;
+    var abrir = box.hidden;
+    if (abrir && !box.innerHTML) { var e = (P.encontros || []).concat(P.encontrosAnual || []).filter(function (x) { return String(x.n) === n; })[0]; box.innerHTML = '<div class="nv-player">' + iframeVideo(VIDEOS.encontros[n], e ? e.titulo : "Gravação") + "</div>"; }
+    box.hidden = !abrir; b.setAttribute("aria-expanded", abrir ? "true" : "false"); b.textContent = abrir ? "Fechar gravação" : "▶ Assistir à gravação";
+  });
 
   /* ---------- Nivelamento: aulas em vídeo no formato "player + lista de módulos" (nivelamento.js) ---------- */
   var NV = window.NIVELAMENTO || { modulos: [], emBreve: [] };
@@ -1126,7 +1181,7 @@
       '<p class="muted" style="margin:4px 0 0"><b style="color:var(--ink)">' + pct + "% concluído</b> · " + pr.feitas + "/" + pr.total + " aulas · " + pr.ferr + "/" + pr.ferrTotal + ' ferramentas preenchidas</p></div>' +
       '<div class="nv-prog" role="progressbar" aria-label="Progresso do nivelamento" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + pct + '%"></i></div></div>';
     h += '<div class="nv' + (teatro ? " teatro" : "") + '"><div class="nv-principal">';
-    h += '<div class="nv-player">' + (a.video ? '<iframe src="' + esc(a.video) + '" loading="lazy" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen title="' + esc(a.titulo) + '"></iframe>' :
+    h += '<div class="nv-player">' + (videoAula(a) && linkEmbed(videoAula(a)) ? iframeVideo(videoAula(a), a.titulo) :
       '<div class="nv-sem"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>' + esc(a.titulo) + '</b><span>Vídeo em gravação · ' + esc(a.dur) + " min</span></div>") + "</div>";
     h += '<div class="nv-ctrl"><div><button class="nv-ic" data-nv-ir="' + (idx - 1) + '"' + (idx ? "" : " disabled") + ' aria-label="Aula anterior"><svg viewBox="0 0 24 24"><path d="M6 5v14M18 5l-9 7 9 7z"/></svg></button>' +
       '<button class="nv-ic" data-nv-ir="' + (idx + 1) + '"' + (idx < aulas.length - 1 ? "" : " disabled") + ' aria-label="Próxima aula"><svg viewBox="0 0 24 24"><path d="M18 5v14M6 5l9 7-9 7z"/></svg></button></div>' +
@@ -1544,6 +1599,7 @@
     var real = memoria && memoria.nuvem && MD && !verExemplo;
     h += real ? "" : '<div class="m-aviso">Dados de exemplo: a turma abaixo é fictícia.' + (memoria && memoria.nuvem ? ' <button class="m-link" id="m-real">Voltar para a turma real</button>' : "") + "</div>";
     if (memoria && memoria.nuvem && MD) h += painelAcessos() + painelProjetos();
+    h += painelVideos();
     h += '<div class="m-corpo"><section class="m-kpis">' +
       [["Alunos", turma.length, turma.filter(function (a) { return a.aluno.turma === "hub"; }).length + " do 1º Encontro"], ["Faturamento contratado", moeda(contratado), "ticket médio " + moeda(turma.length ? contratado / turma.length : 0)],
        ["Recebido até hoje", moeda(rec), "a receber " + moeda(contratado - rec)], ["Ativos na semana", ativos + " de " + turma.length, Math.round(ativos / Math.max(1, turma.length) * 100) + "% entraram nos últimos 7 dias"],
@@ -1576,10 +1632,51 @@
       function abre() { alunoSel = +b.getAttribute("data-m-aluno"); telaMentor(); var d = document.getElementById("m-det"); if (d) d.scrollIntoView({ block: "start", behavior: "smooth" }); }
       b.onclick = abre; b.onkeydown = function (e) { if (e.key === "Enter") abre(); };
     });
-    ligarAcessos(); ligarProjetosM();
+    ligarAcessos(); ligarProjetosM(); ligarVideosM();
     var fx = document.getElementById("m-fechar"); if (fx) fx.onclick = function () { alunoSel = null; telaMentor(); };
     var cm = document.getElementById("m-copiar");
     if (cm) cm.onclick = function () { var t = cm.getAttribute("data-txt"); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast("Mensagem copiada. Cole no WhatsApp do aluno."); }, function () { window.prompt("Copie a mensagem:", t); }); };
+  }
+
+  /* Vídeos: o Ramon cola o link de cada aula do nivelamento e de cada encontro (config/videos no Firestore) */
+  var abaVideosM = "nivelamento";
+  function painelVideos() {
+    var itens = abaVideosM === "nivelamento" ? nivAulas().map(function (a, i) { return { tipo: "nivelamento", chave: a.id, rot: "Aula " + (i + 1), titulo: a.titulo, fixo: a.video || "" }; })
+      : (P.encontros || []).concat(P.encontrosAnual || []).map(function (e) { return { tipo: "encontros", chave: String(e.n), rot: "Encontro " + e.n, titulo: e.titulo, fixo: "" }; });
+    var com = itens.filter(function (x) { return (VIDEOS[x.tipo] || {})[x.chave] || x.fixo; }).length;
+    var h = '<div class="m-corpo m-acessos"><section class="card m-videos"><div class="m-lista-topo"><span class="rot">Vídeos · ' + com + " de " + itens.length + ' com vídeo</span><div class="m-filtros">' +
+      [["nivelamento", "Nivelamento"], ["encontros", "Encontros"]].map(function (f) { return '<button class="chip' + (abaVideosM === f[0] ? " on" : "") + '" data-mv-aba="' + f[0] + '">' + f[1] + "</button>"; }).join("") + "</div></div>" +
+      '<p class="muted" style="margin:0 0 6px">Suba o vídeo no YouTube como Não listado e cole o link aqui. Também aceita Bunny Stream, Vimeo e Google Drive (compartilhado com “qualquer pessoa com o link”).</p>';
+    h += itens.map(function (x) {
+      var k = x.tipo + "|" + x.chave, u = (VIDEOS[x.tipo] || {})[x.chave] || "", emb = u ? linkEmbed(u) : null;
+      return '<div class="m-video"><div class="m-video-tit"><b>' + esc(x.rot) + "</b> · " + esc(x.titulo) + (x.fixo && !u ? ' <small class="muted">(já tem vídeo no código)</small>' : "") + "</div>" +
+        '<div class="m-video-form"><input type="url" inputmode="url" aria-label="Link do vídeo: ' + esc(x.rot) + '" placeholder="https://youtu.be/…" value="' + esc(u) + '" data-mv-in="' + esc(k) + '"><button class="btn peq" data-mv-salvar="' + esc(k) + '">Salvar</button>' +
+        (u ? '<button class="btn peq contorno" data-mv-rem="' + esc(k) + '">Remover</button>' : "") + "</div>" +
+        (u ? '<small class="m-video-prev">' + (emb ? "Vai tocar como: " + esc(emb) : "Link inválido: use um endereço que comece com https://") + "</small>" : "") + "</div>";
+    }).join("") + "</section></div>";
+    return h;
+  }
+  function ligarVideosM() {
+    document.querySelectorAll("[data-mv-aba]").forEach(function (b) { b.onclick = function () { abaVideosM = b.getAttribute("data-mv-aba"); telaMentor(); }; });
+    function par(v) { var i = v.indexOf("|"); return { tipo: v.slice(0, i), chave: v.slice(i + 1) }; }
+    document.querySelectorAll("[data-mv-salvar]").forEach(function (b) {
+      b.onclick = function () {
+        var v = b.getAttribute("data-mv-salvar"), k = par(v), inp = null;
+        document.querySelectorAll("[data-mv-in]").forEach(function (x) { if (x.getAttribute("data-mv-in") === v) inp = x; });
+        var u = ((inp && inp.value) || "").trim();
+        if (!u) { toast("Cole o link do vídeo."); return; }
+        if (!linkEmbed(u)) { toast("O link precisa começar com https://"); return; }
+        b.disabled = true;
+        salvarVideo(k.tipo, k.chave, u).then(function () { toast("Vídeo salvo. Os alunos já veem."); telaMentor(); }, function () { b.disabled = false; toast("Não consegui salvar. Confira a internet."); });
+      };
+    });
+    document.querySelectorAll("[data-mv-rem]").forEach(function (b) {
+      b.onclick = function () {
+        if (!confirm("Remover este vídeo?")) return;
+        var k = par(b.getAttribute("data-mv-rem"));
+        salvarVideo(k.tipo, k.chave, "").then(function () { toast("Vídeo removido."); telaMentor(); }, function () { toast("Não consegui remover. Confira a internet."); });
+      };
+    });
   }
 
   /* Aba de acessos do mentor: pré-cadastros, novo aluno, pausar/reativar */
@@ -1876,6 +1973,7 @@
     if (di) di.addEventListener("change", function () { d.demoInicio = di.value === "entrada" ? null : di.value; salvar(); desenhar(); });
   }
 
+  carregarVideos();
   if (NV_) {
     if (memoria && !memoria.demo) { memoria = null; }
     desenhar();
