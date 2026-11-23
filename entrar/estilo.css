@@ -644,3 +644,18 @@ body.so-leitura main.conteudo form,body.so-leitura main.conteudo [data-visto],bo
 .m-video-form input{flex:1;min-width:200px;padding:8px 10px;border:1px solid rgba(0,0,0,.2);border-radius:3px;font:inherit;font-size:14px;background:#fff}
 .m-video-prev{display:block;color:var(--muted);margin-top:4px;word-break:break-all;font-size:12px}
 @media (max-width:600px){.enc-grav{margin-left:0}}
+
+/* Meu projeto: o aluno ajusta o projeto (23/11) */
+.proj-norte{margin:0 0 16px}
+.proj-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.proj-selo{display:inline-block;margin:0 0 8px;padding:3px 10px;border-radius:999px;background:#EAF4EC;color:#1f7a44;font-size:12px;font-weight:700}
+.proj-ed .campo{display:block;margin:0 0 10px}
+.proj-ed .campo span{display:block;font-size:12.5px;font-weight:700;margin:0 0 4px}
+.proj-ed input,.proj-ed textarea{width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid rgba(0,0,0,.18);border-radius:8px;font:inherit;background:#fff}
+.proj-ed-mes{border:1px solid rgba(0,0,0,.1);border-radius:10px;padding:12px 14px;margin:14px 0 0}
+.proj-ed-mes legend{font-weight:800;padding:0 6px}
+.proj-ed-sem{border-top:1px dashed rgba(0,0,0,.12);padding:10px 0 4px;margin-top:8px}
+.proj-ed-dem{display:flex;gap:6px;align-items:center;margin:0 0 6px}
+.proj-ed-dem input{flex:1}
+.m-proj-ver{margin:6px 0 12px;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,.035);font-size:13px}
+.m-proj-ver p{margin:0 0 4px}

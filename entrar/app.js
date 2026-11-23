@@ -592,11 +592,33 @@
     ["sonho", "Um sonho que hoje parece difícil", "Uma profissão, uma meta, um projeto que você ainda não teve coragem ou estrutura para fazer."],
     ["recursos", "Tempo e investimento", "Quantas horas por semana você consegue dedicar e quanto pode investir por mês (anúncios, ferramentas)?"]
   ];
-  var projNuvem = null, projCarregando = false, projOpSel = null, projMes = 1;
+  var projNuvem = null, projCarregando = false, projOpSel = null, projMes = 1, projEditando = false, projRasc = null, projVerM = null;
   function projD() { var d = dados(); if (!d.projeto) d.projeto = { resp: {}, feitas: {} }; if (!d.projeto.feitas) d.projeto.feitas = {}; return d.projeto; }
   function projStatus() { return projNuvem ? projNuvem.status : (projD().demoStatus || "rascunho"); }
   function projOpcoes() { var t = projNuvem ? projNuvem.opcoes : projD().demoOpcoes; try { return typeof t === "string" ? JSON.parse(t) : (t || []); } catch (e) { return []; } }
   function projEscolha() { return projNuvem ? projNuvem.escolha : projD().demoEscolha; }
+  /* versão ajustada pelo aluno (meuProjeto); sem ela, vale a opção sugerida que ele escolheu */
+  function projMeu() { var t = projNuvem ? projNuvem.meuProjeto : projD().demoMeu; if (!t) return null; try { return typeof t === "string" ? JSON.parse(t) : t; } catch (e) { return null; } }
+  function projSugerido() { return projOpcoes()[projEscolha()] || {}; }
+  function projAtual() { return projMeu() || projSugerido(); }
+  function copiaProj(o) { return JSON.parse(JSON.stringify(o || {})); }
+  function idDem(m, w, k) { return m + "-" + w + "-" + k; }
+  /* leva as marcas de "feito" de uma versão para outra pelo texto da demanda (mesmo mês e semana) */
+  function remapFeitasTexto(antigo, novo) {
+    var pd = projD(), mapa = {};
+    (antigo.meses || []).forEach(function (m) { (m.semanas || []).forEach(function (w) { (w.demandas || []).forEach(function (t, k) { var id = idDem(m.n, w.n, k); if (pd.feitas[id]) mapa[m.n + "|" + w.n + "|" + String(t).trim().toLowerCase()] = true; delete pd.feitas[id]; }); }); });
+    (novo.meses || []).forEach(function (m) { (m.semanas || []).forEach(function (w) { (w.demandas || []).forEach(function (t, k) { if (mapa[m.n + "|" + w.n + "|" + String(t).trim().toLowerCase()]) pd.feitas[idDem(m.n, w.n, k)] = true; }); }); });
+  }
+  function gravarProjeto(campos, msg, depois) {
+    if (projNuvem) {
+      return NV_.db.collection("projetos").doc(usuarioNuvem.uid).update(campos).then(function () { Object.keys(campos).forEach(function (k) { projNuvem[k] = campos[k]; }); if (depois) depois(); salvar(); toast(msg); desenhar(); window.scrollTo(0, 0); },
+        function () { toast("Não consegui salvar. Confira a internet e tente de novo."); });
+    }
+    var pd = projD();
+    if ("meuProjeto" in campos) pd.demoMeu = campos.meuProjeto;
+    if ("status" in campos) pd.demoStatus = campos.status;
+    if (depois) depois(); salvar(); toast(msg); desenhar(); window.scrollTo(0, 0);
+  }
   function carregarProjeto() {
     if (!(NV_ && usuarioNuvem) || projCarregando) return;
     projCarregando = true;
@@ -607,7 +629,8 @@
     var nuvem = !!(NV_ && usuarioNuvem && dados().nuvem);
     if (nuvem && !projNuvem) { carregarProjeto(); return cabecalho("Meu projeto", "Carregando...") + '<div class="vazio">Um instante...</div>'; }
     var st = projStatus(), pd = projD();
-    var h = cabecalho("Meu projeto", "O que você vai tirar do papel nesses 3 meses. Você conta a sua história, a gente monta as opções, o Ramon revisa e você escolhe.");
+    var h = cabecalho("Meu projeto", "O seu norte dentro da Panela: o que você vai tirar do papel, mês a mês e semana a semana.");
+    h += '<div class="dica proj-norte"><span class="rot">Para que serve</span><p>O Meu projeto é o caminho que você segue durante a mentoria. A inteligência artificial monta as opções a partir da sua história, o Ramon revisa e você escolhe a que mais combina com você. Depois de escolher, o projeto é seu: você pode ajustar títulos, entregas e demandas quando quiser, ou trocar por outra opção. Marque o que for fazendo e acompanhe o avanço na barra.</p></div>';
     h += '<div class="proj-passos">' + [["rascunho", "1. Você conta"], ["gerado", "2. O Ramon revisa"], ["pronto", "3. Você escolhe"], ["escolhido", "4. Mão na massa"]].map(function (p, i) {
       var ordem = { rascunho: 0, enviado: 1, erro: 1, gerado: 1, pronto: 2, escolhido: 3 }[st] || 0;
       return '<span class="' + (i < ordem ? "ok" : i === ordem ? "at" : "") + '">' + p[1] + "</span>"; }).join("") + "</div>";
@@ -623,7 +646,7 @@
         "<p>" + (st === "gerado" ? "Assim que ele aprovar, as opções aparecem aqui para você escolher. Você também recebe um aviso." : "Em alguns minutos a gente monta de 3 a 4 opções de projeto a partir da sua história. Depois o Ramon revisa cada uma antes de liberar para você.") + "</p></div>";
     } else if (st === "pronto") {
       var ops = projOpcoes();
-      h += '<p class="muted" style="margin:0 0 12px">Escolha UM projeto. Ele vira o seu objetivo dos 3 meses, com uma entrega por mês e demandas toda semana.</p>';
+      h += '<p class="muted" style="margin:0 0 12px">Escolha UM projeto. Ele vira o seu norte, com uma entrega por mês e demandas toda semana. Depois você pode ajustar o que quiser.</p>';
       h += '<div class="grid g2 proj-ops">' + ops.map(function (o, i) {
         var aberto = projOpSel === i;
         return '<div class="card proj-op' + (aberto ? " aberto" : "") + '"><span class="rot">Opção ' + (i + 1) + "</span><h2>" + esc(o.titulo) + "</h2><p><b>" + esc(o.resumo) + "</b></p><p class=\"muted\">" + esc(o.porque) + "</p>" +
@@ -632,12 +655,14 @@
           '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn peq contorno" data-proj-ver="' + i + '">' + (aberto ? "Fechar" : "Ver os 3 meses") + '</button><button class="btn peq" data-proj-escolher="' + i + '">Escolher este</button></div></div>';
       }).join("") + "</div>";
     } else if (st === "escolhido") {
-      var o2 = projOpcoes()[projEscolha()] || {}, meses = o2.meses || [];
+      var o2 = projAtual(), meses = o2.meses || [], ajustado = !!projMeu();
       if (planoAtual() === "tempero") meses = meses.filter(function (x) { return x.n === 1; });
+      if (projEditando && projRasc) return h + formEdicaoProjeto(meses);
       var tot = 0, ok = 0;
       meses.forEach(function (m) { (m.semanas || []).forEach(function (w) { (w.demandas || []).forEach(function (_, k) { tot++; if (pd.feitas[m.n + "-" + w.n + "-" + k]) ok++; }); }); });
       var pct = tot ? Math.round(ok / tot * 100) : 0;
-      h += '<div class="card obj"><span class="rot">Meu projeto</span><p class="obj-frase">' + esc(o2.titulo) + '</p><p class="muted" style="margin:0 0 10px">' + esc(o2.resultado || o2.resumo || "") + '</p><div class="obj-meta"><span><b>' + ok + "/" + tot + "</b> demandas feitas</span><span><b>" + pct + '%</b> do projeto</span></div><div class="barra"><i style="width:' + pct + '%"></i></div></div>';
+      h += '<div class="card obj"><span class="rot">Meu projeto</span><p class="obj-frase">' + esc(o2.titulo) + '</p><p class="muted" style="margin:0 0 10px">' + esc(o2.resultado || o2.resumo || "") + '</p>' + (ajustado ? '<p class="proj-selo">Ajustado por você</p>' : "") + '<div class="obj-meta"><span><b>' + ok + "/" + tot + "</b> demandas feitas</span><span><b>" + pct + '%</b> do projeto</span></div><div class="barra"><i style="width:' + pct + '%"></i></div>' +
+        '<div class="proj-acoes"><button class="btn peq" id="proj-ajustar">Ajustar meu projeto</button>' + (ajustado ? '<button class="btn peq contorno" id="proj-original">Voltar ao projeto sugerido</button>' : "") + '<button class="btn peq contorno" id="proj-trocar">Escolher outra opção</button></div></div>';
       h += '<div class="via-abas" style="margin-top:16px">' + meses.map(function (m) { return '<button class="' + (projMes === m.n ? "on" : "") + '" data-proj-mes="' + m.n + '">Mês ' + m.n + "</button>"; }).join("") + "</div>";
       var m = meses.filter(function (x) { return x.n === projMes; })[0] || meses[0];
       if (planoAtual() === "tempero") h += '<p class="muted" style="margin:10px 0 0">No ' + descPlano("tempero") + ' você faz o mês 1 do projeto. Os meses 2 e 3 abrem no ' + descPlano("panela") + '.</p>';
@@ -648,6 +673,58 @@
       }).join("") + "</div>";
     }
     return h;
+  }
+  function formEdicaoProjeto(mesesVis) {
+    var r = projRasc, nums = mesesVis.map(function (m) { return m.n; });
+    var h = '<form id="f-proj-ed" class="card proj-ed" novalidate><span class="rot">Ajustando o seu projeto</span>' +
+      '<p class="muted" style="margin:4px 0 12px">Mude o que quiser: o nome, o resultado, o que sai pronto em cada mês, o foco de cada semana e as demandas. As demandas que você já fez continuam marcadas.</p>' +
+      '<label class="campo"><span>Nome do projeto</span><input data-ed="titulo" value="' + esc(r.titulo || "") + '"></label>' +
+      '<label class="campo"><span>Como você quer estar no fim (resultado)</span><textarea data-ed="resultado" rows="2">' + esc(r.resultado || r.resumo || "") + "</textarea></label>";
+    (r.meses || []).forEach(function (m, mi) {
+      if (nums.indexOf(m.n) < 0) return;
+      h += '<fieldset class="proj-ed-mes"><legend>Mês ' + m.n + "</legend>" +
+        '<label class="campo"><span>Título do mês</span><input data-em="' + mi + '" data-c="titulo" value="' + esc(m.titulo || "") + '"></label>' +
+        '<label class="campo"><span>Sai pronto no fim do mês</span><input data-em="' + mi + '" data-c="entrega" value="' + esc(m.entrega || "") + '"></label>';
+      (m.semanas || []).forEach(function (w, wi) {
+        h += '<div class="proj-ed-sem"><label class="campo"><span>Semana ' + w.n + ' · foco</span><input data-ew="' + mi + "-" + wi + '" value="' + esc(w.foco || "") + '"></label>' +
+          (w.demandas || []).map(function (d, di) {
+            return '<div class="proj-ed-dem"><input data-ed-dem="' + mi + "-" + wi + "-" + di + '" value="' + esc(d.t) + '" aria-label="Demanda"><button type="button" class="nv-ic" data-ed-del="' + mi + "-" + wi + "-" + di + '" aria-label="Apagar demanda" title="Apagar">✕</button></div>';
+          }).join("") +
+          '<button type="button" class="btn peq contorno" data-ed-add="' + mi + "-" + wi + '">+ Demanda</button></div>';
+      });
+      h += "</fieldset>";
+    });
+    return h + '<div class="proj-acoes"><button class="btn" type="submit">Salvar</button><button class="btn contorno" type="button" id="proj-cancelar">Cancelar</button></div></form>';
+  }
+  function lerEdicaoProjeto() {
+    var f = document.getElementById("f-proj-ed"), r = projRasc; if (!f || !r) return;
+    f.querySelectorAll("[data-ed]").forEach(function (i) { r[i.getAttribute("data-ed")] = i.value; });
+    f.querySelectorAll("[data-em]").forEach(function (i) { r.meses[+i.getAttribute("data-em")][i.getAttribute("data-c")] = i.value; });
+    f.querySelectorAll("[data-ew]").forEach(function (i) { var p = i.getAttribute("data-ew").split("-"); r.meses[+p[0]].semanas[+p[1]].foco = i.value; });
+    f.querySelectorAll("[data-ed-dem]").forEach(function (i) { var p = i.getAttribute("data-ed-dem").split("-"); r.meses[+p[0]].semanas[+p[1]].demandas[+p[2]].t = i.value; });
+  }
+  function abrirEdicaoProjeto() {
+    var r = copiaProj(projAtual());
+    (r.meses || []).forEach(function (m) { (m.semanas || []).forEach(function (w) { w.demandas = (w.demandas || []).map(function (t, k) { return { t: t, o: idDem(m.n, w.n, k) }; }); }); });
+    projRasc = r; projEditando = true; desenhar(); window.scrollTo(0, 0);
+  }
+  function salvarEdicaoProjeto() {
+    lerEdicaoProjeto();
+    var r = projRasc, pd = projD(), novas = {}, novo = copiaProj(r);
+    if (!String(r.titulo || "").trim()) { toast("Dê um nome ao seu projeto."); return; }
+    (novo.meses || []).forEach(function (m, mi) {
+      (m.semanas || []).forEach(function (w, wi) {
+        var lista = r.meses[mi].semanas[wi].demandas.filter(function (d) { return String(d.t || "").trim(); });
+        lista.forEach(function (d, k) { if (d.o && pd.feitas[d.o]) novas[idDem(m.n, w.n, k)] = true; });
+        w.demandas = lista.map(function (d) { return String(d.t).trim(); });
+      });
+    });
+    gravarProjeto({ meuProjeto: JSON.stringify(novo), meuProjetoEm: new Date().toISOString() }, "Projeto ajustado. Ele é o seu norte!", function () {
+      /* as marcas antigas saem; ficam só as das demandas que continuam no projeto */
+      Object.keys(pd.feitas).forEach(function (k) { if (/^\d+-\d+-\d+$/.test(k)) delete pd.feitas[k]; });
+      Object.keys(novas).forEach(function (k) { pd.feitas[k] = true; });
+      projEditando = false; projRasc = null;
+    });
   }
   function amostraProjeto() {
     function mes(n, t, e, focos) { return { n: n, titulo: t, entrega: e, semanas: focos.map(function (f, i) { return { n: i + 1, foco: f[0], demandas: f[1] }; }) }; }
@@ -699,12 +776,33 @@
         (o.meses || []).forEach(function (x, k) { if (m.marcos[k] && !m.marcos[k].t) m.marcos[k].t = x.entrega; });
         projMes = 1;
         if (projNuvem) {
-          NV_.db.collection("projetos").doc(usuarioNuvem.uid).update({ status: "escolhido", escolha: i, escolhidoEm: new Date().toISOString() }).then(function () { projNuvem.status = "escolhido"; projNuvem.escolha = i; salvar(); toast("Projeto escolhido. Mão na massa!"); desenhar(); window.scrollTo(0, 0); },
+          NV_.db.collection("projetos").doc(usuarioNuvem.uid).update({ status: "escolhido", escolha: i, escolhidoEm: new Date().toISOString(), meuProjeto: "" }).then(function () { projNuvem.status = "escolhido"; projNuvem.escolha = i; projNuvem.meuProjeto = ""; salvar(); toast("Projeto escolhido. Mão na massa!"); desenhar(); window.scrollTo(0, 0); },
             function () { toast("Não consegui salvar a escolha. Tente de novo."); });
-        } else { pd.demoStatus = "escolhido"; pd.demoEscolha = i; salvar(); desenhar(); window.scrollTo(0, 0); }
+        } else { pd.demoStatus = "escolhido"; pd.demoEscolha = i; pd.demoMeu = ""; salvar(); desenhar(); window.scrollTo(0, 0); }
       });
     });
     document.querySelectorAll("[data-proj-mes]").forEach(function (b) { b.addEventListener("click", function () { projMes = +b.getAttribute("data-proj-mes"); desenhar(); }); });
+    var bAj = document.getElementById("proj-ajustar"); if (bAj) bAj.addEventListener("click", abrirEdicaoProjeto);
+    var bOr = document.getElementById("proj-original");
+    if (bOr) bOr.addEventListener("click", function () {
+      if (!confirm("Voltar ao projeto sugerido? Os seus ajustes saem, e as demandas iguais continuam marcadas.")) return;
+      var meu = projMeu(), sug = projSugerido();
+      gravarProjeto({ meuProjeto: "", meuProjetoEm: new Date().toISOString() }, "Pronto: voltou ao projeto sugerido.", function () { remapFeitasTexto(meu || {}, sug); });
+    });
+    var bTr = document.getElementById("proj-trocar");
+    if (bTr) bTr.addEventListener("click", function () {
+      if (!confirm("Escolher outra opção? As opções aprovadas pelo Ramon voltam a aparecer, e o progresso deste projeto é zerado.")) return;
+      gravarProjeto({ status: "pronto", meuProjeto: "", trocouEm: new Date().toISOString() }, "Escolha a opção que faz mais sentido agora.", function () {
+        var pd = projD(); Object.keys(pd.feitas).forEach(function (k) { if (/^\d+-\d+-\d+$/.test(k)) delete pd.feitas[k]; }); projMes = 1; projOpSel = null;
+      });
+    });
+    var fEd = document.getElementById("f-proj-ed");
+    if (fEd) {
+      fEd.addEventListener("submit", function (e) { e.preventDefault(); salvarEdicaoProjeto(); });
+      document.getElementById("proj-cancelar").addEventListener("click", function () { projEditando = false; projRasc = null; desenhar(); window.scrollTo(0, 0); });
+      fEd.querySelectorAll("[data-ed-del]").forEach(function (b) { b.addEventListener("click", function () { lerEdicaoProjeto(); var p = b.getAttribute("data-ed-del").split("-"); projRasc.meses[+p[0]].semanas[+p[1]].demandas.splice(+p[2], 1); desenhar(); }); });
+      fEd.querySelectorAll("[data-ed-add]").forEach(function (b) { b.addEventListener("click", function () { lerEdicaoProjeto(); var p = b.getAttribute("data-ed-add").split("-"); projRasc.meses[+p[0]].semanas[+p[1]].demandas.push({ t: "", o: null }); desenhar(); var ins = document.querySelectorAll('[data-ed-dem^="' + p[0] + "-" + p[1] + '-"]'); if (ins.length) ins[ins.length - 1].focus(); }); });
+    }
     document.querySelectorAll("[data-dem]").forEach(function (c) { c.addEventListener("change", function () { pd.feitas[c.getAttribute("data-dem")] = c.checked; salvar(); desenhar(); }); });
   }
 
@@ -1707,13 +1805,19 @@
     h += "</section>";
     if (escolhidos.length) h += '<section class="card"><span class="rot">Projetos liberados · ' + escolhidos.length + "</span>" + escolhidos.map(function (p) {
       var ops = []; try { ops = JSON.parse(p.opcoes || "[]"); } catch (e) {}
-      return '<div class="m-conv"><span>' + esc(p.nome || p.email) + " · " + (p.status === "escolhido" ? "escolheu: <b>" + esc((ops[p.escolha] || {}).titulo || "") + "</b>" : "ainda escolhendo") + "</span></div>"; }).join("") + "</section>";
+      var meu = null; try { meu = p.meuProjeto ? JSON.parse(p.meuProjeto) : null; } catch (e) {}
+      var lin = '<div class="m-conv"><span>' + esc(p.nome || p.email) + " · " + (p.status === "escolhido" ? "escolheu: <b>" + esc((meu || ops[p.escolha] || {}).titulo || "") + "</b>" + (meu ? ' <span class="chip">ajustado pelo aluno</span> <button class="btn peq contorno" data-m-verproj="' + p.uid + '">' + (projVerM === p.uid ? "Fechar" : "Ver a versão do aluno") + "</button>" : "") : "ainda escolhendo") + "</span></div>";
+      if (meu && projVerM === p.uid) lin += '<div class="m-proj-ver">' + (meu.resultado ? "<p><b>Resultado:</b> " + esc(meu.resultado) + "</p>" : "") + (meu.meses || []).map(function (m) {
+        return "<p><b>Mês " + m.n + " · " + esc(m.titulo || "") + "</b> · sai pronto: " + esc(m.entrega || "") + "</p>" + (m.semanas || []).map(function (w) { return '<p class="muted">Semana ' + w.n + " · " + esc(w.foco || "") + ": " + esc((w.demandas || []).join(" · ")) + "</p>"; }).join("");
+      }).join("") + "</div>";
+      return lin; }).join("") + "</section>";
     return h + "</div>";
   }
   function ligarProjetosM() {
     if (!(memoria && memoria.nuvem && MD)) return;
     var db = NV_.db;
     function recarregar() { carregarMentor().then(telaMentor); }
+    document.querySelectorAll("[data-m-verproj]").forEach(function (b) { b.onclick = function () { var u = b.getAttribute("data-m-verproj"); projVerM = projVerM === u ? null : u; telaMentor(); }; });
     document.querySelectorAll("[data-m-proj]").forEach(function (b) { b.onclick = function () { var u = b.getAttribute("data-m-proj"); projAbertoM = projAbertoM === u ? null : u; telaMentor(); }; });
     document.querySelectorAll("[data-m-aprovar]").forEach(function (b) {
       b.onclick = function () {
