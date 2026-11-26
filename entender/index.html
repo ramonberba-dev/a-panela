@@ -17,7 +17,7 @@ a{color:inherit}
 [hidden]{display:none!important}
 .wrap{max-width:760px;margin:0 auto;padding:28px max(18px,env(safe-area-inset-left,0px)) 60px}
 .topo{display:flex;align-items:center;gap:12px;margin-bottom:22px}
-.topo img{width:48px;height:48px;border-radius:10px;object-fit:cover}
+.topo img{height:80px;width:auto;object-fit:contain;display:block;mix-blend-mode:multiply}
 .topo a{font-size:13px;color:var(--muted);text-decoration:none;margin-left:auto}
 .rot{font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--vermelho)}
 h1{font-family:var(--display);font-weight:900;font-size:clamp(30px,6vw,46px);line-height:1.02;letter-spacing:-.01em;margin:8px 0 10px}
@@ -74,7 +74,7 @@ textarea{min-height:96px;resize:vertical}
 </head>
 <body>
 <div class="wrap">
-  <div class="topo"><img src="../logo-h-web.jpg" alt="A Panela"><span class="rot" style="color:var(--ink)">A Panela</span><a href="../">&larr; voltar</a></div>
+  <div class="topo"><a href="../" aria-label="A Panela, voltar ao início" style="margin:0"><img src="../logo-h-web.jpg" alt="A Panela"></a><a href="../">&larr; voltar</a></div>
 
   <section id="cabeca">
     <span class="rot">Meet de apresentação · online</span>
