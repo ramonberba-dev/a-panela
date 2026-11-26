@@ -327,8 +327,8 @@ html:not(.liberado) a[href*="a-panela-mentoria-de-ia-negocios-e-fe-turma-01-1ypi
 html:not(.liberado) a[href*="usevox.com.br/produtos/a-panela-"]{opacity:.55;filter:grayscale(.6)}
 html:not(.liberado) a[href*="usevox.com.br/produtos/a-panela-"]::before{content:"🔒 "}
 /* botões da subpágina travados até ver o vídeo */
-html:not(.liberado) a[href="entender/"]{opacity:.6;filter:grayscale(.7);cursor:not-allowed}
-html:not(.liberado) a[href="entender/"]::before{content:"🔒 "}
+html:not(.liberado) a[href^="entender/"]{opacity:.6;filter:grayscale(.7);cursor:not-allowed}
+html:not(.liberado) a[href^="entender/"]::before{content:"🔒 "}
 .trava-aviso{display:block;font-size:12px;color:var(--muted);margin-top:6px}
 html.liberado .trava-aviso{display:none}
 #aviso-video{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:#141414;color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;z-index:999;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
@@ -557,7 +557,7 @@ var CHAVE_VIDEO="panela-video-visto";
 function videoVisto(){try{if(localStorage.getItem(CHAVE_VIDEO)==="1")return true}catch(e){} return window.__videoVisto===true}
 function liberarCompra(){try{localStorage.setItem(CHAVE_VIDEO,"1")}catch(e){} window.__videoVisto=true;document.documentElement.classList.add("liberado");}
 document.addEventListener("click",function(e){if(e.target.closest&&e.target.closest("[data-ver-video]")){e.preventDefault();avisoVideo();}});
-document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest('a[href="entender/"]');if(a&&!videoVisto()){e.preventDefault();avisoVideo("Assista ao vídeo para desbloquear o botão.");}},true);
+document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest('a[href^="entender/"]');if(a&&!videoVisto()){e.preventDefault();avisoVideo("Assista ao vídeo para desbloquear o botão.");}},true);
 function avisoVideo(msg){
   var v=document.getElementById("video");if(v)v.scrollIntoView({behavior:"smooth",block:"start"});
   var t=document.getElementById("aviso-video");
