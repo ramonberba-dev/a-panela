@@ -333,11 +333,39 @@ html:not(.liberado) a[href^="entender/"]::before{content:"🔒 "}
 html.liberado .trava-aviso{display:none}
 #aviso-video{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:#141414;color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;z-index:999;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
 #aviso-video.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* revisão visual 26/11 (Michelangelo) */
+.plano{position:relative}
+.planos2{margin-inline:auto}
+.video .player,.video .vid-barra{grid-column:1;min-width:0}
+.video .vid-barra{grid-row:2;align-self:start}
+.video .lado{grid-column:2;grid-row:1/span 2;align-self:start}
+.btn.cheio{text-align:center;justify-content:center;line-height:1.35}
+.comparar h2{margin:0 0 16px}
+@media (max-width:980px){.video .player,.video .vid-barra,.video .lado{grid-column:1;grid-row:auto}}
+@media (max-width:900px){
+  .hero .wrap{min-height:0}
+  #video{padding-bottom:32px}
+  .barra-compra{transform:translateY(140%);transition:transform .3s ease}
+  html.barra-on .barra-compra{transform:none}
+  footer{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-width:760px){.zap{width:48px;height:48px;right:10px}.zap svg{width:26px;height:26px}}
+@media (max-width:640px){.marca img{height:56px}.topo .wrap{padding-block:8px}}
+@media (max-width:420px){.topo .btn{display:none}}
+@media (max-width:560px){
+  .rot{font-size:12px;letter-spacing:.14em;text-wrap:balance}
+  .hero .sub{font-size:12px;letter-spacing:.16em;flex-wrap:wrap}
+  .hero .sub::after{display:none}
+  .tab-cmp tbody th{width:44%;font-size:12.5px}
+  .tab-cmp td small{font-size:11.5px}
+  .tab-cmp thead small{font-size:11px}
+}
 </style>
 
 <header class="topo">
   <div class="wrap">
-    <a class="marca" href="#inicio"><img src="logo-h-web.jpg" alt="A Panela"></a>
+    <a class="marca" href="#inicio"><img src="logo-h-web.png" alt="A Panela"></a>
     <nav aria-label="Seções"><a href="#video">Vídeo</a><a href="#frentes">O que aprende</a><a href="#caminho">Agenda</a><a href="#area">Plataforma</a><a href="#investimento">As duas panelas</a><a href="entrar/">Já sou aluno</a></nav>
     <a class="btn contorno" href="entender/">Quero entender a Panela</a>
   </div>
@@ -349,7 +377,7 @@ html.liberado .trava-aviso{display:none}
       <div class="cab"><span class="rot">Comece por aqui · assista antes de tudo</span></div>
       <div class="video">
         <div class="player"><video controls playsinline preload="none" poster="capa-video.jpg" aria-label="Vídeo: o convite da Panela"><source src="video/a-panela-convite.mp4" type="video/mp4"><track kind="captions" src="legendas.vtt" srclang="pt-BR" label="Português" default></video></div><div class="vid-barra"><button type="button" id="vid-vel" aria-pressed="false">Acelerar ⏩ 2x</button><button type="button" id="vid-leg" aria-pressed="true">Legenda: ligada</button></div>
-        <div class="card lado"><span class="rot">Em 3 minutos</span><h2>O que é a Panela e por que ela só é ruim pra quem tá de fora</h2><p>Como funciona a Panela, a área do participante, os encontros ao vivo, a aula do Kevin Eger e a condição para quem foi ao 1º Encontro do Hub.</p><a class="btn cheio" href="entender/" style="align-self:start">Faz sentido para mim, quero entender a Panela &rarr;</a><small class="ve-valor">Preencha e saiba o investimento.</small><small class="trava-aviso">🔒 Assista ao vídeo para desbloquear o botão.</small></div>
+        <div class="card lado"><span class="rot">Em 3 minutos</span><h2>O que é a Panela e por que ela só é ruim pra quem tá de fora</h2><p>Como funciona a Panela, a área do participante, os encontros ao vivo, a aula do Kevin Eger e a condição para quem foi ao 1º Encontro do Hub.</p><a class="btn cheio" href="entender/" style="align-self:start">Faz sentido para mim, quero entender a&nbsp;Panela&nbsp;&rarr;</a><small class="ve-valor">Preencha e saiba o investimento.</small><small class="trava-aviso">🔒 Assista ao vídeo para desbloquear o botão.</small></div>
       </div>
     </div>
   </section>
@@ -478,7 +506,7 @@ html.liberado .trava-aviso{display:none}
   </section>
 
   <section id="comparar">
-    <div class="wrap"><div class="comparar"><h3>Compare as duas panelas</h3><div class="tab-wrap"><table class="tab-cmp tab2"><thead><tr><th></th><th class="dest"><img src="plano-prata.jpg" alt=""><span>Silver</span><small>6 meses · 30 encontros</small></th><th><img src="plano-ouro.jpg" alt=""><span>Gold</span><small>1 ano · 66 encontros</small></th></tr></thead><tbody><tr><th scope="row">Duração</th><td class="dest"><i class="ok">✓</i><small>6 meses</small></td><td><i class="ok">✓</i><small>1 ano</small></td></tr><tr><th scope="row">Encontros ao vivo em grupo, online e gravados</th><td class="dest"><i class="ok">✓</i><small>24</small></td><td><i class="ok">✓</i><small>48</small></td></tr><tr><th scope="row">Encontros individuais com o Ramon, online</th><td class="dest"><i class="ok">✓</i><small>6, um por mês</small></td><td><i class="ok">✓</i><small>12, um por mês</small></td></tr><tr><th scope="row">Individuais extras, agendados quando precisar</th><td class="dest"><i class="no">✕</i></td><td><i class="ok">✓</i><small>6</small></td></tr><tr><th scope="row">Prioridade na agenda dos individuais</th><td class="dest"><i class="no">✕</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Projeto personalizado feito a 4 mãos com o Ramon</th><td class="dest"><i class="no">✕</i></td><td><i class="ok">✓</i><small>Conforme o seu negócio e o andamento da mentoria</small></td></tr><tr><th scope="row">Meu projeto: o norte do seu negócio</th><td class="dest"><i class="ok">✓</i><small>Revisão a cada 3 meses (2)</small></td><td><i class="ok">✓</i><small>Revisão a cada 3 meses (4)</small></td></tr><tr><th scope="row">Módulos 1, 2 e 3: A vitrine, A máquina de vendas e A empresa no automático</th><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Aula ao vivo com Kevin Eger</th><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Nivelamento e área do participante</th><td class="dest"><i class="ok">✓</i><small>6 meses</small></td><td><i class="ok">✓</i><small>12 meses</small></td></tr><tr><th scope="row">Temperos (skills prontas para o Claude)</th><td class="dest"><i class="ok">✓</i><small>Mais de 800</small></td><td><i class="ok">✓</i><small>Mais de 800, os novos primeiro</small></td></tr><tr><th scope="row">Curso O Funcionário Invisível e guias do Claude e do Grok</th><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Grupo de dúvidas</th><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Boosts de Sites e de Aplicativos</th><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Boosts de Apresentações, CRM e WhatsApp automático</th><td class="dest"><i class="no">✕</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Ingresso dos Encontros do Hub (1 por Encontro, só para você)</th><td class="dest"><i class="ok">✓</i><small>50% de desconto</small></td><td><i class="ok">✓</i><small>Grátis em todos durante o ano</small></td></tr><tr><th scope="row">30% de cashback na VOX</th><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr></tbody></table></div></div></div>
+    <div class="wrap"><div class="comparar"><h2>Compare as duas panelas</h2><div class="tab-wrap"><table class="tab-cmp tab2"><thead><tr><th></th><th class="dest"><img src="plano-prata.jpg" alt=""><span>Silver</span><small>6 meses · 30 encontros</small></th><th><img src="plano-ouro.jpg" alt=""><span>Gold</span><small>1 ano · 66 encontros</small></th></tr></thead><tbody><tr><th scope="row">Duração</th><td class="dest"><i class="ok">✓</i><small>6 meses</small></td><td><i class="ok">✓</i><small>1 ano</small></td></tr><tr><th scope="row">Encontros ao vivo em grupo, online e gravados</th><td class="dest"><i class="ok">✓</i><small>24</small></td><td><i class="ok">✓</i><small>48</small></td></tr><tr><th scope="row">Encontros individuais com o Ramon, online</th><td class="dest"><i class="ok">✓</i><small>6, um por mês</small></td><td><i class="ok">✓</i><small>12, um por mês</small></td></tr><tr><th scope="row">Individuais extras, agendados quando precisar</th><td class="dest"><i class="no">✕</i></td><td><i class="ok">✓</i><small>6</small></td></tr><tr><th scope="row">Prioridade na agenda dos individuais</th><td class="dest"><i class="no">✕</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Projeto personalizado feito a 4 mãos com o Ramon</th><td class="dest"><i class="no">✕</i></td><td><i class="ok">✓</i><small>Conforme o seu negócio e o andamento da mentoria</small></td></tr><tr><th scope="row">Meu projeto: o norte do seu negócio</th><td class="dest"><i class="ok">✓</i><small>Revisão a cada 3 meses (2)</small></td><td><i class="ok">✓</i><small>Revisão a cada 3 meses (4)</small></td></tr><tr><th scope="row">Módulos 1, 2 e 3: A vitrine, A máquina de vendas e A empresa no automático</th><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Aula ao vivo com Kevin Eger</th><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Nivelamento e área do participante</th><td class="dest"><i class="ok">✓</i><small>6 meses</small></td><td><i class="ok">✓</i><small>12 meses</small></td></tr><tr><th scope="row">Temperos (skills prontas para o Claude)</th><td class="dest"><i class="ok">✓</i><small>Mais de 800</small></td><td><i class="ok">✓</i><small>Mais de 800, os novos primeiro</small></td></tr><tr><th scope="row">Curso O Funcionário Invisível e guias do Claude e do Grok</th><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Grupo de dúvidas</th><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Boosts de Sites e de Aplicativos</th><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Boosts de Apresentações, CRM e WhatsApp automático</th><td class="dest"><i class="no">✕</i></td><td><i class="ok">✓</i></td></tr><tr><th scope="row">Ingresso dos Encontros do Hub (1 por Encontro, só para você)</th><td class="dest"><i class="ok">✓</i><small>50% de desconto</small></td><td><i class="ok">✓</i><small>Grátis em todos durante o ano</small></td></tr><tr><th scope="row">30% de cashback na VOX</th><td class="dest"><i class="ok">✓</i></td><td><i class="ok">✓</i></td></tr></tbody></table></div></div></div>
   </section>
 
   <section id="investimento">
@@ -489,12 +517,12 @@ html.liberado .trava-aviso{display:none}
           <p class="periodo"><b>6 meses</b> · 30 encontros</p>
           <ul class="entregas"><li>24 encontros ao vivo em grupo, online</li><li>6 individuais comigo, um por mês</li><li>Área do participante, nivelamento e temperos</li><li>Meu projeto, com revisão a cada 3 meses</li><li>Grupo de dúvidas</li><li>50% de desconto nos Encontros do Hub</li></ul>
           <div class="preco-oculto prata" aria-label="Preencha e saiba o investimento"><span class="mosaico" aria-hidden="true"></span><span class="tarja">🔒 Preencha e saiba o investimento</span></div>
-          <a class="btn cheio" href="entender/?plano=silver">Faz sentido para mim, quero entender a Panela &rarr;</a><small class="ve-valor">Preencha e saiba o investimento.</small><small class="trava-aviso">🔒 Assista ao vídeo para desbloquear o botão.</small></div>
+          <a class="btn cheio" href="entender/?plano=silver">Faz sentido para mim, quero entender a&nbsp;Panela&nbsp;&rarr;</a><small class="trava-aviso">🔒 Assista ao vídeo para desbloquear o botão.</small></div>
         <div class="card plano p-barro escuro"><span class="selo" style="background:var(--amarelo);color:var(--ink)">1 ano · mais completo</span><img class="plano-logo" src="plano-ouro.jpg" alt="Panela Gold" loading="lazy"><span class="rot" style="color:#bbb">Panela Gold</span>
           <p class="periodo" style="color:#eee"><b>1 ano</b> · 66 encontros</p>
           <ul class="entregas"><li>48 encontros ao vivo em grupo, online</li><li>12 individuais comigo + 6 extras agendados</li><li>Projeto personalizado feito a 4 mãos comigo</li><li>Prioridade na agenda dos individuais</li><li>Meu projeto, com revisão a cada 3 meses</li><li>Ingresso grátis em todos os Encontros do Hub do ano</li></ul>
           <div class="preco-oculto ouro" aria-label="Preencha e saiba o investimento"><span class="mosaico" aria-hidden="true"></span><span class="tarja">🔒 Preencha e saiba o investimento</span></div>
-          <a class="btn cheio" href="entender/?plano=gold">Faz sentido para mim, quero entender a Panela &rarr;</a><small class="ve-valor">Preencha e saiba o investimento.</small><small class="trava-aviso">🔒 Assista ao vídeo para desbloquear o botão.</small></div>
+          <a class="btn cheio" href="entender/?plano=gold">Faz sentido para mim, quero entender a&nbsp;Panela&nbsp;&rarr;</a><small class="trava-aviso">🔒 Assista ao vídeo para desbloquear o botão.</small></div>
       </div>
       <p class="garantia">Como funciona: você preenche algumas perguntas sobre você e o seu negócio, conhece o investimento e garante a sua vaga no Meet de apresentação. A turma é pequena: eu leio cada inscrição. Quem for aceito recebe a data do 1º encontro, o link para agendar o individual e o link de pagamento (cartão em até 12x ou Pix com 15% de desconto). Arrependeu? Você tem até 7 dias para pedir a devolução de 100% do que pagou.</p><p class="cashback">Nas duas panelas, 30% do investimento volta em cashback na VOX.</p>
     </div>
@@ -534,7 +562,7 @@ html.liberado .trava-aviso{display:none}
   <section id="entrar">
     <div class="wrap contato">
       <div><h2>Vamos cozinhar algo extraordinário</h2><p style="color:var(--muted)">Turma pequena, porque eu quero olhar cada negócio de perto. Quando fechar, fechou.</p><p class="rot" style="margin-top:18px">Mentoria online · Brasil inteiro</p></div>
-      <div class="fim-acoes"><a class="btn cheio" href="entender/">Faz sentido para mim, quero entender a Panela &rarr;</a><small class="ve-valor">Preencha e saiba o investimento.</small><small class="trava-aviso">🔒 Assista ao vídeo para desbloquear o botão.</small><a class="btn contorno" href="https://wa.me/5521996588197?text=Oi%2C%20Ramon%21%20Quero%20saber%20mais%20sobre%20a%20Panela." target="_blank" rel="noopener">Tirar uma dúvida no WhatsApp</a><small style="color:var(--muted)">Foi ao 1º Encontro do Hub? Marque na inscrição: você tem uma condição especial.</small></div>
+      <div class="fim-acoes"><a class="btn cheio" href="entender/">Faz sentido para mim, quero entender a&nbsp;Panela&nbsp;&rarr;</a><small class="ve-valor">Preencha e saiba o investimento.</small><small class="trava-aviso">🔒 Assista ao vídeo para desbloquear o botão.</small><a class="btn contorno" href="https://wa.me/5521996588197?text=Oi%2C%20Ramon%21%20Quero%20saber%20mais%20sobre%20a%20Panela." target="_blank" rel="noopener">Tirar uma dúvida no WhatsApp</a><small style="color:var(--muted)">Foi ao 1º Encontro do Hub? Marque na inscrição: você tem uma condição especial.</small></div>
       <div class="card box-panela"><img src="panela-logo-arte.jpg" alt=""><small>Vagas limitadas · turma fundadora</small></div>
     </div>
   </section>
@@ -544,13 +572,19 @@ html.liberado .trava-aviso{display:none}
 <div class="barra-compra"><div><b>A Panela</b><small>Turma 01 · vagas limitadas</small></div><a class="btn cheio" href="entender/">Quero entender</a></div>
 <footer>
   <div class="wrap">
-    <div><span class="logo-rodape"><img src="logo-h-web.jpg" alt="A Panela"></span><small>Uma mentoria do Hub de Empreendedores Católicos<br>Padroeiro: São Josemaria Escrivá</small></div>
+    <div><span class="logo-rodape"><img src="logo-h-web.png" alt="A Panela"></span><small>Uma mentoria do Hub de Empreendedores Católicos<br>Padroeiro: São Josemaria Escrivá</small></div>
     <div><h4>Navegação</h4><a href="#inicio">Início</a><a href="#frentes">O que você aprende</a><a href="#caminho">Agenda</a><a href="#investimento">As duas panelas</a></div>
     <div><h4>A Panela</h4><a href="#area">Área do participante</a><a href="#duvidas">Dúvidas</a><a href="entender/">Meet de apresentação</a></div>
     <div><h4>Entre as panelas</h4><small style="margin-top:0">&ldquo;Entre as panelas também anda o Senhor.&rdquo; Santa Teresa d&rsquo;Ávila</small></div>
   </div>
 </footer>
 
+<script>
+/* barra fixa só aparece depois que o card do vídeo sai da tela */
+(function(){var c=document.querySelector("#video .lado"),h=document.documentElement;
+if(!c||!("IntersectionObserver" in window)){h.classList.add("barra-on");return;}
+new IntersectionObserver(function(es){es.forEach(function(e){h.classList.toggle("barra-on",!e.isIntersecting&&e.boundingClientRect.top<0);});}).observe(c);})();
+</script>
 <script>
 /* compra só depois de assistir ao vídeo (85% do tempo assistido de verdade, sem pular) */
 var CHAVE_VIDEO="panela-video-visto";
