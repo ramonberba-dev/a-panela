@@ -101,6 +101,7 @@
     ["diagnostico", "Diagnóstico", '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>'],
     ["perfil", "Testes de perfil", '<circle cx="9" cy="9" r="5"/><circle cx="15" cy="15" r="5"/>'],
     ["projeto", "Meu projeto", '<path d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/><path d="M4 4h7M4 8h4"/>'],
+    ["quatromaos", "Projeto a 4 mãos", '<path d="M7 11V5a1.5 1.5 0 013 0v5M10 10V4a1.5 1.5 0 013 0v6M13 10V5a1.5 1.5 0 013 0v7c0 4-2.5 7-6 7s-5-2-6.5-5L3 11a1.5 1.5 0 012.5-1.5L7 12"/>'],
     ["plano", "Meu plano", '<path d="M5 5h14v14H5zM9 9h6M9 13h6"/>'],
     ["via", "Via", '<circle cx="7" cy="5" r="2.2"/><circle cx="14" cy="19" r="2.2"/><path d="M8.5 6.5c4 1.5 8 3 6 6.5s-6 2.5-2 5" stroke-dasharray="2.4 2.2"/>'],
     ["praticas", "Boas práticas", '<path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/>'],
@@ -818,7 +819,7 @@
     var dl = diasAte(m.prazo), pct = comT ? Math.round(feitos / comT * 100) : 0;
     var resumo = m.objetivo ? '<div class="obj-resumo"><span class="rot">Meu objetivo</span><p class="obj-frase">' + esc(m.objetivo) + "</p>" +
       '<div class="obj-meta">' + (m.prazo ? "<span><b>" + (dl >= 0 ? dl : 0) + "</b> dias até " + m.prazo.split("-").reverse().join("/") + "</span>" : "<span>sem prazo definido</span>") + "<span><b>" + pct + "%</b> dos marcos</span></div>" +
-      '<div class="barra"><i style="width:' + pct + '%"></i></div></div>' : '<div class="dica" style="margin:0 0 14px"><span class="rot">Comece por aqui</span><p>Cada negócio e cada profissional tem a sua particularidade. Escreva aonde você quer chegar, com prazo. Isso é a régua dos seus 3 meses na Panela (definimos juntos no 1º encontro).</p></div>';
+      '<div class="barra"><i style="width:' + pct + '%"></i></div></div>' : '<div class="dica" style="margin:0 0 14px"><span class="rot">Comece por aqui</span><p>Cada negócio e cada profissional tem a sua particularidade. Escreva aonde você quer chegar, com prazo. Isso é a régua dos próximos 3 meses na Panela (a cada trimestre a gente revisa) (definimos juntos no 1º encontro).</p></div>';
     return '<div class="card obj">' + resumo + '<form id="f-obj" class="obj-form">' +
       '<label>Onde estou hoje<textarea name="hoje" rows="2" placeholder="Ex.: faturo R$ 15 mil por mês, faço tudo sozinha e não tenho tempo para a família">' + esc(m.hoje) + "</textarea></label>" +
       '<label>Aonde quero chegar<textarea name="objetivo" rows="2" placeholder="Ex.: faturar R$ 25 mil por mês com o site e o Instagram vendendo por mim">' + esc(m.objetivo) + "</textarea></label>" +
@@ -939,14 +940,16 @@
   /* 3 planos. Chave interna: tempero (4 encontros), panela (15), anual (66).
      NOMES DOS PLANOS: para trocar o nome que aparece nas telas, mude só a linha NOMES_PLANO.
      Nos textos para o aluno, o plano é tratado pelo número de encontros (decisão do Ramon, 22/11). */
-  var NOMES_PLANO = { tempero: "Panela Bronze", panela: "Panela Silver", anual: "Panela Gold" };
-  var LOGO_PLANO = { tempero: "plano-bronze.jpg", panela: "plano-prata.jpg", anual: "plano-ouro.jpg" };
-  var ENCONTROS_PLANO = { tempero: 5, panela: 15, anual: 66 };
-  var COMPOSICAO_PLANO = { tempero: "4 encontros em grupo e 1 individual", panela: "12 encontros em grupo e 3 individuais", anual: "48 encontros em grupo, 12 individuais e 6 individuais extras" };
-  var MESES_PLANO = { tempero: 1, panela: 3, anual: 12 }; // só para calcular o fim do acesso; não aparece no texto
+  var NOMES_PLANO = { tempero: "Panela Silver", panela: "Panela Silver", anual: "Panela Gold" };
+  var LOGO_PLANO = { tempero: "plano-prata.jpg", panela: "plano-prata.jpg", anual: "plano-ouro.jpg" };
+  var ENCONTROS_PLANO = { tempero: 30, panela: 30, anual: 66 };
+  var COMPOSICAO_PLANO = { tempero: "24 encontros em grupo e 6 individuais", panela: "24 encontros em grupo e 6 individuais", anual: "48 encontros em grupo, 12 individuais, 6 individuais extras e o projeto feito a 4 mãos" };
+  var GRUPO_PLANO = { tempero: 24, panela: 24, anual: 48 };
+  var MESES_PLANO = { tempero: 6, panela: 6, anual: 12 }; // só para calcular o fim do acesso; não aparece no texto
   function planoAtual() {
     var c = (typeof contaNuvem !== "undefined" && contaNuvem) || null, a = (dados() || {}).aluno || {};
-    return (c && c.plano) || a.plano || "panela";
+    var pl = (c && c.plano) || a.plano || "panela";
+    return pl === "tempero" ? "panela" : pl; /* Bronze saiu em 27/11: quem tinha vira Silver */
   }
   function seloPlano(p, grande) {
     p = p || planoAtual();
@@ -962,14 +965,14 @@
     if (v === "nulo") return null;
     var t = v ? new Date(v) : null; return t && !isNaN(t) ? t : null;
   }
-  function fimAcesso(p) { var i = inicioTurma(); if (!i) return null; var f = new Date(i); f.setMonth(f.getMonth() + (MESES_PLANO[p || planoAtual()] || 3)); return f; }
+  function fimAcesso(p) { var i = inicioTurma(); if (!i) return null; var f = new Date(i); f.setMonth(f.getMonth() + (MESES_PLANO[p || planoAtual()] || 6)); return f; }
   function acessoEncerrado() { var d = dados() || {}; if (d.mentor) return false; var f = fimAcesso(); return !!f && Date.now() >= f.getTime(); }
   function zapUpgrade(alvo) { return "https://wa.me/5521996588197?text=" + encodeURIComponent("Oi, Ramon! Estou no " + descPlano() + " (" + nomePlano() + ") e quero passar para o " + descPlano(alvo) + " (" + nomePlano(alvo) + ")."); }
   var ZAP_UPGRADE = zapUpgrade("panela");
   function proximoPlano() { var p = planoAtual(); return p === "tempero" ? "panela" : "anual"; }
   function cartaoUpgrade(alvo) {
     alvo = alvo || proximoPlano();
-    if (alvo === "anual") return '<div class="card upgrade-c"><img class="logo-up" src="' + LOGO_PLANO.anual + '" alt="" onerror="this.remove()"><span class="rot">' + esc(nomePlano("anual")) + " · " + ENCONTROS_PLANO.anual + ' encontros</span><h2>Quer mais encontros?</h2><p>No ' + descPlano("anual") + ': ' + COMPOSICAO_PLANO.anual + ', todos online, com todos os Boosts e o menor valor por encontro.</p><a class="btn" href="' + zapUpgrade("anual") + '" target="_blank" rel="noopener">Quero o ' + descPlano("anual") + "</a></div>";
+    if (alvo === "anual") return '<div class="card upgrade-c"><img class="logo-up" src="' + LOGO_PLANO.anual + '" alt="" onerror="this.remove()"><span class="rot">' + esc(nomePlano("anual")) + " · " + ENCONTROS_PLANO.anual + ' encontros</span><h2>Quer ir mais longe?</h2><p>No ' + esc(nomePlano("anual")) + ' (1 ano): ' + COMPOSICAO_PLANO.anual + ', todos online, com todos os Boosts, prioridade na agenda e ingresso grátis nos Encontros do Hub.</p><a class="btn" href="' + zapUpgrade("anual") + '" target="_blank" rel="noopener">Quero o ' + descPlano("anual") + "</a></div>";
     return '<div class="card upgrade-c"><img class="logo-up" src="' + LOGO_PLANO.panela + '" alt="" onerror="this.remove()"><span class="rot">' + esc(nomePlano("panela")) + " · " + ENCONTROS_PLANO.panela + ' encontros</span><h2>Quer continuar na Panela?</h2><p>O seu plano tem os 4 encontros do Módulo 1 e 1 individual. Para liberar A máquina de vendas e A empresa no automático, mais individuais, a aula do Kevin e todos os temperos, passe para o ' + descPlano("panela") + ' (' + COMPOSICAO_PLANO.panela + '). Em até 30 dias da compra, o valor que você pagou abate no novo plano.</p><a class="btn" href="' + zapUpgrade("panela") + '" target="_blank" rel="noopener">Quero o ' + descPlano("panela") + "</a></div>";
   }
   function faixaEncerrado() {
@@ -1030,16 +1033,85 @@
 
   /* Encontros 13 a 48 do plano de 66 (dados.js: encontrosAnual). Temas em proposta, a confirmar com o Ramon. */
   function blocoAnual(linhaEnc) {
-    var L = P.encontrosAnual || [], blocos = P.blocosAnual || [], anual = planoAtual() === "anual", d = dados();
-    if (!L.length) return "";
-    if (!anual) return '<div class="card modulo-enc trancado"><div class="mod-topo"><div><span class="rot">Encontros ' + L[0].n + " a " + L[L.length - 1].n + " · " + L.length + ' encontros em grupo</span><h2>Mais ' + L.length + ' encontros em grupo</h2></div><span class="chip">🔒 No ' + descPlano("anual") + "</span></div>" +
-      blocos.map(function (m) { var l = L.filter(function (e) { return e.bloco === m.n; }); return '<div class="item"><span class="num">' + m.n + '</span><div style="flex:1"><b>' + esc(m.nome) + '</b><p class="muted" style="margin:2px 0 0">Encontros ' + l[0].n + " a " + l[l.length - 1].n + " · online · tema a confirmar</p></div></div>"; }).join("") + "</div>";
-    return blocos.map(function (m) {
+    var Ltodos = P.encontrosAnual || [], blocos = P.blocosAnual || [], d = dados();
+    if (!Ltodos.length) return "";
+    var limite = GRUPO_PLANO[planoAtual()] || 24;
+    var L = Ltodos.filter(function (e) { return e.n <= limite; }), resto = Ltodos.filter(function (e) { return e.n > limite; });
+    var liberados = blocos.map(function (m) {
       var lista = L.filter(function (e) { return e.bloco === m.n; });
+      if (!lista.length) return "";
       var feitos = lista.filter(function (e) { return d.encontrosVistos.indexOf(e.n) >= 0; }).length;
       return '<div class="card modulo-enc"><div class="mod-topo"><div><span class="rot">Encontros ' + lista[0].n + " a " + lista[lista.length - 1].n + (m.ciclo ? " · " + esc(m.ciclo) : "") + '</span><h2>' + esc(m.nome) + '</h2></div><span class="chip">' + feitos + "/" + lista.length + ' vistos</span></div>' +
         '<p class="mod-entrega"><span class="chip proposta">Tema a confirmar</span> ' + esc(m.entrega || "") + "</p>" + lista.map(linhaEnc).join("") + "</div>";
     }).join("");
+    if (!resto.length) return liberados;
+    var travado = '<div class="card modulo-enc trancado"><div class="mod-topo"><div><span class="rot">Encontros ' + resto[0].n + " a " + resto[resto.length - 1].n + " · " + resto.length + ' encontros em grupo</span><h2>Mais ' + resto.length + ' encontros em grupo</h2></div><span class="chip">🔒 No ' + esc(nomePlano("anual")) + "</span></div>" +
+      blocos.map(function (m) { var l = resto.filter(function (e) { return e.bloco === m.n; }); if (!l.length) return ""; return '<div class="item"><span class="num">' + m.n + '</span><div style="flex:1"><b>' + esc(m.nome) + '</b><p class="muted" style="margin:2px 0 0">Encontros ' + l[0].n + " a " + l[l.length - 1].n + " · online · tema a confirmar</p></div></div>"; }).join("") + "</div>";
+    return liberados + travado;
+  }
+
+  /* ---------- Projeto a 4 mãos (só Panela Gold): o Ramon escreve no painel do mentor; o aluno lê e comenta ----------
+     Firestore: quatromaos/{uid} = { texto, atualizadoEm (mentor), comentarios (JSON [{t, em}]), comentadoEm (aluno) } */
+  var p4 = null, p4Carregando = false;
+  function p4Coment(doc) { try { return JSON.parse((doc && doc.comentarios) || "[]"); } catch (e) { return []; } }
+  function carregarP4() {
+    if (!(NV_ && usuarioNuvem) || p4Carregando) return;
+    p4Carregando = true;
+    NV_.db.collection("quatromaos").doc(usuarioNuvem.uid).get().then(function (doc) { p4 = doc.exists ? doc.data() : { texto: "" }; p4Carregando = false; if (atual === "quatromaos") desenhar(); },
+      function () { p4 = { texto: "", erro: true }; p4Carregando = false; if (atual === "quatromaos") desenhar(); });
+  }
+  function telaQuatroMaos() {
+    var h = cabecalho("Projeto a 4 mãos", "O seu projeto personalizado, escrito por mim e por você, de acordo com o seu negócio e com o que a mentoria for mostrando.") + seloPlano();
+    if (planoAtual() !== "anual") return h + '<div class="card"><p style="margin:0">O projeto feito a 4 mãos é exclusivo do ' + esc(nomePlano("anual")) + '.</p></div><div style="margin-top:16px">' + cartaoUpgrade("anual") + "</div>";
+    var nuvem = !!(NV_ && usuarioNuvem);
+    if (nuvem && !p4) { carregarP4(); return h + '<div class="vazio">Carregando o seu projeto…</div>'; }
+    var d = dados();
+    var doc = nuvem ? p4 : (d.demoP4 || { texto: "Exemplo: Fase 1 (meses 1 a 3) · organizar a vitrine e o atendimento.\nFase 2 (meses 4 a 6) · máquina de vendas com anúncios e WhatsApp automático.\nFase 3 (meses 7 a 12) · empresa no automático e novos produtos.", comentarios: "[]" });
+    var com = p4Coment(doc);
+    h += '<div class="card"><span class="rot">O nosso projeto' + (doc.atualizadoEm ? " · atualizado em " + new Date(doc.atualizadoEm).toLocaleDateString("pt-BR") : "") + '</span>' +
+      (doc.texto ? '<div style="white-space:pre-wrap;margin-top:8px">' + esc(doc.texto) + "</div>" : '<p class="muted" style="margin:8px 0 0">Ainda estamos montando. Ele começa no nosso primeiro individual e vai crescendo a cada encontro.</p>') + "</div>";
+    h += '<div class="card" style="margin-top:16px"><span class="rot">Seus comentários</span>' + (com.length ? com.map(function (c) { return '<p style="margin:8px 0 0"><small class="muted">' + new Date(c.em).toLocaleDateString("pt-BR") + "</small><br>" + esc(c.t) + "</p>"; }).join("") : '<p class="muted" style="margin:8px 0 0">Nenhum comentário ainda.</p>') +
+      '<textarea id="p4-txt" rows="3" maxlength="1500" placeholder="Escreva uma ideia, uma dúvida ou o que mudou no seu negócio" style="width:100%;margin-top:12px"></textarea><button class="btn" id="p4-enviar" style="margin-top:8px">Enviar comentário</button></div>';
+    return h;
+  }
+  function ligarQuatroMaos() {
+    var b = document.getElementById("p4-enviar"); if (!b) return;
+    b.onclick = function () {
+      var t = (document.getElementById("p4-txt").value || "").trim(); if (t.length < 2) { toast("Escreva o comentário."); return; }
+      var nuvem = !!(NV_ && usuarioNuvem), d = dados();
+      var doc = nuvem ? p4 : (d.demoP4 = d.demoP4 || { texto: "", comentarios: "[]" });
+      var com = p4Coment(doc); com.push({ t: t.slice(0, 1500), em: new Date().toISOString() }); com = com.slice(-60);
+      var campos = { comentarios: JSON.stringify(com), comentadoEm: new Date().toISOString() };
+      if (!nuvem) { doc.comentarios = campos.comentarios; salvar(); toast("Comentário salvo."); desenhar(); return; }
+      b.disabled = true;
+      NV_.db.collection("quatromaos").doc(usuarioNuvem.uid).update(campos).then(function () { p4.comentarios = campos.comentarios; toast("Comentário enviado para o Ramon."); desenhar(); },
+        function () { b.disabled = false; toast("Ainda não dá para comentar: o Ramon precisa abrir o seu projeto primeiro."); });
+    };
+  }
+  function painelQuatroMaos() {
+    var golds = (MD.usuarios || []).filter(function (u) { return u.plano === "anual"; });
+    var h = '<div class="m-corpo m-acessos"><section class="card"><span class="rot">Projetos a 4 mãos · Panela Gold · ' + golds.length + "</span>";
+    if (!golds.length) return h + '<p class="muted">Nenhum aluno do Gold ainda.</p></section></div>';
+    h += golds.map(function (u) {
+      var doc = (MD.quatromaos || {})[u.uid] || {}, com = p4Coment(doc);
+      return '<details class="m-p4" style="margin-top:10px"><summary><b>' + esc(u.nome || u.email || u.uid) + "</b>" + (com.length ? ' <span class="chip">' + com.length + " comentário(s)</span>" : "") + (doc.atualizadoEm ? ' <small class="muted">atualizado ' + new Date(doc.atualizadoEm).toLocaleDateString("pt-BR") + "</small>" : "") + "</summary>" +
+        '<textarea class="m-obs" id="p4m-' + u.uid + '" rows="10" style="width:100%">' + esc(doc.texto || "") + '</textarea><button class="btn peq" data-p4-salvar="' + u.uid + '" style="margin-top:6px">Salvar o projeto</button>' +
+        (com.length ? '<div style="margin-top:10px"><span class="rot">Comentários do aluno</span>' + com.map(function (c) { return '<p style="margin:6px 0 0"><small class="muted">' + new Date(c.em).toLocaleDateString("pt-BR") + "</small> " + esc(c.t) + "</p>"; }).join("") + "</div>" : "") + "</details>";
+    }).join("");
+    return h + "</section></div>";
+  }
+  function ligarQuatroMaosM() {
+    if (!(memoria && memoria.nuvem && MD)) return;
+    document.querySelectorAll("[data-p4-salvar]").forEach(function (b) {
+      b.onclick = function () {
+        var u = b.getAttribute("data-p4-salvar"), txt = document.getElementById("p4m-" + u).value, agora = new Date().toISOString();
+        var antes = (MD.quatromaos || {})[u];
+        var campos = antes ? { texto: txt, atualizadoEm: agora } : { texto: txt, atualizadoEm: agora, comentarios: "[]", comentadoEm: "" };
+        b.disabled = true;
+        NV_.db.collection("quatromaos").doc(u).set(campos, { merge: true }).then(function () { MD.quatromaos = MD.quatromaos || {}; MD.quatromaos[u] = Object.assign({}, antes || {}, campos); toast("Projeto salvo. O aluno já vê na aba Projeto a 4 mãos."); b.disabled = false; },
+          function () { b.disabled = false; toast("Não consegui salvar. Confira a internet."); });
+      };
+    });
   }
 
   /* ---------- Vídeos (links colados pelo Ramon no painel do mentor) ----------
@@ -1126,7 +1198,7 @@
     return a.ferramenta.nome.toUpperCase() + "\n" + a.ferramenta.campos.map(function (c, i) { return "- " + c.rot + ": " + ((f[i] || "").trim() || "(não preenchido)"); }).join("\n");
   }
 
-  /* ---------- Planilha do plano semanal (aula 9): grade, pedras grandes e número do dia ---------- */
+  /* ---------- Planilha do plano semanal (aula 11): grade, pedras grandes e número do dia ---------- */
   var DIAS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"], TURNOS = ["Manhã", "Tarde", "Noite"];
   var CATS = { "": "Sem marcação", F: "Família, fé e saúde", P: "Pedra grande", T: "Trabalho e rotina", C: "Com o Claude" }, ORDEM_C = ["", "F", "P", "T", "C"];
   var semOff = 0;
@@ -1177,7 +1249,7 @@
       '<div class="pl-sem"><button type="button" class="nv-ic" data-pl-sem="-1" aria-label="Semana anterior">‹</button><span><small>Semana</small><b>' + rotSemana() + '</b></span><button type="button" class="nv-ic" data-pl-sem="1" aria-label="Próxima semana">›</button></div></div>' +
       '<h3 class="pl-tit"><span>01</span> Grade da semana</h3><p class="muted pl-dica">Escreva o que entra em cada bloco e toque na bolinha para trocar a cor.</p><div class="pl-legs">' + leg + "</div>" + grade +
       '<div class="campo" style="max-width:280px;margin-top:12px"><label for="pl-enc">Meu horário de encerrar o dia</label><input id="pl-enc" data-pl-campo="encerrar" placeholder="Ex.: 18h30" value="' + esc(p.encerrar) + '"></div>' +
-      '<h3 class="pl-tit"><span>02</span> Pedras grandes</h3><p class="muted pl-dica">As 3 prioridades que mais mexem no resultado. Vieram da aula 8; ajuste se precisar.</p>' + pedras +
+      '<h3 class="pl-tit"><span>02</span> Pedras grandes</h3><p class="muted pl-dica">As 3 prioridades que mais mexem no resultado. Vieram da aula 10; ajuste se precisar.</p>' + pedras +
       '<h3 class="pl-tit"><span>03</span> Número do dia</h3><p class="muted pl-dica">Anote no fim de cada dia quanto você fez. O resto a planilha calcula.</p>' + num +
       '<div class="campo" style="margin-top:14px"><label for="pl-bal">Balanço da semana: onde a grade furou e o que aprendi</label><textarea id="pl-bal" rows="3" data-pl-campo="balanco">' + esc(p.balanco) + "</textarea></div>" +
       '<div class="pl-acoes"><button class="btn" id="pl-xlsx" type="button">Baixar em Excel</button><button class="btn contorno" id="pl-claude" type="button">Copiar para o Claude analisar</button><button class="btn contorno" id="pl-imp" type="button">Imprimir ou salvar PDF</button></div>' +
@@ -1271,7 +1343,7 @@
   /* Material de apoio em PDF de cada aula e guias */
   var BASE_MAT = (location.protocol === "https:" || location.protocol === "http:") && !/claude\.ai|claudeusercontent/.test(location.host) ? "materiais/" : "https://panela.usevox.com.br/entrar/materiais/";
   var GUIAS = [["guia-claude.pdf", "Guia prático inicial do Claude", "32 páginas"], ["guia-grok-claude.pdf", "Grok + Claude: a dupla do seu negócio", "18 páginas"]];
-  function pdfAula(idx) { return BASE_MAT + "aula-" + ("0" + (idx + 1)).slice(-2) + ".pdf"; }
+  function pdfAula(a) { return a && a.pdf ? BASE_MAT + a.pdf : ""; }
   function telaNivelamento() {
     var n = nivD(), aulas = nivAulas(), a = aulaAtual(), idx = aulas.indexOf(a), pr = nivProg();
     var pct = Math.round(pr.feitas / pr.total * 100), feita = n.feitas.indexOf(a.id) >= 0, fav = n.fav.indexOf(a.id) >= 0, nota = n.aval[a.id] || 0;
@@ -1300,9 +1372,9 @@
     }
     if (a.id === "planilha") h += planilhaHTML();
     var matLivre = idx === 0 || n.feitas.indexOf(aulas[idx - 1].id) >= 0;
-    h += '<div class="card nv-mat' + (matLivre ? "" : " travado") + '"><div><span class="rot">Material de apoio · PDF' + (matLivre ? "" : " · bloqueado") + '</span><b>Aula ' + ("0" + (idx + 1)).slice(-2) + " · " + esc(a.titulo) + '</b><small class="muted">' +
+    if (pdfAula(a)) h += '<div class="card nv-mat' + (matLivre ? "" : " travado") + '"><div><span class="rot">Material de apoio · PDF' + (matLivre ? "" : " · bloqueado") + '</span><b>Aula ' + ("0" + (idx + 1)).slice(-2) + " · " + esc(a.titulo) + '</b><small class="muted">' +
       (matLivre ? "Explicação passo a passo, exemplos, a ferramenta para imprimir e os pedidos prontos para o Claude." : "Libera quando você concluir a aula anterior: " + esc(aulas[idx - 1].titulo) + ".") + "</small></div>" +
-      (matLivre ? '<div class="nv-mat-b"><a class="btn" href="' + pdfAula(idx) + '" target="_blank" rel="noopener">Abrir o PDF</a><a class="btn contorno" href="' + pdfAula(idx) + '" download>Baixar</a></div>' :
+      (matLivre ? '<div class="nv-mat-b"><a class="btn" href="' + pdfAula(a) + '" target="_blank" rel="noopener">Abrir o PDF</a><a class="btn contorno" href="' + pdfAula(a) + '" download>Baixar</a></div>' :
         '<div class="nv-mat-b"><span class="nv-cadeado" aria-hidden="true">🔒</span><button class="btn contorno" type="button" data-nv-ir="' + (idx - 1) + '">Ir para a aula anterior</button></div>') + "</div>";
     h += '<div class="card"><span class="rot">Missão da aula</span><p style="margin:6px 0 0"><b>' + esc(a.tarefa) + '</b></p><p class="muted" style="font-size:12.5px;margin:8px 0 0">Ficou com dúvida? Leve para o grupo da Panela no WhatsApp ou para o seu encontro individual.</p></div>';
     h += '<div class="card"><label class="rot" for="nv-notas">Anotações</label><textarea id="nv-notas" class="nv-notas" rows="4" placeholder="Escreva aqui o que você quer lembrar desta aula. Só você vê.">' + esc(n.notas[a.id] || "") + '</textarea><div style="margin-top:10px"><button class="btn peq" id="nv-salvar">Salvar</button></div></div>';
@@ -1635,9 +1707,9 @@
   var MD = null, verExemplo = false;
   function carregarMentor() {
     var db = NV_.db;
-    return Promise.all([db.collection("usuarios").get(), db.collection("progresso").get(), db.collection("convites").get(), db.collection("projetos").get().catch(function () { return { docs: [] }; })]).then(function (r) {
+    return Promise.all([db.collection("usuarios").get(), db.collection("progresso").get(), db.collection("convites").get(), db.collection("projetos").get().catch(function () { return { docs: [] }; }), db.collection("quatromaos").get().catch(function () { return { docs: [] }; })]).then(function (r) {
       var prog = {}; r[1].forEach(function (d) { try { prog[d.id] = JSON.parse(d.data().dados); } catch (e) {} });
-      MD = { usuarios: r[0].docs.map(function (d) { var x = d.data(); x.uid = d.id; return x; }), prog: prog, convites: r[2].docs.map(function (d) { var x = d.data(); x.email = d.id; return x; }), projetos: r[3].docs.map(function (d) { var x = d.data(); x.uid = d.id; return x; }) };
+      MD = { usuarios: r[0].docs.map(function (d) { var x = d.data(); x.uid = d.id; return x; }), prog: prog, convites: r[2].docs.map(function (d) { var x = d.data(); x.email = d.id; return x; }), projetos: r[3].docs.map(function (d) { var x = d.data(); x.uid = d.id; return x; }), quatromaos: (function () { var o = {}; r[4].docs.forEach(function (d) { o[d.id] = d.data(); }); return o; })() };
     }).catch(function () { MD = { usuarios: [], prog: {}, convites: [], erro: true }; });
   }
   function turmaReal() {
@@ -1696,7 +1768,7 @@
     var h = '<div class="mentor"><header class="m-topo"><img src="logo-h-web.jpg" alt="A Panela"><div><span class="rot">Acesso do mentor</span><b>Painel do Ramon</b></div><button class="btn peq contorno" id="m-sair">Sair</button></header>';
     var real = memoria && memoria.nuvem && MD && !verExemplo;
     h += real ? "" : '<div class="m-aviso">Dados de exemplo: a turma abaixo é fictícia.' + (memoria && memoria.nuvem ? ' <button class="m-link" id="m-real">Voltar para a turma real</button>' : "") + "</div>";
-    if (memoria && memoria.nuvem && MD) h += painelAcessos() + painelProjetos();
+    if (memoria && memoria.nuvem && MD) h += painelAcessos() + painelProjetos() + painelQuatroMaos();
     h += painelVideos();
     h += '<div class="m-corpo"><section class="m-kpis">' +
       [["Alunos", turma.length, turma.filter(function (a) { return a.aluno.turma === "hub"; }).length + " do 1º Encontro"], ["Faturamento contratado", moeda(contratado), "ticket médio " + moeda(turma.length ? contratado / turma.length : 0)],
@@ -1730,7 +1802,7 @@
       function abre() { alunoSel = +b.getAttribute("data-m-aluno"); telaMentor(); var d = document.getElementById("m-det"); if (d) d.scrollIntoView({ block: "start", behavior: "smooth" }); }
       b.onclick = abre; b.onkeydown = function (e) { if (e.key === "Enter") abre(); };
     });
-    ligarAcessos(); ligarProjetosM(); ligarVideosM();
+    ligarAcessos(); ligarProjetosM(); ligarQuatroMaosM(); ligarVideosM();
     var fx = document.getElementById("m-fechar"); if (fx) fx.onclick = function () { alunoSel = null; telaMentor(); };
     var cm = document.getElementById("m-copiar");
     if (cm) cm.onclick = function () { var t = cm.getAttribute("data-txt"); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast("Mensagem copiada. Cole no WhatsApp do aluno."); }, function () { window.prompt("Copie a mensagem:", t); }); };
@@ -1942,13 +2014,13 @@
     if (!d) return telaLogin();
     if (d.mentor) return telaMentor();
     marcarDia();
-    var telas = { inicio: telaInicio, nivelamento: telaNivelamento, diagnostico: telaDiagnostico, projeto: telaProjeto, plano: telaPlano, via: telaVia, praticas: telaPraticas, boosts: telaBoosts, encontros: telaEncontros, temperos: telaTemperos, perfil: telaPerfil, conquistas: telaConquistas, cashback: telaCashback, individual: telaIndividual, regras: telaRegras };
+    var telas = { inicio: telaInicio, nivelamento: telaNivelamento, diagnostico: telaDiagnostico, projeto: telaProjeto, quatromaos: telaQuatroMaos, plano: telaPlano, via: telaVia, praticas: telaPraticas, boosts: telaBoosts, encontros: telaEncontros, temperos: telaTemperos, perfil: telaPerfil, conquistas: telaConquistas, cashback: telaCashback, individual: telaIndividual, regras: telaRegras };
     var menu = MENU.map(function (m) { return '<button data-ir="' + m[0] + '" class="' + (atual === m[0] ? "ativo" : "") + '"' + (atual === m[0] ? ' aria-current="page"' : "") + '><svg viewBox="0 0 24 24" aria-hidden="true">' + m[2] + "</svg>" + m[1] + "</button>"; }).join("");
     var raiz = document.getElementById("raiz");
     var enc = acessoEncerrado();
     document.body.classList.toggle("so-leitura", enc);
     var dataDemo = function (dias) { return new Date(Date.now() + dias * 864e5).toISOString().slice(0, 10); };
-    raiz.innerHTML = (d.demo ? '<div class="aviso-demo">Participante de demonstração: os dados ficam só neste navegador. Ver como: ' + ["tempero", "panela", "anual"].map(function (k) { return '<button class="demo-pl' + (planoAtual() === k ? " on" : "") + '" data-demo-plano="' + k + '">' + ENCONTROS_PLANO[k] + " encontros</button>"; }).join("") +
+    raiz.innerHTML = (d.demo ? '<div class="aviso-demo">Participante de demonstração: os dados ficam só neste navegador. Ver como: ' + ["panela", "anual"].map(function (k) { return '<button class="demo-pl' + (planoAtual() === k ? " on" : "") + '" data-demo-plano="' + k + '">' + esc(NOMES_PLANO[k]) + " · " + ENCONTROS_PLANO[k] + " encontros</button>"; }).join("") +
       ' · Início da turma: <select id="demo-inicio" aria-label="Início da turma na demonstração">' + [["entrada", "data de entrada"], ["nulo", "sem data"], [dataDemo(-400), "há 13 meses"], [dataDemo(-100), "há 100 dias"], [dataDemo(40), "daqui a 40 dias"]].map(function (o) { var v = d.demoInicio || "entrada"; return '<option value="' + o[0] + '"' + (v === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></div>" : "") + faixaEncerrado() +
       '<header class="topo-mob"><img src="logo-h-web.jpg" alt="A Panela"><button class="topo-mob-perfil" data-ir="conquistas" aria-label="Minhas conquistas">' + avatar() + "</button></header>" +
       '<div class="app"><aside class="lateral"><img src="logo-h-web.jpg" alt="A Panela"><nav class="menu" aria-label="Área do participante">' + menu + "</nav>" +
@@ -1960,7 +2032,7 @@
   function ligar() {
     var d = dados();
     ligarNivelamento();
-    ligarObjetivo(); ligarVia(); ligarProjeto();
+    ligarObjetivo(); ligarVia(); ligarProjeto(); ligarQuatroMaos();
     document.querySelectorAll("[data-ir]").forEach(function (b) { b.addEventListener("click", function () { ir(b.getAttribute("data-ir")); }); });
     var bm = document.getElementById("b-mais"), fo = document.getElementById("folha-mais"), ff = document.getElementById("folha-fundo");
     function folha(abrir) { if (!fo) return; fo.hidden = !abrir; ff.hidden = !abrir; bm.setAttribute("aria-expanded", String(abrir)); document.body.classList.toggle("sem-rolar", abrir); }

@@ -7,18 +7,32 @@ window.NIVELAMENTO = {
       id: "comece", titulo: "Comece por aqui",
       aulas: [
         {
-          id: "boas-vindas", titulo: "Bem-vindo à Panela", dur: "4:00", video: null,
-          resumo: "Por que esta mentoria existe, como ela funciona e o que você vai ter feito daqui a 12 semanas.",
-          pontos: ["Panela só é ruim pra quem tá de fora: o que é este grupo", "Os 12 encontros, os individuais e o grupo de dúvidas", "O combinado: aplicar, não só assistir"],
+          id: "boas-vindas", titulo: "Bem-vindo à Panela", dur: "3:45", video: null, pdf: "aula-01.pdf",
+          resumo: "Por que esta mentoria existe, como ela funciona e o combinado de quem entra na Panela.",
+          pontos: ["Panela só é ruim pra quem tá de fora: o que é este grupo", "Os encontros ao vivo, os individuais e o grupo de dúvidas", "O combinado: aplicar, não só assistir"],
           tarefa: "Entre no grupo de dúvidas no WhatsApp e se apresente: nome, negócio e a tarefa que mais rouba o seu tempo.",
           roteiro: ["Abertura: a história de quem fazia tudo sozinho e não via a família", "O que é a Panela (grupo seleto que se ajuda) e a frase de Santa Teresa: entre as panelas também anda o Senhor", "Como funciona: encontros, individuais, grupo, plataforma", "O combinado: cada aula tem uma ferramenta; quem preenche chega pronto", "Missão: se apresentar no grupo"]
         },
         {
-          id: "plataforma", titulo: "Como usar a plataforma", dur: "3:00", video: null,
-          resumo: "Um passeio rápido pelas abas: diagnóstico, testes de perfil, nivelamento, encontros, temperos e conquistas.",
+          id: "plataforma", titulo: "Tour pela plataforma", dur: "4:10", video: null, pdf: "aula-02.pdf",
+          resumo: "Um passeio por todas as abas: Início, Diagnóstico, Testes de perfil, Meu projeto, Meu plano, Via, Nivelamento, Encontros, Temperos, Boosts, Individual, Cashback e Conquistas.",
           pontos: ["Onde estão as aulas e como marcar como concluída", "As ferramentas que você preenche dentro da aula", "Como os pontos e os prêmios funcionam"],
           tarefa: "Instale a plataforma no celular (Adicionar à tela de início) e faça o diagnóstico.",
           roteiro: ["Tela a tela, sem pressa: Início, Diagnóstico, Testes de perfil", "Nivelamento: vídeo, ferramenta, anotações, concluir e avançar", "Temperos e Conquistas", "Como instalar no celular", "Missão: fazer o diagnóstico"]
+        },
+        {
+          id: "meu-projeto", titulo: "Meu projeto: o seu norte", dur: "4:30", video: null,
+          resumo: "Como o seu projeto nasce das suas respostas, como o Ramon revisa, como você escolhe e por que você pode ajustar o projeto quando quiser.",
+          pontos: ["Você conta, o Ramon revisa, você escolhe, mão na massa", "Meses, semanas e demandas: a barra de progresso", "Ajustar meu projeto, voltar ao sugerido ou escolher outra opção"],
+          tarefa: "Responda as 10 perguntas do Meu projeto, com calma e com sinceridade.",
+          roteiro: ["Ver Nivelamento - roteiros/Aula 03 - Meu projeto o seu norte.md"]
+        },
+        {
+          id: "plano-via", titulo: "Meu plano, Via e Boas práticas", dur: "3:30", video: null,
+          resumo: "O seu objetivo com os 3 marcos, a rotina do dia na Via e os hábitos que fazem a mentoria virar resultado.",
+          pontos: ["Meu plano: onde estou, aonde quero chegar e os 3 marcos", "A Via: Hoje, Ideias, Saúde e família e o Fechamento do dia", "Boas práticas: ao acordar, durante o dia, no fechamento e toda semana"],
+          tarefa: "Preencha o seu objetivo no Meu plano e, hoje à noite, faça o seu primeiro fechamento do dia na Via.",
+          roteiro: ["Ver Nivelamento - roteiros/Aula 04 - Meu plano Via e Boas praticas.md"]
         }
       ]
     },
@@ -26,7 +40,7 @@ window.NIVELAMENTO = {
       id: "nivelamento", titulo: "Nivelamento",
       aulas: [
         {
-          id: "negocio", titulo: "O seu negócio em uma página", dur: "10:00", video: null,
+          id: "negocio", titulo: "O seu negócio em uma página", dur: "3:25", video: null, pdf: "aula-03.pdf",
           resumo: "Antes de colocar a IA para trabalhar, você precisa enxergar o seu negócio inteiro numa folha só.",
           pontos: ["O que você vende, para quem e como o dinheiro entra", "Onde o seu tempo vai embora", "O que trava hoje: o gargalo número 1"],
           ferramenta: {
@@ -45,7 +59,7 @@ window.NIVELAMENTO = {
           roteiro: ["Abertura: dono que sabe tudo de cabeça, mas nunca colocou no papel", "Os 6 campos do raio-X, com um exemplo real (loja, confeitaria ou consultório)", "Demonstração: colar o raio-X no Claude com o pedido pronto", "Ler a resposta e mostrar o que aproveitar", "Missão: preencher e guardar"]
         },
         {
-          id: "produto", titulo: "O que você entrega de verdade", dur: "11:00", video: null,
+          id: "produto", titulo: "O que você entrega de verdade", dur: "3:00", video: null, pdf: "aula-04.pdf",
           resumo: "Cliente não compra o seu currículo, compra a mudança que você traz. Vamos organizar os seus produtos do mais simples ao mais completo.",
           pontos: ["A transformação: como o cliente está antes e depois de você", "Porta de entrada, produto principal e o que se repete todo mês", "Qual produto dá mais resultado com menos esforço"],
           ferramenta: {
@@ -63,7 +77,7 @@ window.NIVELAMENTO = {
           roteiro: ["Abertura: ninguém compra a furadeira, compra o furo", "Antes e depois: exemplo de 2 ramos diferentes", "A escada: porta de entrada, principal, recorrente (desenho na tela)", "Demonstração no Claude com o mapa preenchido", "Missão: escolher a porta de entrada"]
         },
         {
-          id: "cliente", titulo: "O cliente que você quer servir", dur: "11:00", video: null,
+          id: "cliente", titulo: "O cliente que você quer servir", dur: "3:10", video: null, pdf: "aula-05.pdf",
           resumo: "Quem tenta vender para todo mundo não fala com ninguém. A ficha do cliente ideal guia o conteúdo, a venda e até o Claude.",
           pontos: ["Os clientes que dão lucro e os que dão trabalho", "A dor real (e não a que você acha que ele tem)", "Onde ele está e o que faz ele decidir"],
           ferramenta: {
@@ -82,7 +96,7 @@ window.NIVELAMENTO = {
           roteiro: ["Abertura: o cliente que pede desconto e o que indica 5 amigos", "Preenchendo a ficha com um cliente real (sem dados pessoais)", "Por que o Claude precisa dessa ficha: tudo o que ele escrever fica melhor", "Demonstração: a persona com nome e as 10 perguntas", "Missão: 3 conversas para validar"]
         },
         {
-          id: "atracao", titulo: "De onde vêm os seus clientes", dur: "10:00", video: null,
+          id: "atracao", titulo: "De onde vêm os seus clientes", dur: "4:10", video: null, pdf: "aula-06.pdf",
           resumo: "Todo negócio tem 2 ou 3 caminhos que trazem quase todos os clientes. Descubra os seus e faça a conta simples que mostra quanto esforço cada venda pede.",
           pontos: ["Os canais: indicação, redes, WhatsApp, loja, parcerias", "A conta simples: contatos, conversas e vendas", "O número do dia: quantos contatos você precisa fazer"],
           ferramenta: {
@@ -100,7 +114,7 @@ window.NIVELAMENTO = {
           roteiro: ["Abertura: quem não sabe de onde vem o cliente não sabe onde investir", "Os canais mais comuns e como medir sem sistema", "A conta na lousa: contatos, conversas, vendas", "Demonstração: o Claude calculando o número do dia", "Missão: 5 dias de número do dia"]
         },
         {
-          id: "semana", titulo: "A semana que cabe na sua vida", dur: "10:00", video: null,
+          id: "semana", titulo: "A semana que cabe na sua vida", dur: "4:00", video: null, pdf: "aula-07.pdf",
           resumo: "A agenda não é para caber o trabalho; é para caber a vida. Primeiro entram família, oração e saúde. Depois, o trabalho que dá resultado. A burocracia vai para o Claude.",
           pontos: ["Os blocos fixos que não se negociam", "O trabalho que só você pode fazer", "A burocracia que pode sair das suas costas"],
           ferramenta: {
@@ -118,7 +132,7 @@ window.NIVELAMENTO = {
           roteiro: ["Abertura: o pescador de Porto de Galinhas (a família no fim do plano)", "Os 3 tipos de bloco, com a minha própria agenda na tela", "Demonstração: o Claude montando a semana em tabela", "O horário de encerrar o dia como regra", "Missão: uma semana seguindo a grade"]
         },
         {
-          id: "pedras", titulo: "Pedras grandes primeiro", dur: "9:00", video: null,
+          id: "pedras", titulo: "Pedras grandes primeiro", dur: "3:50", video: null, pdf: "aula-08.pdf",
           resumo: "Se a areia entra primeiro, as pedras grandes não cabem. Toda segunda, 3 prioridades que mexem no resultado; o resto vem depois.",
           pontos: ["O que é pedra grande, pedrinha e areia", "As 3 prioridades da semana", "O que cortar sem culpa"],
           ferramenta: {
@@ -136,14 +150,14 @@ window.NIVELAMENTO = {
           roteiro: ["Abertura: o pote com pedras, pedrinhas e areia", "Como escolher a pedra grande: a pergunta do resultado", "O que cortar e como dizer não", "Demonstração: o Claude quebrando as pedras em passos", "Missão: o ritual de segunda"]
         },
         {
-          id: "planilha", titulo: "A planilha do plano semanal", dur: "5:00", video: null,
+          id: "planilha", titulo: "A planilha do plano semanal", dur: "3:30", video: null, pdf: "aula-09.pdf",
           resumo: "A planilha que junta a grade da semana, as pedras grandes e o número do dia, para acompanhar sem esforço. Ela fica aqui embaixo: use na própria aula ou baixe em Excel.",
           pontos: ["As 3 partes: grade da semana, pedras grandes e número do dia", "Usar aqui mesmo ou baixar em Excel (abre no Google Planilhas)", "Como pedir ao Claude para analisar a sua semana"],
           tarefa: "Preencha a planilha da semana atual aqui na aula e, no domingo, copie para o Claude analisar.",
           roteiro: ["Mostrar a planilha na tela, parte por parte", "As cores da grade: família, pedra grande, rotina e Claude", "Preencher uma semana de exemplo", "Baixar em Excel e abrir no Google Planilhas", "Pedir ao Claude a análise da semana", "Missão: a semana atual preenchida"]
         },
         {
-          id: "metas", titulo: "Metas que cabem na vida real", dur: "10:00", video: null,
+          id: "metas", titulo: "Metas que cabem na vida real", dur: "4:00", video: null, pdf: "aula-10.pdf",
           resumo: "Meta boa é a que você enxerga no dia. Vamos descer da meta do ano até o número de hoje, sem sacrificar o que importa.",
           pontos: ["A meta do ano e o porquê dela", "Do ano para o mês, do mês para a semana, da semana para o dia", "A meta que respeita a família"],
           ferramenta: {
@@ -162,7 +176,7 @@ window.NIVELAMENTO = {
           roteiro: ["Abertura: meta de virada de ano que morre em fevereiro", "A escada: ano, mês, semana, dia (na tela)", "O que não se sacrifica", "Demonstração: o Claude desdobrando com sazonalidade", "Missão: o número do dia à vista"]
         },
         {
-          id: "claude", titulo: "O Claude pronto para o 1º encontro", dur: "12:00", video: null,
+          id: "claude", titulo: "O Claude pronto para o 1º encontro", dur: "4:20", video: null, pdf: "aula-11.pdf",
           resumo: "Conta criada, um Projeto do seu negócio com tudo o que você preencheu no nivelamento e a primeira tarefa resolvida.",
           pontos: ["Criar a conta e escolher o plano", "Montar o Projeto do negócio com as ferramentas do nivelamento", "A primeira tarefa de burocracia resolvida"],
           prompt: "Leia tudo o que está neste Projeto (raio-X, produtos, cliente ideal, canais, semana e metas) e me faça 5 perguntas para entender melhor o meu negócio. Depois, resolva a tarefa de burocracia que eu indicar.",
@@ -170,7 +184,7 @@ window.NIVELAMENTO = {
           roteiro: ["Abertura: o funcionário invisível precisa de manual", "Conta e plano (indicar o curso para quem quiser o passo a passo)", "Criar o Projeto e colar as ferramentas do nivelamento (botão Copiar tudo)", "Demonstração: as 5 perguntas e a primeira tarefa", "Missão: Projeto pronto"]
         },
         {
-          id: "checklist", titulo: "Checklist antes do 1º encontro", dur: "3:00", video: null,
+          id: "checklist", titulo: "Checklist antes do 1º encontro", dur: "2:40", video: null, pdf: "aula-12.pdf",
           resumo: "Tudo o que você precisa ter feito para chegar no 1º encontro e aproveitar cada minuto.",
           pontos: ["Diagnóstico e testes de perfil feitos", "As ferramentas do nivelamento preenchidas", "Uma tarefa que rouba o seu tempo para resolvermos ao vivo"],
           tarefa: "Marque todas as aulas como concluídas e traga a sua tarefa para o 1º encontro.",

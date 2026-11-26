@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Meet de apresentação · A Panela</title>
+<meta name="description" content="Garanta sua vaga no Meet de apresentação da Panela, a mentoria de IA, negócios e fé do Ramon Berba.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap">
+<style>
+:root{--bg:#F1F1EE;--surface:#fff;--ink:#141414;--muted:#6A6A66;--line:#DFDFDA;--azul:#2D5BD7;--vermelho:#E2231A;--amarelo:#F5B800;
+--display:"Archivo","Arial Narrow",system-ui,sans-serif;--texto:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--texto);font-size:16px;line-height:1.6}
+a{color:inherit}
+[hidden]{display:none!important}
+.wrap{max-width:760px;margin:0 auto;padding:28px max(18px,env(safe-area-inset-left,0px)) 60px}
+.topo{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.topo img{width:48px;height:48px;border-radius:10px;object-fit:cover}
+.topo a{font-size:13px;color:var(--muted);text-decoration:none;margin-left:auto}
+.rot{font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--vermelho)}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(30px,6vw,46px);line-height:1.02;letter-spacing:-.01em;margin:8px 0 10px}
+h2{font-family:var(--display);font-weight:800;font-size:22px;margin:0 0 10px}
+.subt{margin:0 0 12px;font-size:18px;color:#333}
+.data{display:inline-flex;flex-wrap:wrap;gap:8px;margin:4px 0 16px}
+.data span{background:var(--ink);color:#fff;border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px;margin:0 0 18px}
+.resumo p{margin:0 0 10px}
+.resumo ul{margin:6px 0 0;padding-left:18px}
+.passo{display:inline-block;font-family:var(--display);font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--azul);margin-bottom:4px}
+label.t,p.t{display:block;font-weight:600;margin:16px 0 6px}
+.opt{font-weight:400;color:var(--muted);font-size:14px}
+input[type=text],input[type=tel],input[type=email],textarea{width:100%;padding:13px 14px;border:1px solid #cfcfca;border-radius:8px;font:inherit;background:#fff;color:var(--ink)}
+textarea{min-height:96px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{cursor:pointer}
+.chips input{position:absolute;opacity:0;pointer-events:none}
+.chips span{display:inline-block;padding:10px 16px;border:1.5px solid #cfcfca;border-radius:999px;background:#fff;font-weight:600;font-size:15px}
+.chips input:checked+span{border-color:var(--azul);background:var(--azul);color:#fff}
+.chips input:focus-visible+span{outline:2px solid var(--azul);outline-offset:2px}
+.check{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-weight:600}
+.check input{width:20px;height:20px;margin-top:3px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:22px;font-family:var(--display);font-size:14px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:17px 22px;border-radius:6px;border:0;background:var(--azul);color:#fff;cursor:pointer;text-decoration:none;box-shadow:0 10px 24px -12px rgba(45,91,215,.7)}
+.btn[disabled]{opacity:.6;cursor:wait}
+.btn.sec{background:#fff;color:var(--azul);border:1.5px solid var(--azul);box-shadow:none;margin-top:10px}
+.msg{min-height:22px;margin:10px 0 0;color:var(--vermelho);font-weight:600}
+.lgpd{font-size:13px;color:var(--muted);margin-top:12px}
+.aviso-sentido{margin:22px 0 4px;padding:14px 16px;border-left:4px solid var(--amarelo);background:#FFF7DB;border-radius:6px;font-weight:700;font-size:16px;line-height:1.45}
+.isca{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+/* etapa 2 */
+.entra{animation:entra .7s ease both}
+@keyframes entra{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.precos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.precos{grid-template-columns:1fr}}
+.preco{position:relative;border-radius:12px;padding:20px;overflow:hidden;opacity:0;transform:translateY(16px) scale(.98);transition:opacity .7s ease,transform .7s ease}
+.preco.on{opacity:1;transform:none}
+.preco.silver{background:linear-gradient(150deg,#f4f6f8,#d9dee3);border:1px solid #c5ccd3}
+.preco.gold{background:linear-gradient(150deg,#1d1a12,#3a2f12);color:#fff;border:1px solid #8d6418}
+.preco img{width:64px;height:57px;object-fit:cover;border-radius:8px;display:block;margin-bottom:8px}
+.preco .nome{font-family:var(--display);font-weight:800;font-size:20px}
+.preco .per{font-size:14px;opacity:.8;margin-bottom:10px}
+.preco .rot2{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+.preco .parc{font-family:var(--display);font-weight:900;font-size:clamp(24px,7vw,32px);white-space:nowrap;line-height:1.05;margin:2px 0 6px}
+.preco .linha{margin:4px 0 0;font-size:15px}
+.preco .total{font-size:14px;opacity:.75}
+.preco .hub{margin-top:12px;padding:10px 12px;border-radius:8px;background:rgba(245,184,0,.18);font-size:14px}
+@media (prefers-reduced-motion:reduce){.preco,.entra{transition:none;animation:none}}
+.ok-meet{background:#E9F7EF;border:1px solid #b7e3c7;border-radius:10px;padding:16px 18px;margin:0 0 18px}
+.ok-meet b{display:block;font-size:20px;margin-bottom:4px}
+.agenda{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.agenda a{flex:1;min-width:200px;margin-top:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topo"><img src="../logo-h-web.jpg" alt="A Panela"><span class="rot" style="color:var(--ink)">A Panela</span><a href="../">&larr; voltar</a></div>
+
+  <section id="cabeca">
+    <span class="rot">Meet de apresentação · online</span>
+    <h1>Quero participar do Meet · <span id="t-data">2 de dezembro</span></h1>
+    <p class="subt">Preencha, garanta sua vaga no Meet e saiba o investimento.</p>
+    <div class="data"><span id="t-dia">Quarta, 02/12</span><span id="t-hora">20h37</span><span>Google Meet</span></div>
+    <div class="card resumo">
+      <p><b>A Panela é a mentoria de IA, negócios e fé do Ramon Berba.</b> Encontros ao vivo, individuais e uma área do participante para você sair com o seu negócio organizado, vendendo e com o Claude tirando o trabalho burocrático das suas costas, para sobrar mais tempo com a família.</p>
+      <ul><li><b>Panela Silver:</b> 6 meses, 30 encontros.</li><li><b>Panela Gold:</b> 1 ano, 66 encontros, com projeto feito a 4 mãos comigo.</li></ul>
+      <p style="margin-top:10px">No Meet eu mostro tudo por dentro e tiro as suas dúvidas.</p>
+    </div>
+  </section>
+
+  <!-- ETAPA 1 -->
+  <form class="card" id="etapa1" novalidate>
+    <span class="passo">Etapa 1 de 2</span>
+    <h2>Seus dados e algumas perguntas</h2>
+    <label class="t" for="nome">Nome completo</label><input id="nome" name="nome" type="text" autocomplete="name" required>
+    <label class="t" for="whatsapp">WhatsApp</label><input id="whatsapp" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" placeholder="(21) 99999-9999" required>
+    <label class="t" for="email">E-mail <span class="opt">o convite do Meet chega nele</span></label><input id="email" name="email" type="email" autocomplete="email" required>
+    <div class="aviso-sentido">Antes de revelar o investimento, precisamos saber se essa mentoria faz sentido para você.</div>
+    <p class="t">A mentoria te atende? Você acha que vai te ajudar a alcançar os seus objetivos?</p>
+    <div class="chips"><label><input type="radio" name="atende" value="sim" required><span>Sim</span></label><label><input type="radio" name="atende" value="nao"><span>Não</span></label></div>
+    <label class="t" for="porque">Por que deveríamos aceitar você na mentoria?</label><textarea id="porque" name="porque" maxlength="1200" required></textarea>
+    <label class="t" for="valeu">O que precisa acontecer para você sentir que valeu?</label><textarea id="valeu" name="valeu" maxlength="1200" required></textarea>
+    <label class="check"><input type="checkbox" name="hub" value="1"> Participei do 1º Encontro do Hub de Empreendedores Católicos</label>
+    <input class="isca" name="site" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <p class="msg" id="msg1" role="status"></p>
+    <button class="btn" type="submit" id="bt1">Saiba o investimento</button>
+    <p class="lgpd">Usamos os seus dados só para o Meet e para falar com você sobre a Panela. Você pode pedir para apagar quando quiser.</p>
+  </form>
+
+  <!-- ETAPA 2 -->
+  <form class="card entra" id="etapa2" hidden novalidate>
+    <span class="passo">Etapa 2 de 2</span>
+    <h2>O investimento</h2>
+    <div class="precos" id="precos"></div>
+    <p class="t" style="margin-top:22px">Faz sentido para você, nesse investimento, ter seus problemas resolvidos, dominar a IA no seu negócio, construir aplicativos e sites e ter alguém te acompanhando de perto?</p>
+    <div class="chips"><label><input type="radio" name="faz_sentido" value="sim"><span>Sim, faz sentido</span></label><label><input type="radio" name="faz_sentido" value="meet"><span>Quero entender melhor no Meet</span></label></div>
+    <p class="t">Para tudo o que a Panela entrega, o que você acha desse investimento?</p>
+    <div class="chips"><label><input type="radio" name="percepcao" value="justo"><span>Justo pelo que entrega</span></label><label><input type="radio" name="percepcao" value="alto_vale"><span>Alto, mas vale a pena</span></label><label><input type="radio" name="percepcao" value="alto_momento"><span>Alto para o meu momento</span></label></div>
+    <p class="t">Qual panela combina com você?</p>
+    <div class="chips"><label><input type="radio" name="plano" value="silver"><span>Silver · 6 meses</span></label><label><input type="radio" name="plano" value="gold"><span>Gold · 1 ano</span></label></div>
+    <p class="t">Qual forma se enquadra na sua realidade?</p>
+    <div class="chips"><label><input type="radio" name="forma" value="12x"><span>12x no cartão</span></label><label><input type="radio" name="forma" value="pix"><span>À vista no Pix</span></label></div>
+    <p class="msg" id="msg2" role="status"></p>
+    <button class="btn" type="submit" id="bt2">Confirmar minha vaga no Meet</button>
+  </form>
+
+  <!-- CONFIRMAÇÃO -->
+  <section id="confirmado" class="entra" hidden>
+    <div class="ok-meet"><b>Vaga confirmada! Te vejo no Meet. 🙏</b><span id="r-quando">Quarta, 02/12, às 20h37</span> · o convite foi para o seu e-mail.
+      <div class="agenda"><a class="btn" id="r-google" target="_blank" rel="noopener">Adicionar ao Google Agenda</a><a class="btn sec" id="r-ics" download="meet-panela.ics">Baixar convite (.ics)</a></div>
+      <a class="btn sec" id="r-meet" target="_blank" rel="noopener">Link do Meet</a>
+    </div>
+    <div class="card"><h2>Próximos passos</h2><p style="margin:0">No Meet eu apresento tudo e respondo as suas dúvidas. Depois, leio a sua inscrição e respondo pelo WhatsApp. Quem for aceito recebe a data do 1º encontro, o link para agendar o individual e o link de pagamento.</p></div>
+  </section>
+</div>
+
+<script>
+/* ===== DADOS DO MEET (troque aqui se mudar) ===== */
+var MEET = {
+  inicio: "2026-12-02T20:37:00-03:00",
+  fim:    "2026-12-02T21:37:00-03:00",
+  link:   "https://meet.google.com/fxc-joai-uzi",
+  titulo: "Meet de apresentação · A Panela",
+  rotuloData: "2 de dezembro", rotuloDia: "Quarta, 02/12", rotuloHora: "20h37"
+};
+var API = "https://angelus.ramonberba.workers.dev/candidatura";
+
+document.getElementById("t-data").textContent = MEET.rotuloData;
+document.getElementById("t-dia").textContent = MEET.rotuloDia;
+document.getElementById("t-hora").textContent = MEET.rotuloHora;
+(function(){ var p=new URLSearchParams(location.search).get("plano"); if(p){var r=document.querySelector('input[name=plano][value="'+p+'"]'); if(r)r.checked=true;} })();
+
+var TOKEN = "", HUB = false;
+function utc(iso){ return new Date(iso).toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,""); }
+function brl(v){ return "R$ "+Number(v).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function brl0(v){ return "R$ "+Number(v).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2}); }
+function el(t,c,h){ var e=document.createElement(t); if(c)e.className=c; if(h!=null)e.textContent=h; return e; }
+function escolha(f,n){ return (f.querySelector("input[name="+n+"]:checked")||{}).value||""; }
+function postar(url,d){
+  return fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)})
+    .then(function(r){return r.json().catch(function(){return {};}).then(function(j){ if(!r.ok||!j.ok) throw new Error(j.erro||"Não foi possível enviar."); return j; });});
+}
+
+function mostrarInvestimento(precos){
+  var box=document.getElementById("precos"); box.textContent="";
+  [["silver","Panela Silver","6 meses · 30 encontros","../plano-prata.jpg"],["gold","Panela Gold","1 ano · 66 encontros","../plano-ouro.jpg"]].forEach(function(d,i){
+    var p=precos[d[0]]; if(!p) return;
+    var c=el("div","preco "+d[0]); var img=el("img"); img.src=d[3]; img.alt=""; c.appendChild(img);
+    c.appendChild(el("div","nome",d[1])); c.appendChild(el("div","per",d[2]));
+    c.appendChild(el("div","rot2","No cartão"));
+    c.appendChild(el("div","parc","12x de "+brl(p.cheio/12)));
+    c.appendChild(el("p","linha","Ou "+brl(p.cheio*0.85)+" à vista no Pix (15% de desconto)"));
+    c.appendChild(el("p","linha total","Total: "+brl0(p.cheio)));
+    if(HUB && p.hub){ var hh=el("div","hub"); hh.appendChild(el("b",null,"Sua condição de quem foi ao 1º Encontro (−25%): ")); hh.appendChild(document.createTextNode("12x de "+brl(p.hub/12)+" ou "+brl(p.hub*0.85)+" no Pix. Total: "+brl0(p.hub)+".")); c.appendChild(hh); }
+    box.appendChild(c); setTimeout(function(){c.classList.add("on")}, 200+i*350);
+  });
+}
+
+function montarAgenda(){
+  var det="Meet de apresentação da Panela com o Ramon Berba. Entre pelo link: "+MEET.link;
+  document.getElementById("r-quando").textContent = MEET.rotuloDia+", às "+MEET.rotuloHora;
+  document.getElementById("r-meet").href = MEET.link;
+  document.getElementById("r-google").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(MEET.titulo)+"&dates="+utc(MEET.inicio)+"/"+utc(MEET.fim)+"&details="+encodeURIComponent(det)+"&location="+encodeURIComponent(MEET.link)+"&ctz=America/Sao_Paulo";
+  var N=String.fromCharCode(13,10);
+  var ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//A Panela//Meet//PT","BEGIN:VEVENT","UID:meet-panela-"+utc(MEET.inicio)+"@panela.usevox.com.br","DTSTAMP:"+utc(new Date().toISOString()),"DTSTART:"+utc(MEET.inicio),"DTEND:"+utc(MEET.fim),"SUMMARY:"+MEET.titulo,"DESCRIPTION:"+det,"LOCATION:"+MEET.link,"URL:"+MEET.link,"END:VEVENT","END:VCALENDAR"].join(N);
+  document.getElementById("r-ics").href = URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));
+}
+
+/* etapa 1 */
+var f1=document.getElementById("etapa1"), m1=document.getElementById("msg1"), b1=document.getElementById("bt1");
+f1.addEventListener("submit",function(e){
+  e.preventDefault(); m1.textContent="";
+  var d={ nome:f1.nome.value.trim(), whatsapp:f1.whatsapp.value.trim(), email:f1.email.value.trim(), atende:escolha(f1,"atende"),
+    porque:f1.porque.value.trim(), valeu:f1.valeu.value.trim(), hub:f1.hub.checked, site:f1.site.value, origem:"meet-02-12" };
+  if(d.nome.length<2){m1.textContent="Escreva o seu nome.";f1.nome.focus();return;}
+  if(d.whatsapp.replace(/\D/g,"").length<10){m1.textContent="Escreva o WhatsApp com DDD.";f1.whatsapp.focus();return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)){m1.textContent="Confira o seu e-mail: é nele que chega o convite.";f1.email.focus();return;}
+  if(!d.atende){m1.textContent="Responda se a mentoria te atende.";return;}
+  if(d.porque.length<5||d.valeu.length<5){m1.textContent="Conte um pouco mais nas respostas abertas.";return;}
+  b1.disabled=true; b1.textContent="Enviando…";
+  postar(API,d).then(function(j){
+    TOKEN=j.token||""; HUB=d.hub; mostrarInvestimento(j.precos||{});
+    f1.hidden=true; document.getElementById("cabeca").hidden=true;
+    var f2=document.getElementById("etapa2"); f2.hidden=false; window.scrollTo({top:0,behavior:"smooth"});
+  }).catch(function(err){ m1.textContent=err.message+" Tente de novo ou fale comigo no WhatsApp (21) 99658-8197."; b1.disabled=false; b1.textContent="Saiba o investimento"; });
+});
+
+/* etapa 2 */
+var f2=document.getElementById("etapa2"), m2=document.getElementById("msg2"), b2=document.getElementById("bt2");
+f2.addEventListener("submit",function(e){
+  e.preventDefault(); m2.textContent="";
+  var d={ token:TOKEN, faz_sentido:escolha(f2,"faz_sentido"), percepcao:escolha(f2,"percepcao"), plano:escolha(f2,"plano"), forma:escolha(f2,"forma") };
+  if(!d.faz_sentido||!d.percepcao||!d.plano||!d.forma){m2.textContent="Responda as quatro perguntas para confirmar.";return;}
+  b2.disabled=true; b2.textContent="Confirmando…";
+  postar(API+"/etapa2",d).then(function(){
+    montarAgenda(); f2.hidden=true; document.getElementById("confirmado").hidden=false; window.scrollTo({top:0,behavior:"smooth"});
+  }).catch(function(err){ m2.textContent=err.message+" Se continuar, fale comigo no WhatsApp (21) 99658-8197."; b2.disabled=false; b2.textContent="Confirmar minha vaga no Meet"; });
+});
+</script>
+</body>
+</html>
